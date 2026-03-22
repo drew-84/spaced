@@ -63,7 +63,7 @@ export function BookingForm() {
         <select
           id="spaceId"
           {...form.register("spaceId")}
-          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-amber-300/45"
+          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
         >
           <option value="">Choose a nearby space</option>
           {mockSpaces.map((space) => (
@@ -90,7 +90,7 @@ export function BookingForm() {
           <select
             id="durationMinutes"
             {...form.register("durationMinutes")}
-            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-amber-300/45"
+            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
           >
             <option value="30">30 minutes</option>
             <option value="60">60 minutes</option>
@@ -107,7 +107,7 @@ export function BookingForm() {
           <select
             id="extensionMinutes"
             {...form.register("extensionMinutes")}
-            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-amber-300/45"
+            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
           >
             <option value="0">No extension</option>
             <option value="15">+15 minutes</option>
@@ -124,7 +124,7 @@ export function BookingForm() {
           id="notes"
           {...form.register("notes")}
           rows={3}
-          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition placeholder:text-zinc-500 focus:border-amber-300/45"
+          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition placeholder:text-zinc-500 focus:border-fuchsia-400/50"
           placeholder="Access preferences or special instructions"
         />
         {form.formState.errors.notes ? (
@@ -134,14 +134,14 @@ export function BookingForm() {
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-amber-200/20 bg-gradient-to-r from-amber-200/10 to-transparent px-4 py-3 text-sm text-zinc-300">
+      <div className="rounded-xl border border-fuchsia-300/20 bg-gradient-to-r from-fuchsia-400/10 to-purple-500/5 px-4 py-3 text-sm text-zinc-300">
         Estimated total:{" "}
-        <span className="font-semibold text-amber-100">${estimatedTotal}</span>
+        <span className="font-semibold text-fuchsia-200">${estimatedTotal}</span>
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400/30 to-orange-300/20 px-4 py-2.5 text-sm font-medium text-amber-100 transition hover:border-amber-200/60 hover:from-amber-300/40 hover:to-orange-200/30"
+        className="w-full rounded-full border border-fuchsia-400/45 bg-gradient-to-r from-fuchsia-500/35 to-pink-400/20 px-4 py-2.5 text-sm font-medium text-fuchsia-100 transition hover:border-fuchsia-300/65 hover:from-fuchsia-400/45 hover:to-pink-300/30"
       >
         Save Booking Draft
       </button>

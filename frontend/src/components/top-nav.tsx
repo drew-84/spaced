@@ -6,8 +6,8 @@ type TopNavProps = {
 
 function navClass(isActive: boolean) {
   return isActive
-    ? "rounded-full border border-amber-300/35 bg-gradient-to-r from-amber-400/30 to-orange-300/20 px-3 py-1.5 text-sm font-medium text-amber-100"
-    : "rounded-full px-3 py-1.5 text-sm text-zinc-400 transition hover:bg-amber-300/10 hover:text-zinc-100";
+    ? "rounded-full border border-fuchsia-400/40 bg-gradient-to-r from-fuchsia-500/30 to-pink-400/20 px-3 py-1.5 text-sm font-medium text-fuchsia-100"
+    : "rounded-full px-3 py-1.5 text-sm text-zinc-400 transition hover:bg-fuchsia-400/10 hover:text-zinc-100";
 }
 
 export function TopNav({ active }: TopNavProps) {
@@ -17,7 +17,7 @@ export function TopNav({ active }: TopNavProps) {
         <Link href="/" className="text-lg font-semibold tracking-tight text-zinc-100">
           SPACED
         </Link>
-        <nav className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 shadow-[0_8px_24px_rgba(245,158,11,0.08)]">
+        <nav className="flex items-center gap-2 rounded-full border border-white/10 bg-white/5 p-1 shadow-[0_8px_24px_rgba(236,72,153,0.12)]">
           <Link href="/" className={navClass(active === "home")}>
             Home
           </Link>

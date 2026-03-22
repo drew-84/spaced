@@ -23,7 +23,7 @@ export default function SpacesPage() {
 
         <Link
           href="/book"
-          className="inline-flex rounded-full border border-amber-300/40 bg-gradient-to-r from-amber-400/30 to-orange-300/20 px-5 py-2.5 text-sm font-medium text-amber-100 transition hover:border-amber-200/60 hover:from-amber-300/40 hover:to-orange-200/25"
+          className="inline-flex rounded-full border border-fuchsia-400/45 bg-gradient-to-r from-fuchsia-500/35 to-pink-400/20 px-5 py-2.5 text-sm font-medium text-fuchsia-100 transition hover:border-fuchsia-300/65 hover:from-fuchsia-400/45 hover:to-pink-300/30"
         >
           Continue to booking
         </Link>

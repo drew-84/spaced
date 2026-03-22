@@ -12,7 +12,7 @@ const typeLabel: Record<Space["type"], string> = {
 
 export function SpaceCard({ space }: SpaceCardProps) {
   return (
-    <article className="rounded-2xl border border-white/15 bg-white/[0.05] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.35)] transition hover:border-amber-300/35 hover:shadow-[0_18px_38px_rgba(245,158,11,0.18)]">
+    <article className="rounded-2xl border border-white/15 bg-white/[0.05] p-5 shadow-[0_16px_34px_rgba(0,0,0,0.35)] transition hover:border-fuchsia-400/40 hover:shadow-[0_18px_38px_rgba(236,72,153,0.22)]">
       <div className="flex items-start justify-between gap-3">
         <div>
           <h3 className="text-base font-semibold text-zinc-100">{space.title}</h3>
@@ -21,7 +21,7 @@ export function SpaceCard({ space }: SpaceCardProps) {
           </p>
         </div>
         {space.instantAccess ? (
-          <span className="rounded-full border border-amber-300/35 bg-amber-300/20 px-2.5 py-1 text-xs font-medium text-amber-100">
+          <span className="rounded-full border border-fuchsia-400/40 bg-fuchsia-400/20 px-2.5 py-1 text-xs font-medium text-fuchsia-100">
             Instant access
           </span>
         ) : null}

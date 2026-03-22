@@ -43,7 +43,7 @@ export default function BookPage() {
           </ul>
           <Link
             href="/spaces"
-            className="inline-flex text-sm font-medium text-zinc-200 underline hover:text-amber-100"
+            className="inline-flex text-sm font-medium text-zinc-200 underline hover:text-fuchsia-200"
           >
             Back to spaces
           </Link>
