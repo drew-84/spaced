@@ -54,16 +54,16 @@ export function BookingForm() {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="space-y-5 rounded-2xl border border-white/15 bg-white/[0.06] p-6 shadow-[0_16px_34px_rgba(0,0,0,0.35)]"
+      className="space-y-5 rounded-2xl border border-purple-400/20 bg-purple-500/10 p-6 shadow-[0_16px_34px_rgba(168,85,247,0.12)]"
     >
       <div className="space-y-2">
-        <label htmlFor="spaceId" className="text-sm font-medium text-zinc-200">
+        <label htmlFor="spaceId" className="text-sm font-medium text-purple-100">
           Space
         </label>
         <select
           id="spaceId"
           {...form.register("spaceId")}
-          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
+          className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
         >
           <option value="">Choose a nearby space</option>
           {mockSpaces.map((space) => (
@@ -73,7 +73,7 @@ export function BookingForm() {
           ))}
         </select>
         {form.formState.errors.spaceId ? (
-          <p className="text-xs text-red-600">
+          <p className="text-xs text-pink-400">
             {form.formState.errors.spaceId.message}
           </p>
         ) : null}
@@ -83,14 +83,14 @@ export function BookingForm() {
         <div className="space-y-2">
           <label
             htmlFor="durationMinutes"
-            className="text-sm font-medium text-zinc-200"
+            className="text-sm font-medium text-purple-100"
           >
             Duration
           </label>
           <select
             id="durationMinutes"
             {...form.register("durationMinutes")}
-            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
+            className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
           >
             <option value="30">30 minutes</option>
             <option value="60">60 minutes</option>
@@ -100,14 +100,14 @@ export function BookingForm() {
         <div className="space-y-2">
           <label
             htmlFor="extensionMinutes"
-            className="text-sm font-medium text-zinc-200"
+            className="text-sm font-medium text-purple-100"
           >
             Extension
           </label>
           <select
             id="extensionMinutes"
             {...form.register("extensionMinutes")}
-            className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition focus:border-fuchsia-400/50"
+            className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
           >
             <option value="0">No extension</option>
             <option value="15">+15 minutes</option>
@@ -117,31 +117,31 @@ export function BookingForm() {
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="notes" className="text-sm font-medium text-zinc-200">
+        <label htmlFor="notes" className="text-sm font-medium text-purple-100">
           Notes (optional)
         </label>
         <textarea
           id="notes"
           {...form.register("notes")}
           rows={3}
-          className="w-full rounded-xl border border-white/15 bg-black/35 px-3 py-2 text-sm text-zinc-100 outline-none ring-0 transition placeholder:text-zinc-500 focus:border-fuchsia-400/50"
+          className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition placeholder:text-purple-300/40 focus:border-fuchsia-400/50"
           placeholder="Access preferences or special instructions"
         />
         {form.formState.errors.notes ? (
-          <p className="text-xs text-red-600">
+          <p className="text-xs text-pink-400">
             {form.formState.errors.notes.message}
           </p>
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-fuchsia-300/20 bg-gradient-to-r from-fuchsia-400/10 to-purple-500/5 px-4 py-3 text-sm text-zinc-300">
+      <div className="rounded-xl border border-fuchsia-400/20 bg-gradient-to-r from-fuchsia-500/15 to-purple-500/10 px-4 py-3 text-sm text-purple-100">
         Estimated total:{" "}
         <span className="font-semibold text-fuchsia-200">${estimatedTotal}</span>
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-full border border-fuchsia-400/45 bg-gradient-to-r from-fuchsia-500/35 to-pink-400/20 px-4 py-2.5 text-sm font-medium text-fuchsia-100 transition hover:border-fuchsia-300/65 hover:from-fuchsia-400/45 hover:to-pink-300/30"
+        className="w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_25px_rgba(236,72,153,0.35)] transition hover:shadow-[0_12px_35px_rgba(236,72,153,0.5)] hover:brightness-110"
       >
         Save Booking Draft
       </button>
