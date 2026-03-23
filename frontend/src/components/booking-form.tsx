@@ -54,7 +54,7 @@ export function BookingForm() {
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="space-y-5 rounded-2xl border border-purple-400/20 bg-purple-500/10 p-6 shadow-[0_16px_34px_rgba(168,85,247,0.12)]"
+      className="space-y-5 rounded-2xl border border-purple-500/20 bg-purple-500/8 p-6 shadow-[0_0_30px_rgba(190,0,255,0.08)]"
     >
       <div className="space-y-2">
         <label htmlFor="spaceId" className="text-sm font-medium text-purple-100">
@@ -63,7 +63,7 @@ export function BookingForm() {
         <select
           id="spaceId"
           {...form.register("spaceId")}
-          className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
+          className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
         >
           <option value="">Choose a nearby space</option>
           {mockSpaces.map((space) => (
@@ -90,7 +90,7 @@ export function BookingForm() {
           <select
             id="durationMinutes"
             {...form.register("durationMinutes")}
-            className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
+            className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
           >
             <option value="30">30 minutes</option>
             <option value="60">60 minutes</option>
@@ -107,7 +107,7 @@ export function BookingForm() {
           <select
             id="extensionMinutes"
             {...form.register("extensionMinutes")}
-            className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-fuchsia-400/50"
+            className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
           >
             <option value="0">No extension</option>
             <option value="15">+15 minutes</option>
@@ -124,7 +124,7 @@ export function BookingForm() {
           id="notes"
           {...form.register("notes")}
           rows={3}
-          className="w-full rounded-xl border border-purple-400/20 bg-purple-900/40 px-3 py-2 text-sm text-white outline-none ring-0 transition placeholder:text-purple-300/40 focus:border-fuchsia-400/50"
+          className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition placeholder:text-purple-400/30 focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
           placeholder="Access preferences or special instructions"
         />
         {form.formState.errors.notes ? (
@@ -134,14 +134,14 @@ export function BookingForm() {
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-fuchsia-400/20 bg-gradient-to-r from-fuchsia-500/15 to-purple-500/10 px-4 py-3 text-sm text-purple-100">
+      <div className="rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-purple-500/5 px-4 py-3 text-sm text-purple-100">
         Estimated total:{" "}
-        <span className="font-semibold text-fuchsia-200">${estimatedTotal}</span>
+        <span className="font-semibold text-cyan-300 drop-shadow-[0_0_6px_rgba(56,182,255,0.3)]">${estimatedTotal}</span>
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-full bg-gradient-to-r from-fuchsia-500 to-pink-500 px-4 py-2.5 text-sm font-semibold text-white shadow-[0_8px_25px_rgba(236,72,153,0.35)] transition hover:shadow-[0_12px_35px_rgba(236,72,153,0.5)] hover:brightness-110"
+        className="w-full rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_25px_rgba(255,0,128,0.4),0_0_50px_rgba(255,0,128,0.15)] transition hover:shadow-[0_0_35px_rgba(255,0,128,0.6),0_0_70px_rgba(255,0,128,0.25)] hover:brightness-110"
       >
         Save Booking Draft
       </button>
