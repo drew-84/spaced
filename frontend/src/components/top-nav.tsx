@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 
 type TopNavProps = {
-  active?: "home" | "spaces" | "book";
+  active?: "home" | "spaces" | "book" | "login" | "register";
+  hideRegisterLink?: boolean;
 };
 
 function navClass(isActive: boolean) {
@@ -10,7 +13,9 @@ function navClass(isActive: boolean) {
     : "rounded-full px-3 py-1.5 text-sm text-purple-300/60 transition hover:bg-pink-500/10 hover:text-white";
 }
 
-export function TopNav({ active }: TopNavProps) {
+export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
+  void hideRegisterLink;
+
   return (
     <header className="sticky top-0 z-20 border-b border-purple-500/15 bg-[#0d0221]/70 backdrop-blur-xl">
       <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-4 sm:px-8">
@@ -31,6 +36,9 @@ export function TopNav({ active }: TopNavProps) {
           </Link>
           <Link href="/book" className={navClass(active === "book")}>
             Book
+          </Link>
+          <Link href="/login" className={navClass(active === "login")}>
+            Login
           </Link>
         </nav>
       </div>
