@@ -56,9 +56,9 @@ export default function Home() {
               <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
 
               <h1 className="relative text-5xl font-bold leading-tight tracking-tight [text-shadow:0_12px_35px_rgba(4,8,20,0.42)] sm:text-6xl lg:text-7xl">
-                Un lugar solo para{" "}
+                Activa tu{" "}
                 <span className="bg-gradient-to-r from-pink-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,0,128,0.35)]">
-                  ustedes dos
+                  Espacio
                 </span>
               </h1>
               <p className="relative mx-auto mt-6 max-w-2xl text-lg text-purple-50/92 sm:text-xl">
