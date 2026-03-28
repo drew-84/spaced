@@ -1,3 +1,4 @@
+// this seems to be the main page structure
 import Link from "next/link";
 import { TopNav } from "@/components/top-nav";
 
@@ -66,6 +67,8 @@ export default function Home() {
               <h3 className="text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,0,128,0.3)]">Citas privadas</h3>
               <p className="mt-2 text-sm text-purple-100/80">
                 Espacios intimos y discretos para parejas. Sin miradas, sin interrupciones.
+              //There needs to be an option to change the language of the website
+              //Arturo needs to start coding and propmting in English              
               </p>
             </div>
           </div>
