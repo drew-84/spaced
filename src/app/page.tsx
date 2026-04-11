@@ -150,9 +150,6 @@ export default function Home() {
             <div className="mx-auto max-w-3xl rounded-2xl border border-white/15 bg-white/[0.04] p-4 sm:p-5">
               <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-purple-100/80">
                 <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
-                  Sin cámaras
-                </span>
-                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
                   Privacidad total
                 </span>
                 <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
