@@ -72,7 +72,7 @@ export default function Home() {
             </div>
 
             <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
-              ¿Necesitas un lugar privado ahora mismo?
+              ¿Necesitas un lugar ahora mismo?
             </h1>
 
             <p className="mx-auto max-w-2xl text-lg text-purple-100/85 sm:text-xl">
