@@ -65,7 +65,7 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-b from-[#090312]/35 via-[#120626]/30 to-[#090312]/55" />
         <div className="pointer-events-none absolute inset-0 opacity-50 [background:repeating-linear-gradient(118deg,rgba(210,230,255,0.045)_0px,rgba(210,230,255,0.045)_1px,transparent_1px,transparent_54px)]" />
 
-        <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 pb-20 pt-16 sm:px-8 sm:pt-20">
+        <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 pb-20 pt-16 uppercase sm:px-8 sm:pt-20">
           <header className="mx-auto w-full max-w-5xl space-y-8 text-center">
             <div className="inline-flex rounded-full border border-pink-200/40 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-pink-100 backdrop-blur-md">
               Tu refugio privado, al instante
