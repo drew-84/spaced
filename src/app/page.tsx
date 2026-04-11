@@ -1,250 +1,239 @@
-// this seems to be the main page structure
 import Link from "next/link";
+import type { CSSProperties } from "react";
 import { TopNav } from "@/components/top-nav";
+import { mockSpaces } from "@/lib/mock-spaces";
+
+const steps = [
+  {
+    title: "Homepage (clarity + trust)",
+    description: "Explain the value in seconds and build confidence immediately.",
+  },
+  {
+    title: "Browse spaces",
+    description: "User explores nearby options by area, price, and availability.",
+  },
+  {
+    title: "Space detail (photos, rules, privacy)",
+    description: "User verifies photos, rules, and privacy expectations before booking.",
+  },
+  {
+    title: "Booking (manual for now)",
+    description: "Keep booking simple while manual operations validate demand.",
+  },
+] as const;
+
+const useCases = [
+  {
+    title: "Private encounter",
+    description: "Discreet spaces designed for privacy, comfort, and zero friction.",
+  },
+  {
+    title: "Short reset",
+    description: "Recharge between meetings, travel, or long days with full privacy.",
+  },
+  {
+    title: "Temporary escape",
+    description: "Step out of noise and into a calm, ready-to-use private space.",
+  },
+] as const;
+
+const orbitCards = [
+  { angle: "8deg", imageIndex: 0, tilt: "-8deg" },
+  { angle: "78deg", imageIndex: 1, tilt: "9deg" },
+  { angle: "150deg", imageIndex: 2, tilt: "-5deg" },
+  { angle: "222deg", imageIndex: 3, tilt: "8deg" },
+  { angle: "296deg", imageIndex: 4, tilt: "-10deg" },
+] as const;
 
 export default function Home() {
+  const instantAccessCount = mockSpaces.filter((space) => space.instantAccess).length;
+  const averageRating =
+    mockSpaces.reduce((total, space) => total + space.rating, 0) / mockSpaces.length;
+  const totalReviews = mockSpaces.reduce((total, space) => total + space.reviewCount, 0);
+
   return (
     <div className="min-h-screen text-white">
       <TopNav active="home" />
 
-      {/* Hero full-width con imagen de fondo */}
       <section
-        className="relative flex min-h-[85vh] items-center justify-center overflow-hidden"
+        className="relative overflow-hidden"
         style={{
           backgroundImage:
-            "radial-gradient(circle at 14% 10%, rgba(56,182,255,0.22) 0%, transparent 34%), radial-gradient(circle at 82% 14%, rgba(255,0,170,0.2) 0%, transparent 31%), radial-gradient(circle at 50% 68%, rgba(166,80,255,0.26) 0%, transparent 50%), linear-gradient(148deg, #040710 0%, #0d0221 36%, #15072f 62%, #050916 100%)",
+            "radial-gradient(circle at 14% 10%, rgba(56,182,255,0.2) 0%, transparent 34%), radial-gradient(circle at 82% 14%, rgba(255,0,170,0.18) 0%, transparent 31%), radial-gradient(circle at 50% 68%, rgba(166,80,255,0.22) 0%, transparent 50%), linear-gradient(148deg, #040710 0%, #0d0221 36%, #15072f 62%, #050916 100%)",
         }}
       >
-        <div className="absolute inset-0 bg-gradient-to-b from-[#090312]/38 via-[#120626]/28 to-[#090312]/52" />
-        <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(118deg,rgba(255,255,255,0.12)_0%,rgba(255,255,255,0.03)_16%,rgba(255,255,255,0)_42%),radial-gradient(circle_at_28%_82%,rgba(56,182,255,0.12),transparent_36%),radial-gradient(circle_at_74%_74%,rgba(255,0,170,0.1),transparent_35%)]" />
-        <div className="pointer-events-none absolute inset-0 opacity-55 [background:repeating-linear-gradient(118deg,rgba(210,230,255,0.045)_0px,rgba(210,230,255,0.045)_1px,transparent_1px,transparent_54px)]" />
-        <div className="relative mx-auto w-full max-w-5xl px-6 [perspective:1700px]">
-          <div className="pointer-events-none absolute inset-x-14 top-1/2 hidden h-[320px] -translate-y-1/2 rounded-[3rem] border border-white/10 bg-[radial-gradient(circle_at_20%_20%,rgba(255,255,255,0.14),transparent_45%),radial-gradient(circle_at_80%_70%,rgba(56,182,255,0.16),transparent_48%)] shadow-[0_35px_110px_rgba(6,10,30,0.5)] backdrop-blur-sm md:block" />
-          <div className="pointer-events-none absolute left-1/2 top-[54%] hidden h-56 w-[76%] -translate-x-1/2 rounded-[2.4rem] border border-white/10 bg-[linear-gradient(135deg,rgba(255,255,255,0.14)_0%,rgba(255,255,255,0.02)_36%,rgba(56,182,255,0.12)_100%)] shadow-[0_25px_80px_rgba(6,10,30,0.4)] backdrop-blur-md [transform:translateZ(-30px)_rotateX(56deg)_rotateZ(-9deg)] md:block" />
+        <div className="absolute inset-0 bg-gradient-to-b from-[#090312]/35 via-[#120626]/30 to-[#090312]/55" />
+        <div className="pointer-events-none absolute inset-0 opacity-50 [background:repeating-linear-gradient(118deg,rgba(210,230,255,0.045)_0px,rgba(210,230,255,0.045)_1px,transparent_1px,transparent_54px)]" />
 
-          <div className="relative mx-auto flex w-full max-w-4xl flex-col items-center gap-4 [transform-style:preserve-3d] [transform:rotateX(8deg)_rotateY(-9deg)]">
-            <div className="absolute -left-4 top-10 z-30 hidden rounded-2xl border border-cyan-100/40 bg-gradient-to-br from-cyan-100/20 via-cyan-100/7 to-transparent px-4 py-3 text-left shadow-[0_16px_36px_rgba(7,16,35,0.34)] backdrop-blur-xl [transform:translate3d(-10px,-8px,55px)_rotateY(-15deg)_rotateX(4deg)] md:block">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-cyan-100/85">
-                Access Layer
-              </p>
-              <p className="mt-1 text-sm font-medium text-cyan-50/90">
-                Privacidad verificada
-              </p>
-              <div className="pointer-events-none absolute inset-[1px] rounded-[14px] border border-white/30" />
+        <main className="relative mx-auto flex w-full max-w-6xl flex-col gap-14 px-6 pb-20 pt-16 sm:px-8 sm:pt-20">
+          <header className="mx-auto w-full max-w-5xl space-y-8 text-center">
+            <div className="inline-flex rounded-full border border-pink-200/40 bg-white/10 px-4 py-1.5 text-xs font-semibold uppercase tracking-[0.22em] text-pink-100 backdrop-blur-md">
+              Tu refugio privado, al instante
             </div>
 
-            <div className="absolute -right-5 bottom-14 z-30 hidden rounded-2xl border border-fuchsia-100/35 bg-gradient-to-br from-fuchsia-100/18 via-purple-100/7 to-transparent px-4 py-3 text-right shadow-[0_16px_36px_rgba(18,10,34,0.36)] backdrop-blur-xl [transform:translate3d(12px,8px,62px)_rotateY(16deg)_rotateX(4deg)] lg:block">
-              <p className="text-[10px] font-semibold uppercase tracking-[0.28em] text-fuchsia-100/82">
-                Atmosphere
-              </p>
-              <p className="mt-1 text-sm font-medium text-purple-50/90">
-                Ready in minutes
-              </p>
-              <div className="pointer-events-none absolute inset-[1px] rounded-[14px] border border-white/30" />
-            </div>
+            <h1 className="text-4xl font-bold leading-tight tracking-tight sm:text-6xl">
+              ¿Necesitas un lugar privado ahora mismo?
+            </h1>
 
-            <div className="relative z-20 self-center rounded-full border border-pink-100/45 bg-gradient-to-r from-pink-200/14 via-fuchsia-200/8 to-cyan-200/10 px-5 py-2 backdrop-blur-lg [transform:translate3d(0,-6px,70px)_rotateX(7deg)_rotateY(-8deg)]">
-              <div className="pointer-events-none absolute inset-[1px] rounded-full border border-white/25" />
-              <p className="relative text-xs font-semibold uppercase tracking-widest text-pink-100">
-                Tu espacio privado, ahora
-              </p>
-            </div>
+            <p className="mx-auto max-w-2xl text-lg text-purple-100/85 sm:text-xl">
+              Encuentra espacios cerca, de forma discreta y segura
+            </p>
 
-            <div className="relative z-10 w-full overflow-hidden rounded-[1.9rem] border border-white/34 bg-gradient-to-br from-white/8 via-white/[0.02] to-transparent px-6 py-8 text-center shadow-[0_26px_70px_rgba(7,10,28,0.5)] backdrop-blur-xl [transform:translate3d(0,0,38px)_rotateY(-3deg)_rotateX(1deg)] sm:px-10 sm:py-10">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(116deg,rgba(255,255,255,0.22)_0%,rgba(255,255,255,0.08)_12%,rgba(255,255,255,0)_37%),linear-gradient(274deg,rgba(56,182,255,0.12)_0%,rgba(56,182,255,0)_44%),radial-gradient(circle_at_88%_18%,rgba(255,255,255,0.16),transparent_38%)]" />
-              <div className="pointer-events-none absolute inset-[1px] rounded-[1.78rem] border border-white/30" />
-              <div className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/70 to-transparent" />
+            <div className="cta-hero-scene relative mx-auto mt-4 h-[400px] w-full max-w-4xl overflow-hidden rounded-[2rem] border border-white/15 bg-white/[0.03] px-4 py-8 shadow-[0_26px_70px_rgba(7,10,28,0.45)] backdrop-blur-sm sm:h-[470px] sm:px-8">
+              <div className="pointer-events-none absolute inset-0 bg-[radial-gradient(circle_at_50%_52%,rgba(255,255,255,0.12),transparent_36%),radial-gradient(circle_at_22%_24%,rgba(56,182,255,0.18),transparent_28%),radial-gradient(circle_at_84%_72%,rgba(190,0,255,0.16),transparent_32%)]" />
+              <div className="pointer-events-none absolute inset-0 [transform-style:preserve-3d]">
+                <div className="sphere-depth absolute left-1/2 top-1/2 h-56 w-56 -translate-x-1/2 -translate-y-1/2 rounded-full sm:h-64 sm:w-64" />
+                <div className="sphere-ring absolute left-1/2 top-1/2 h-[20rem] w-[20rem] -translate-x-1/2 -translate-y-1/2 rounded-full sm:h-[24rem] sm:w-[24rem]" />
+              </div>
 
-              <h1 className="relative text-5xl font-bold leading-tight tracking-tight [text-shadow:0_12px_35px_rgba(4,8,20,0.42)] sm:text-6xl lg:text-7xl">
-                Activa tu{" "}
-                <span className="bg-gradient-to-r from-pink-300 via-fuchsia-300 to-cyan-300 bg-clip-text text-transparent drop-shadow-[0_0_20px_rgba(255,0,128,0.35)]">
-                  Espacio
-                </span>
-              </h1>
-              <p className="relative mx-auto mt-6 max-w-2xl text-lg text-purple-50/92 sm:text-xl">
-                Espacios privados cerca de ti, listos en minutos. Sin compromisos,
-                sin esperas, total discrecion.
-              </p>
-            </div>
+              <div className="absolute inset-0 [transform-style:preserve-3d]">
+                <div className="orbit-track">
+                  {orbitCards.map((card) => (
+                    <article
+                      key={`orbit-main-${card.angle}`}
+                      className="orbit-card h-28 w-44 overflow-hidden rounded-[1.3rem] border border-white/25 bg-[#0d0221]/55 shadow-[0_18px_36px_rgba(3,8,22,0.45)] sm:h-32 sm:w-48"
+                      style={
+                        {
+                          "--angle": card.angle,
+                          "--tilt": card.tilt,
+                          "--image-url": `url('${mockSpaces[card.imageIndex]?.imageUrl ?? ""}')`,
+                        } as CSSProperties
+                      }
+                    >
+                      <div className="orbit-image h-full w-full bg-cover bg-center" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221]/40 via-transparent to-transparent" />
+                      <div className="absolute inset-[1px] rounded-[1.1rem] border border-white/20" />
+                    </article>
+                  ))}
+                </div>
 
-            <div className="relative z-20 w-full max-w-3xl overflow-hidden rounded-[1.6rem] border border-white/30 bg-gradient-to-br from-white/12 via-white/[0.03] to-transparent px-5 py-5 shadow-[0_24px_60px_rgba(7,10,28,0.44)] backdrop-blur-xl [transform:translate3d(0,4px,52px)_rotateY(4deg)_rotateX(2deg)] sm:px-7">
-              <div className="pointer-events-none absolute inset-0 bg-[linear-gradient(120deg,rgba(255,255,255,0.18)_0%,rgba(255,255,255,0)_40%),radial-gradient(circle_at_12%_90%,rgba(190,0,255,0.12),transparent_45%)]" />
-              <div className="pointer-events-none absolute inset-[1px] rounded-[1.48rem] border border-white/26" />
-              <div className="relative flex flex-wrap justify-center gap-4">
-                <Link
-                  href="/spaces"
-                  className="rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(255,0,128,0.5),0_0_60px_rgba(255,0,128,0.2)] transition hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,128,0.7),0_0_80px_rgba(255,0,128,0.3)]"
-                >
-                  Explorar espacios
-                </Link>
+                <div className="orbit-track orbit-track-reverse">
+                  {orbitCards.map((card, index) => (
+                    <article
+                      key={`orbit-alt-${card.angle}`}
+                      className="orbit-card orbit-card-alt h-24 w-36 overflow-hidden rounded-[1.2rem] border border-white/20 bg-[#0d0221]/50 shadow-[0_16px_32px_rgba(3,8,22,0.42)] sm:h-28 sm:w-40"
+                      style={
+                        {
+                          "--angle": `${Number.parseInt(card.angle, 10) + 32}deg`,
+                          "--tilt": `${Number.parseInt(card.tilt, 10) * -1}deg`,
+                          "--image-url":
+                            `url('${mockSpaces[(card.imageIndex + index + 2) % mockSpaces.length]?.imageUrl ?? ""}')`,
+                        } as CSSProperties
+                      }
+                    >
+                      <div className="orbit-image h-full w-full bg-cover bg-center opacity-90" />
+                      <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221]/35 via-transparent to-transparent" />
+                    </article>
+                  ))}
+                </div>
+              </div>
+
+              <div className="absolute left-1/2 top-1/2 z-20 flex -translate-x-1/2 -translate-y-1/2 items-center justify-center">
                 <Link
                   href="/book"
-                  className="rounded-full border border-cyan-300/45 bg-cyan-300/12 px-8 py-3.5 text-sm font-bold text-cyan-100 shadow-[0_0_15px_rgba(56,182,255,0.15)] backdrop-blur-lg transition hover:border-cyan-300/65 hover:bg-cyan-300/18 hover:shadow-[0_0_25px_rgba(56,182,255,0.3)]"
+                  className="rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-8 py-4 text-sm font-bold text-white shadow-[0_0_35px_rgba(255,0,128,0.6),0_0_70px_rgba(255,0,128,0.25)] transition hover:scale-105 hover:shadow-[0_0_45px_rgba(255,0,128,0.75),0_0_90px_rgba(255,0,128,0.35)]"
                 >
-                  Reservar ahora
+                  Buscar lugar ahora
                 </Link>
               </div>
             </div>
-          </div>
-        </div>
-      </section>
 
-      <main className="mx-auto flex w-full max-w-6xl flex-col gap-16 px-6 py-20 sm:px-8">
-        {/* Features con imagenes de fondo */}
-        <section className="relative grid gap-6 rounded-3xl border border-white/12 bg-gradient-to-br from-white/[0.04] via-white/[0.015] to-transparent p-4 shadow-[0_24px_60px_rgba(6,10,28,0.26)] backdrop-blur-sm sm:grid-cols-3 sm:p-5">
-          <div
-            className="group relative overflow-hidden rounded-2xl border border-pink-500/20 shadow-[0_0_30px_rgba(255,0,128,0.12)]"
-            style={{ minHeight: "320px" }}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1545232979-8bf68ee9b1af?w=600&q=80')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] via-[#0d0221]/50 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-pink-500/50 to-transparent" />
-            <div className="relative flex h-full flex-col justify-end p-6">
-              <h3 className="text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(255,0,128,0.3)]">Citas privadas</h3>
-              <p className="mt-2 text-sm text-purple-100/80">
-                Espacios intimos y discretos para parejas. Sin miradas, sin interrupciones.
-              //There needs to be an option to change the language of the website
-              //Arturo needs to start coding and propmting in English              
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="group relative overflow-hidden rounded-2xl border border-cyan-500/20 shadow-[0_0_30px_rgba(56,182,255,0.12)]"
-            style={{ minHeight: "320px" }}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1540518614846-7eded433c457?w=600&q=80')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] via-[#0d0221]/50 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400/50 to-transparent" />
-            <div className="relative flex h-full flex-col justify-end p-6">
-              <h3 className="text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(56,182,255,0.3)]">Descanso express</h3>
-              <p className="mt-2 text-sm text-purple-100/80">
-                Necesitas un respiro? Reserva 30 minutos de privacidad y confort total.
-              </p>
-            </div>
-          </div>
-
-          <div
-            className="group relative overflow-hidden rounded-2xl border border-fuchsia-500/20 shadow-[0_0_30px_rgba(190,0,255,0.12)]"
-            style={{ minHeight: "320px" }}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1522771739844-6a9f6d5f14af?w=600&q=80')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] via-[#0d0221]/50 to-transparent" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-fuchsia-500/50 to-transparent" />
-            <div className="relative flex h-full flex-col justify-end p-6">
-              <h3 className="text-xl font-bold text-white drop-shadow-[0_0_10px_rgba(190,0,255,0.3)]">Acceso inmediato</h3>
-              <p className="mt-2 text-sm text-purple-100/80">
-                Reserva y accede en minutos. Codigo digital, sin papeleo.
-              </p>
-            </div>
-          </div>
-        </section>
-
-        {/* Banner con imagen */}
-        <section
-          className="relative overflow-hidden rounded-3xl border border-white/18 bg-cover bg-center shadow-[0_0_50px_rgba(255,0,128,0.1),0_24px_60px_rgba(6,10,28,0.26)]"
-          style={{
-            backgroundImage:
-              "url('https://images.unsplash.com/photo-1566073771259-6a8506099945?w=1400&q=80')",
-            minHeight: "350px",
-          }}
-        >
-          <div className="pointer-events-none absolute inset-[1px] rounded-[1.45rem] border border-white/20" />
-          <div className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/55 to-transparent" />
-          <div className="absolute inset-0 bg-gradient-to-r from-[#0d0221]/95 via-[#1a0533]/80 to-transparent" />
-          <div className="relative flex h-full min-h-[350px] flex-col justify-center px-10 py-12 sm:px-16">
-            <h2 className="max-w-lg text-3xl font-bold sm:text-4xl">
-              Privacidad y confort cuando{" "}
-              <span className="bg-gradient-to-r from-pink-400 to-cyan-400 bg-clip-text text-transparent">
-                mas lo necesitas
-              </span>
-            </h2>
-            <p className="mt-4 max-w-md text-purple-100/80">
-              Habitaciones, estudios y apartamentos listos para ti. Desde 30
-              minutos, extiende cuando quieras.
-            </p>
-            <div className="mt-8">
+            <div className="flex flex-wrap items-center justify-center gap-3">
               <Link
                 href="/spaces"
-                className="rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(255,0,128,0.5),0_0_60px_rgba(255,0,128,0.2)] transition hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,128,0.7),0_0_80px_rgba(255,0,128,0.3)]"
+                className="rounded-full border border-cyan-300/40 bg-cyan-300/12 px-6 py-2.5 text-xs font-semibold uppercase tracking-[0.16em] text-cyan-100 transition hover:border-cyan-300/65 hover:bg-cyan-300/18"
               >
-                Ver espacios disponibles
+                Ver espacios
               </Link>
             </div>
-          </div>
-        </section>
 
-        {/* CTA cards con imagenes */}
-        <section className="relative grid gap-6 rounded-3xl border border-white/12 bg-gradient-to-br from-white/[0.04] via-white/[0.012] to-transparent p-4 shadow-[0_24px_60px_rgba(6,10,28,0.24)] backdrop-blur-sm sm:grid-cols-2 sm:p-5">
-          <Link
-            href="/spaces"
-            className="group relative overflow-hidden rounded-2xl border border-pink-500/15 shadow-[0_0_25px_rgba(255,0,128,0.1)] transition hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(255,0,128,0.25)]"
-            style={{ minHeight: "240px" }}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1618773928121-c32242e63f39?w=800&q=80')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] via-[#0d0221]/60 to-[#0d0221]/20" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-pink-500/40 to-transparent" />
-            <div className="relative flex h-full min-h-[240px] flex-col justify-end p-7">
-              <h2 className="text-xl font-bold text-white">Descubre espacios</h2>
-              <p className="mt-2 text-sm text-purple-100/75">
-                Habitaciones privadas, estudios y mas cerca de ti.
-              </p>
-              <p className="mt-4 text-sm font-semibold text-pink-400 drop-shadow-[0_0_8px_rgba(255,0,128,0.4)] group-hover:text-pink-300">
-                Ver disponibles &rarr;
-              </p>
+            <div className="mx-auto max-w-3xl rounded-2xl border border-white/15 bg-white/[0.04] p-4 sm:p-5">
+              <div className="flex flex-wrap items-center justify-center gap-2 text-xs font-medium text-purple-100/80">
+                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
+                  Sin cámaras
+                </span>
+                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
+                  Privacidad total
+                </span>
+                <span className="rounded-full border border-white/20 bg-white/10 px-3 py-1.5">
+                  Espacios verificados
+                </span>
+              </div>
             </div>
-          </Link>
+          </header>
 
-          <Link
-            href="/book"
-            className="group relative overflow-hidden rounded-2xl border border-cyan-500/15 shadow-[0_0_25px_rgba(56,182,255,0.1)] transition hover:-translate-y-1 hover:shadow-[0_0_40px_rgba(56,182,255,0.25)]"
-            style={{ minHeight: "240px" }}
-          >
-            <div
-              className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-110"
-              style={{
-                backgroundImage:
-                  "url('https://images.unsplash.com/photo-1590490360182-c33d57733427?w=800&q=80')",
-              }}
-            />
-            <div className="absolute inset-0 bg-gradient-to-t from-[#0d0221] via-[#0d0221]/60 to-[#0d0221]/20" />
-            <div className="absolute inset-x-0 bottom-0 h-px bg-gradient-to-r from-transparent via-cyan-400/40 to-transparent" />
-            <div className="relative flex h-full min-h-[240px] flex-col justify-end p-7">
-              <h2 className="text-xl font-bold text-white">Reserva al instante</h2>
-              <p className="mt-2 text-sm text-purple-100/75">
-                Elige tu tiempo, paga y accede. Asi de simple.
-              </p>
-              <p className="mt-4 text-sm font-semibold text-cyan-400 drop-shadow-[0_0_8px_rgba(56,182,255,0.4)] group-hover:text-cyan-300">
-                Reservar ahora &rarr;
-              </p>
+          <section className="grid gap-4 rounded-3xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_24px_60px_rgba(6,10,28,0.24)] backdrop-blur-sm md:grid-cols-2 lg:grid-cols-4">
+            {steps.map((step, index) => (
+              <article
+                key={step.title}
+                className="rounded-2xl border border-purple-500/18 bg-purple-500/10 p-5"
+              >
+                <p className="text-xs font-semibold uppercase tracking-[0.2em] text-cyan-200/80">
+                  Paso {index + 1}
+                </p>
+                <h2 className="mt-2 text-lg font-semibold text-white">{step.title}</h2>
+                <p className="mt-2 text-sm text-purple-100/70">{step.description}</p>
+              </article>
+            ))}
+          </section>
+
+          <section className="space-y-5">
+            <div className="flex items-end justify-between gap-4">
+              <h2 className="text-2xl font-semibold">Built for real moments</h2>
+              <Link
+                href="/spaces"
+                className="text-sm font-semibold text-cyan-300 transition hover:text-cyan-200"
+              >
+                See available spaces
+              </Link>
             </div>
-          </Link>
-        </section>
-      </main>
+
+            <div className="grid gap-4 md:grid-cols-3">
+              {useCases.map((item) => (
+                <article
+                  key={item.title}
+                  className="rounded-2xl border border-purple-500/20 bg-purple-500/8 p-5 shadow-[0_0_22px_rgba(190,0,255,0.08)]"
+                >
+                  <h3 className="text-lg font-semibold text-white">{item.title}</h3>
+                  <p className="mt-2 text-sm text-purple-100/70">{item.description}</p>
+                </article>
+              ))}
+            </div>
+          </section>
+
+          <section className="grid gap-4 rounded-3xl border border-white/15 bg-white/[0.04] p-5 shadow-[0_24px_60px_rgba(6,10,28,0.24)] backdrop-blur-sm md:grid-cols-3">
+            <article className="rounded-2xl border border-purple-500/18 bg-purple-500/10 p-5 text-center">
+              <p className="text-3xl font-bold text-pink-200">{averageRating.toFixed(1)} / 5</p>
+              <p className="mt-1 text-sm text-purple-100/70">Average rating</p>
+            </article>
+            <article className="rounded-2xl border border-purple-500/18 bg-purple-500/10 p-5 text-center">
+              <p className="text-3xl font-bold text-cyan-200">{totalReviews}+</p>
+              <p className="mt-1 text-sm text-purple-100/70">User reviews</p>
+            </article>
+            <article className="rounded-2xl border border-purple-500/18 bg-purple-500/10 p-5 text-center">
+              <p className="text-3xl font-bold text-fuchsia-200">{instantAccessCount}</p>
+              <p className="mt-1 text-sm text-purple-100/70">Instant-access spaces</p>
+            </article>
+          </section>
+
+          <section className="rounded-3xl border border-white/15 bg-gradient-to-r from-pink-500/12 via-fuchsia-500/10 to-cyan-500/12 px-6 py-10 text-center shadow-[0_24px_60px_rgba(6,10,28,0.24)]">
+            <h2 className="text-3xl font-bold sm:text-4xl">
+              Tu lugar privado puede estar a minutos
+            </h2>
+            <p className="mx-auto mt-3 max-w-2xl text-purple-100/80">
+              En esta fase estamos validando comportamiento real, no solo opiniones.
+            </p>
+            <div className="mt-7">
+              <Link
+                href="/book"
+                className="rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-8 py-3.5 text-sm font-bold text-white shadow-[0_0_30px_rgba(255,0,128,0.5),0_0_60px_rgba(255,0,128,0.2)] transition hover:scale-105 hover:shadow-[0_0_40px_rgba(255,0,128,0.7),0_0_80px_rgba(255,0,128,0.3)]"
+              >
+                Iniciar flujo manual
+              </Link>
+            </div>
+          </section>
+        </main>
+      </section>
     </div>
   );
 }

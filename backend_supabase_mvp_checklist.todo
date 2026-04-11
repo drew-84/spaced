@@ -1,0 +1,90 @@
+# SPACED - Backend (Supabase) MVP Checklist (v0.1)
+
+
+— WEDGE ANCHOR —
+
+Need a private place right now? Book a room near you in minutes.
+
+Core moment:
+Immediate need for discreet, short-duration private space.
+
+————————————
+Purpose
+
+Define backend work needed in Supabase to support the MVP transaction loop.
+
+---
+
+Current status
+
+- [ ] Supabase project wiring not yet implemented in app.
+- [ ] No database schema or migration files in repo yet.
+- [ ] No API layer for bookings/payments/access delivery yet.
+
+---
+
+Core Supabase build checklist
+
+Auth and accounts
+
+- [ ] Configure Supabase Auth project and environments.
+- [ ] Implement email/password sign up and sign in.
+- [ ] Add role model (guest, host, admin).
+- [ ] Create user profile table linked to auth users.
+
+Listings and availability
+
+- [ ] Create `spaces` table (host, type, location, pricing, access type, status).
+- [ ] Create `space_media` table (images).
+- [ ] Create availability model (time slots or calendar windows).
+- [ ] Enforce immediate availability queries ("available now").
+- [ ] Add host listing create/update endpoints.
+
+Bookings and session lifecycle
+
+- [ ] Create `bookings` table with status lifecycle.
+- [ ] Enforce MVP duration constraints (30/60 base, +15 increments).
+- [ ] Enforce turnover buffer constraints (configurable 15-30 min).
+- [ ] Add booking create endpoint with conflict checks.
+- [ ] Add booking extension endpoint with conflict checks.
+- [ ] Add booking confirmation payload for frontend.
+
+Payments
+
+- [ ] Define payment integration strategy (e.g., Stripe + webhook).
+- [ ] Create `payments` table and payment event tracking.
+- [ ] Implement checkout session creation endpoint.
+- [ ] Implement payment webhook handling and booking status updates.
+
+Access delivery
+
+- [ ] Create `access_instructions` table/payload model.
+- [ ] Support access types:
+  - [ ] digital lock
+  - [ ] lockbox
+  - [ ] concierge/front desk
+- [ ] Implement secure retrieval of access instructions only for confirmed bookings.
+
+Security and policies
+
+- [ ] Add Row Level Security (RLS) on all core tables.
+- [ ] Add policies for guest/host access boundaries.
+- [ ] Add audit fields (created_at, updated_at, created_by).
+- [ ] Add basic abuse/rate-limit protections for booking endpoints.
+
+Observability and ops
+
+- [ ] Add structured logging for booking/payment/access flows.
+- [ ] Add error monitoring and alerting for failed booking/payment events.
+- [ ] Add seed data scripts for local development.
+
+---
+
+Definition of done (backend MVP)
+
+- [ ] User can sign in.
+- [ ] User can query available nearby spaces now.
+- [ ] User can book 30/60 min and extend by 15 min when valid.
+- [ ] Payment success confirms booking.
+- [ ] User receives access instructions without host presence.
+- [ ] Buffer rules prevent conflicting/too-tight consecutive bookings.

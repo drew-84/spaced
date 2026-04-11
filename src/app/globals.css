@@ -71,3 +71,119 @@ body {
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
+
+.cta-hero-scene {
+  perspective: 1900px;
+}
+
+.sphere-depth {
+  transform-style: preserve-3d;
+  animation: spherePulse 10s ease-in-out infinite;
+  background:
+    radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.1) 31%, transparent 58%),
+    radial-gradient(circle at 68% 62%, rgba(56, 182, 255, 0.34), transparent 48%),
+    radial-gradient(circle at 50% 52%, rgba(255, 0, 170, 0.2), rgba(13, 2, 33, 0.7) 68%);
+  border: 1px solid rgba(255, 255, 255, 0.26);
+  box-shadow:
+    inset -18px -26px 46px rgba(7, 6, 24, 0.62),
+    inset 14px 12px 35px rgba(255, 255, 255, 0.16),
+    0 0 130px rgba(255, 0, 170, 0.34),
+    0 34px 82px rgba(7, 8, 30, 0.6);
+}
+
+.sphere-depth::before,
+.sphere-depth::after {
+  content: "";
+  position: absolute;
+  border-radius: 9999px;
+}
+
+.sphere-depth::before {
+  inset: 14%;
+  border: 1px solid rgba(255, 255, 255, 0.24);
+  transform: translateZ(32px);
+}
+
+.sphere-depth::after {
+  inset: 26%;
+  border: 1px solid rgba(255, 255, 255, 0.12);
+  transform: translateZ(58px);
+}
+
+.sphere-ring {
+  border: 1px solid rgba(255, 255, 255, 0.16);
+  box-shadow:
+    0 0 85px rgba(56, 182, 255, 0.14),
+    inset 0 0 20px rgba(255, 255, 255, 0.05);
+  transform: rotateX(70deg) translateZ(-30px);
+}
+
+.orbit-track {
+  position: absolute;
+  inset: 0;
+  transform-style: preserve-3d;
+  animation: orbitSpin 44s linear infinite;
+}
+
+.orbit-track-reverse {
+  animation: orbitSpinReverse 58s linear infinite;
+  transform: rotateX(22deg) rotateZ(8deg);
+}
+
+.orbit-card {
+  position: absolute;
+  left: 50%;
+  top: 50%;
+  transform-style: preserve-3d;
+  transform:
+    translate(-50%, -50%)
+    rotateY(var(--angle))
+    translateZ(282px)
+    rotateY(calc(var(--angle) * -1))
+    rotateX(9deg)
+    rotateZ(var(--tilt));
+  backface-visibility: hidden;
+}
+
+.orbit-card-alt {
+  transform:
+    translate(-50%, -50%)
+    rotateY(var(--angle))
+    translateZ(220px)
+    rotateY(calc(var(--angle) * -1))
+    rotateX(-5deg)
+    rotateZ(var(--tilt));
+  opacity: 0.86;
+}
+
+.orbit-image {
+  background-image: var(--image-url);
+}
+
+@keyframes orbitSpin {
+  from {
+    transform: rotateX(18deg) rotateY(0deg);
+  }
+  to {
+    transform: rotateX(18deg) rotateY(360deg);
+  }
+}
+
+@keyframes orbitSpinReverse {
+  from {
+    transform: rotateX(22deg) rotateY(360deg) rotateZ(8deg);
+  }
+  to {
+    transform: rotateX(22deg) rotateY(0deg) rotateZ(8deg);
+  }
+}
+
+@keyframes spherePulse {
+  0%,
+  100% {
+    transform: translateZ(0px) scale(1);
+  }
+  50% {
+    transform: translateZ(18px) scale(1.035);
+  }
+}

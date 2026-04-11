@@ -1,0 +1,112 @@
+# SPACED - Homepage CTA Plan (Call To Action)
+
+
+— WEDGE ANCHOR —
+
+Need a private place right now? Book a room near you in minutes.
+
+Core moment:
+Immediate need for discreet, short-duration private space.
+
+————————————
+Goal
+
+Make the homepage communicate MVP value in under 5 seconds and drive users to one action: explore and book now.
+
+Primary user emotion to trigger
+
+- "I can get a private space near me right now, with no friction."
+
+Core value proposition (hero-level)
+
+- Private space on demand.
+- Nearby, discreet, and ready in minutes.
+- Start with 30-60 minutes, extend anytime.
+
+---
+
+Homepage message hierarchy
+
+1) First screen (hero) = promise + proof + CTA
+- [ ] Headline focused on immediate outcome.
+- [ ] Subheadline with speed + discretion + flexibility.
+- [ ] Primary CTA: Explore spaces now.
+- [ ] Secondary CTA: How it works (or Book in 60s).
+- [ ] Quick trust chips under CTA:
+  - [ ] "Available now"
+  - [ ] "No commitment"
+  - [ ] "Instant access"
+
+2) How it works (3 steps)
+- [ ] Discover nearby spaces.
+- [ ] Choose 30 or 60 minutes.
+- [ ] Book, pay, and receive access instructions.
+- [ ] Micro-CTA after steps: "See available spaces."
+
+3) Use-case cards (emotion-driven)
+- [ ] Private encounter
+- [ ] Short reset / rest
+- [ ] Temporary privacy
+- [ ] Each card includes one specific benefit and one short CTA.
+
+4) Social proof / trust section
+- [ ] Rating + review count snapshot.
+- [ ] "Access-ready spaces" metric (even if mocked in MVP).
+- [ ] Discretion and reliability statement.
+
+5) Final conversion block
+- [ ] Clear urgency copy ("ready in minutes").
+- [ ] Repeated primary CTA.
+- [ ] Optional secondary CTA for hesitant users.
+
+---
+
+Copy checklist (must pass)
+
+- [ ] Benefit-first wording (not feature-first).
+- [ ] No mixed language in one screen.
+- [ ] Keep headlines short and concrete.
+- [ ] Every section has one intended action.
+- [ ] Remove decorative text that does not improve conversion.
+
+---
+
+CTA variants to test (MVP)
+
+- [ ] Variant A button: "Explore spaces"
+- [ ] Variant B button: "Book now"
+- [ ] Variant C button: "Find a private space near me"
+
+Success metrics (front-end measurable now)
+
+- [ ] Hero CTA click-through rate.
+- [ ] Home -> spaces page click rate.
+- [ ] Home -> booking flow start rate.
+- [ ] Scroll depth to final CTA.
+
+---
+
+Implementation order
+
+Phase 1 (high impact, low complexity)
+- [ ] Rewrite hero copy + CTA labels.
+- [ ] Add trust chips under hero CTA.
+- [ ] Add "How it works" 3-step strip.
+- [ ] Add final repeated CTA block.
+
+Phase 2 (conversion quality)
+- [ ] Tighten use-case card copy.
+- [ ] Add social proof module.
+- [ ] Add simple event tracking hooks for CTA clicks.
+
+Phase 3 (optimization)
+- [ ] Run CTA copy A/B test.
+- [ ] Tune section order and visual density from real click data.
+
+---
+
+Guardrails
+
+- [ ] Keep homepage focused on one primary action.
+- [ ] Avoid too many equal-weight CTAs above the fold.
+- [ ] Do not ship major style-only changes without conversion intent.

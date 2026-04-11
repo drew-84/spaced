@@ -1,0 +1,80 @@
+# SPACED - Frontend MVP Checklist (v0.1)
+
+
+— WEDGE ANCHOR —
+
+Need a private place right now? Book a room near you in minutes.
+
+Core moment:
+Immediate need for discreet, short-duration private space.
+
+————————————
+Purpose
+
+Track what is already implemented on the frontend and what still needs to be built next on frontend only.
+
+---
+
+Already done (frontend)
+
+- [x] Landing page exists with SPACED branding and CTA buttons (`/`).
+- [x] Nearby spaces discovery page exists (`/spaces`) with list view.
+- [x] Space cards include type, distance, rating, and price.
+- [x] Space detail page exists (`/spaces/[id]`) with:
+  - [x] description
+  - [x] amenities
+  - [x] reviews
+  - [x] pricing preview (30/60 min)
+- [x] Booking page exists (`/book`) with booking form UI.
+- [x] Duration selection supports 30 and 60 minutes.
+- [x] Extension selection supports 15-minute increments (+15, +30).
+- [x] Booking form validation exists (Zod + react-hook-form).
+- [x] Local booking draft state exists (Zustand store).
+- [x] Basic top navigation exists (Home, Spaces, Book, Login).
+- [x] Mock inventory data exists for multiple spaces and use cases.
+- [x] Upfront pricing is visible in discovery/detail/booking UI.
+
+---
+
+To build next (frontend only)
+
+Critical for MVP completion (frontend)
+
+- [ ] Add real frontend routes for auth pages in active app router:
+  - [ ] `src/app/login/page.tsx`
+  - [ ] `src/app/register/page.tsx`
+- [ ] Build functional auth forms (submit states, field errors, success/error messages).
+- [ ] Create booking confirmation page/UI after successful checkout.
+- [ ] Add "access instructions" UI surface in booking confirmation/session screen.
+- [ ] Add availability-first UX:
+  - [ ] show only currently available spaces
+  - [ ] clear labels for "available now" vs "next available"
+- [ ] Add turnover buffer UX hints (15-30 min) in booking flow text and availability messaging.
+- [ ] Improve discovery with location-focused UX:
+  - [ ] nearby sort as default
+  - [ ] quick filters for "instant access"
+  - [ ] optional map/list toggle (map can be mocked first)
+- [ ] Build extension flow UI during active session:
+  - [ ] +15 min action
+  - [ ] extension status feedback
+- [ ] Add loading, empty, and error states across key pages (`/spaces`, `/spaces/[id]`, `/book`).
+- [ ] Add basic i18n/language toggle (EN/ES) for key user flows.
+
+Quality and consistency
+
+- [ ] Replace remaining mixed-language copy with a consistent MVP language policy.
+- [ ] Remove temporary/dev comments inside UI files.
+- [ ] Ensure navigation links only point to routes that exist.
+- [ ] Add frontend tests for core flows:
+  - [ ] browse spaces
+  - [ ] open detail
+  - [ ] create booking intent
+  - [ ] see confirmation state
+
+---
+
+Frontend out of scope for now (backend-dependent)
+
+- [ ] Real payment processing UI states tied to backend responses.
+- [ ] Real-time booking lock/conflict handling tied to backend availability APIs.
+- [ ] Verified access-code retrieval from backend/session APIs.
