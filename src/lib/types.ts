@@ -1,4 +1,8 @@
-export type SpaceType = "private-room" | "studio" | "apartment-1br";
+export type SpaceType =
+  | "private-room"
+  | "studio"
+  | "apartment-1br"
+  | "house";
 
 export type Review = {
   id: string;
@@ -8,13 +12,15 @@ export type Review = {
   date: string;
 };
 
-export type Space = {
+type SpaceCommon = {
   id: string;
   title: string;
   type: SpaceType;
   area: string;
-  distanceKm: number;
-  pricePer30m: number;
+  /** WGS84 latitude */
+  lat: number;
+  /** WGS84 longitude */
+  lng: number;
   instantAccess: boolean;
   imageUrl: string;
   rating: number;
@@ -23,3 +29,19 @@ export type Space = {
   amenities: string[];
   reviews: Review[];
 };
+
+/** Short blocks (hours) — priced per 30 minutes */
+export type HourlySpace = SpaceCommon & {
+  stayType: "hourly";
+  pricePer30m: number;
+};
+
+/** Short stays (nights) — apartments, houses, whole units */
+export type NightlySpace = SpaceCommon & {
+  stayType: "nightly";
+  pricePerNight: number;
+  /** Minimum nights for this short-term stay */
+  minNights: number;
+};
+
+export type Space = HourlySpace | NightlySpace;

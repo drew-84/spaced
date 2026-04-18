@@ -1,49 +1,13 @@
 @import "tailwindcss";
 
 /*
- * SPACED — Current App Style Guide (v3 - Neon)
- *
- * Base palette:
- *   - Background:    #0d0221 (deep indigo-black)
- *   - Foreground:    #f0e6ff (soft lavender white)
- *
- * Accent colors (neon):
- *   - Primary:       pink-500 / fuchsia-500 (magenta neon — buttons, CTAs, glows)
- *   - Secondary:     cyan-400 / cyan-500 (electric blue — badges, links, accents)
- *   - Tertiary:      purple-500 / fuchsia-600 (purple — gradients, borders, cards)
- *
- * Glow effects:
- *   - Buttons:       shadow-[0_0_25px_rgba(255,0,128,0.4),0_0_50px_rgba(255,0,128,0.15)]
- *   - Cards hover:   shadow-[0_0_35px_rgba(255,0,128,0.15)]
- *   - Logo:          double-layer text with blur for real neon glow
- *   - Neon lines:    h-px bg-gradient-to-r from-transparent via-{color}/50 to-transparent
- *
- * Surfaces:
- *   - Cards/panels:  bg-purple-500/8, border border-purple-500/20
- *   - Inputs:        bg-purple-950/50, border border-purple-500/25
- *   - Nav:           bg-[#0d0221]/70 backdrop-blur-xl
- *
- * Gradients:
- *   - CTA buttons:   from-pink-500 via-fuchsia-500 to-purple-600
- *   - Hero text:     from-pink-400 via-fuchsia-400 to-cyan-400
- *   - Price text:    from-pink-400 to-fuchsia-400
- *   - Background:    radial neon glows (pink, cyan, purple) over deep indigo base
- *
- * Typography:
- *   - Headings:      text-white, font-bold
- *   - Body text:     text-purple-200/60 to text-purple-200/70
- *   - Muted text:    text-purple-200/40 to text-purple-200/50
- *   - Labels:        text-purple-100, font-medium
- *
- * Images:
- *   - Source: Unsplash (free, no attribution required)
- *   - Applied via CSS background-image with gradient overlays
- *   - Cards: zoom on hover (group-hover:scale-110, duration-500)
+ * SPACED — App shell (aligned with marketing homepage)
+ * Canvas: warm cream (#F4F1EA), stone text, white cards, stone-900 CTAs.
  */
 
 :root {
-  --background: #0d0221;
-  --foreground: #f0e6ff;
+  --background: #f4f1ea;
+  --foreground: #1c1917;
 }
 
 @theme inline {
@@ -53,25 +17,13 @@
   --font-mono: var(--font-geist-mono);
 }
 
-@media (prefers-color-scheme: dark) {
-  :root {
-    --background: #0d0221;
-    --foreground: #f0e6ff;
-  }
-}
-
 body {
-  background:
-    radial-gradient(circle at 10% 0%, rgba(255, 0, 128, 0.3) 0%, transparent 40%),
-    radial-gradient(circle at 90% 5%, rgba(56, 182, 255, 0.25) 0%, transparent 35%),
-    radial-gradient(circle at 50% 50%, rgba(190, 0, 255, 0.12) 0%, transparent 55%),
-    radial-gradient(circle at 75% 85%, rgba(255, 0, 200, 0.15) 0%, transparent 40%),
-    radial-gradient(circle at 20% 90%, rgba(56, 182, 255, 0.1) 0%, transparent 35%),
-    linear-gradient(145deg, #0d0221 0%, #1a0533 48%, #0d0221 100%);
+  background-color: var(--background);
   color: var(--foreground);
   font-family: var(--font-geist-sans), Arial, Helvetica, sans-serif;
 }
 
+/* Legacy neon/orbit helpers — unused in current UI; kept for optional reuse */
 .cta-hero-scene {
   perspective: 1900px;
 }
@@ -81,14 +33,13 @@ body {
   animation: spherePulse 10s ease-in-out infinite;
   background:
     radial-gradient(circle at 34% 30%, rgba(255, 255, 255, 0.56), rgba(255, 255, 255, 0.1) 31%, transparent 58%),
-    radial-gradient(circle at 68% 62%, rgba(56, 182, 255, 0.34), transparent 48%),
-    radial-gradient(circle at 50% 52%, rgba(255, 0, 170, 0.2), rgba(13, 2, 33, 0.7) 68%);
-  border: 1px solid rgba(255, 255, 255, 0.26);
+    radial-gradient(circle at 68% 62%, rgba(120, 113, 108, 0.2), transparent 48%),
+    radial-gradient(circle at 50% 52%, rgba(28, 25, 23, 0.15), rgba(245, 241, 234, 0.85) 68%);
+  border: 1px solid rgba(120, 113, 108, 0.25);
   box-shadow:
-    inset -18px -26px 46px rgba(7, 6, 24, 0.62),
-    inset 14px 12px 35px rgba(255, 255, 255, 0.16),
-    0 0 130px rgba(255, 0, 170, 0.34),
-    0 34px 82px rgba(7, 8, 30, 0.6);
+    inset -18px -26px 46px rgba(28, 25, 23, 0.08),
+    inset 14px 12px 35px rgba(255, 255, 255, 0.35),
+    0 34px 82px rgba(28, 25, 23, 0.12);
 }
 
 .sphere-depth::before,
@@ -100,21 +51,21 @@ body {
 
 .sphere-depth::before {
   inset: 14%;
-  border: 1px solid rgba(255, 255, 255, 0.24);
+  border: 1px solid rgba(120, 113, 108, 0.2);
   transform: translateZ(32px);
 }
 
 .sphere-depth::after {
   inset: 26%;
-  border: 1px solid rgba(255, 255, 255, 0.12);
+  border: 1px solid rgba(120, 113, 108, 0.12);
   transform: translateZ(58px);
 }
 
 .sphere-ring {
-  border: 1px solid rgba(255, 255, 255, 0.16);
+  border: 1px solid rgba(120, 113, 108, 0.18);
   box-shadow:
-    0 0 85px rgba(56, 182, 255, 0.14),
-    inset 0 0 20px rgba(255, 255, 255, 0.05);
+    0 0 40px rgba(28, 25, 23, 0.06),
+    inset 0 0 20px rgba(255, 255, 255, 0.2);
   transform: rotateX(70deg) translateZ(-30px);
 }
 

@@ -7,10 +7,15 @@ import { bookingSchema, type BookingFormValues } from "@/lib/booking-schema";
 import { mockSpaces } from "@/lib/mock-spaces";
 import { useBookingStore } from "@/store/booking-store";
 
+const hourlySpaces = mockSpaces.filter((s) => s.stayType === "hourly");
+
 function formatTotal(duration: string, extension: string, unitPrice: number) {
   const blocks = (Number(duration) + Number(extension)) / 30;
   return blocks * unitPrice;
 }
+
+const inputClass =
+  "w-full rounded-xl border border-stone-200 bg-white px-3 py-2 text-sm text-stone-900 outline-none ring-0 transition placeholder:text-stone-400 focus:border-stone-400 focus:ring-2 focus:ring-stone-200";
 
 export function BookingForm() {
   const { draft, setDraft } = useBookingStore();
@@ -31,13 +36,18 @@ export function BookingForm() {
   });
 
   const selectedSpace = useMemo(
-    () => mockSpaces.find((space) => space.id === selectedSpaceId),
+    () => hourlySpaces.find((space) => space.id === selectedSpaceId),
     [selectedSpaceId],
   );
 
-  const estimatedTotal = selectedSpace
-    ? formatTotal(selectedDuration, selectedExtension, selectedSpace.pricePer30m)
-    : 0;
+  const estimatedTotal =
+    selectedSpace && selectedSpace.stayType === "hourly"
+      ? formatTotal(
+          selectedDuration,
+          selectedExtension,
+          selectedSpace.pricePer30m,
+        )
+      : 0;
 
   const onSubmit = (values: BookingFormValues) => {
     setDraft({
@@ -47,33 +57,32 @@ export function BookingForm() {
       notes: values.notes ?? "",
     });
 
-    // MVP base: keep feedback inline until API and payment flow are connected.
-    alert("Booking draft saved locally.");
+    alert("Borrador de reserva guardado localmente.");
   };
 
   return (
     <form
       onSubmit={form.handleSubmit(onSubmit)}
-      className="space-y-5 rounded-2xl border border-purple-500/20 bg-purple-500/8 p-6 shadow-[0_0_30px_rgba(190,0,255,0.08)]"
+      className="space-y-5 rounded-2xl border border-stone-200/90 bg-white p-6 shadow-[0_2px_24px_rgba(28,25,23,0.06)]"
     >
       <div className="space-y-2">
-        <label htmlFor="spaceId" className="text-sm font-medium text-purple-100">
-          Space
+        <label htmlFor="spaceId" className="text-sm font-medium text-stone-800">
+          Espacio
         </label>
         <select
           id="spaceId"
           {...form.register("spaceId")}
-          className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
+          className={inputClass}
         >
-          <option value="">Choose a nearby space</option>
-          {mockSpaces.map((space) => (
+          <option value="">Elige un espacio cercano</option>
+          {hourlySpaces.map((space) => (
             <option key={space.id} value={space.id}>
               {space.title} ({space.area})
             </option>
           ))}
         </select>
         {form.formState.errors.spaceId ? (
-          <p className="text-xs text-pink-400">
+          <p className="text-xs text-red-600">
             {form.formState.errors.spaceId.message}
           </p>
         ) : null}
@@ -83,67 +92,67 @@ export function BookingForm() {
         <div className="space-y-2">
           <label
             htmlFor="durationMinutes"
-            className="text-sm font-medium text-purple-100"
+            className="text-sm font-medium text-stone-800"
           >
-            Duration
+            Duración
           </label>
           <select
             id="durationMinutes"
             {...form.register("durationMinutes")}
-            className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
+            className={inputClass}
           >
-            <option value="30">30 minutes</option>
-            <option value="60">60 minutes</option>
+            <option value="30">30 minutos</option>
+            <option value="60">60 minutos</option>
           </select>
         </div>
 
         <div className="space-y-2">
           <label
             htmlFor="extensionMinutes"
-            className="text-sm font-medium text-purple-100"
+            className="text-sm font-medium text-stone-800"
           >
-            Extension
+            Ampliación
           </label>
           <select
             id="extensionMinutes"
             {...form.register("extensionMinutes")}
-            className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
+            className={inputClass}
           >
-            <option value="0">No extension</option>
-            <option value="15">+15 minutes</option>
-            <option value="30">+30 minutes</option>
+            <option value="0">Sin ampliación</option>
+            <option value="15">+15 minutos</option>
+            <option value="30">+30 minutos</option>
           </select>
         </div>
       </div>
 
       <div className="space-y-2">
-        <label htmlFor="notes" className="text-sm font-medium text-purple-100">
-          Notes (optional)
+        <label htmlFor="notes" className="text-sm font-medium text-stone-800">
+          Notas (opcional)
         </label>
         <textarea
           id="notes"
           {...form.register("notes")}
           rows={3}
-          className="w-full rounded-xl border border-purple-500/25 bg-purple-950/50 px-3 py-2 text-sm text-white outline-none ring-0 transition placeholder:text-purple-400/30 focus:border-pink-500/50 focus:shadow-[0_0_15px_rgba(255,0,128,0.15)]"
-          placeholder="Access preferences or special instructions"
+          className={inputClass}
+          placeholder="Preferencias de acceso o instrucciones"
         />
         {form.formState.errors.notes ? (
-          <p className="text-xs text-pink-400">
+          <p className="text-xs text-red-600">
             {form.formState.errors.notes.message}
           </p>
         ) : null}
       </div>
 
-      <div className="rounded-xl border border-cyan-500/20 bg-gradient-to-r from-cyan-500/10 to-purple-500/5 px-4 py-3 text-sm text-purple-100">
-        Estimated total:{" "}
-        <span className="font-semibold text-cyan-300 drop-shadow-[0_0_6px_rgba(56,182,255,0.3)]">${estimatedTotal}</span>
+      <div className="rounded-xl border border-stone-200 bg-stone-50 px-4 py-3 text-sm text-stone-800">
+        Total estimado:{" "}
+        <span className="font-semibold text-stone-900">${estimatedTotal}</span>
       </div>
 
       <button
         type="submit"
-        className="w-full rounded-full bg-gradient-to-r from-pink-500 via-fuchsia-500 to-purple-600 px-4 py-2.5 text-sm font-bold text-white shadow-[0_0_25px_rgba(255,0,128,0.4),0_0_50px_rgba(255,0,128,0.15)] transition hover:shadow-[0_0_35px_rgba(255,0,128,0.6),0_0_70px_rgba(255,0,128,0.25)] hover:brightness-110"
+        className="w-full rounded-full bg-stone-900 px-4 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
       >
-        Save Booking Draft
+        Guardar borrador de reserva
       </button>
     </form>
   );
