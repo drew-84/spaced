@@ -5,12 +5,19 @@ import { SpaceDistance } from "@/components/space-distance";
 import { TopNav } from "@/components/top-nav";
 import { mockSpaces } from "@/lib/mock-spaces";
 
-const typeLabel = {
+const typeLabel: Record<string, string> = {
   "private-room": "Habitación",
   studio: "Estudio",
   "apartment-1br": "Depto 1 recámara",
   house: "Casa",
-} as const;
+  "rest-room": "Descanso",
+  kitchen: "Cocina",
+  office: "Oficina",
+  "meeting-room": "Sala de reuniones",
+  "recording-studio": "Estudio de grabación",
+  "podcast-studio": "Estudio de podcast",
+  coworking: "Coworking",
+};
 
 function Stars({
   rating,

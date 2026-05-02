@@ -11,6 +11,13 @@ const typeLabel: Record<Space["type"], string> = {
   studio: "Estudio",
   "apartment-1br": "Depto 1 rec.",
   house: "Casa",
+  "rest-room": "Descanso",
+  kitchen: "Cocina",
+  office: "Oficina",
+  "meeting-room": "Sala de reuniones",
+  "recording-studio": "Estudio de grabación",
+  "podcast-studio": "Estudio de podcast",
+  coworking: "Coworking",
 };
 
 function Stars({ rating }: { rating: number }) {
