@@ -1,4 +1,14 @@
-export type SpaceType = "private-room" | "studio" | "apartment-1br";
+export type SpaceType =
+  | "private-room"
+  | "studio"
+  | "apartment-1br"
+  | "rest-room"
+  | "kitchen"
+  | "office"
+  | "meeting-room"
+  | "recording-studio"
+  | "podcast-studio"
+  | "coworking";
 
 export type Review = {
   id: string;

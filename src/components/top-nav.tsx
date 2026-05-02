@@ -9,27 +9,23 @@ type TopNavProps = {
 
 function navClass(isActive: boolean) {
   return isActive
-    ? "rounded-full border border-pink-200/45 bg-gradient-to-r from-pink-200/18 via-fuchsia-200/10 to-cyan-200/12 px-3 py-1.5 text-sm font-medium text-pink-100 shadow-[0_10px_22px_rgba(10,8,30,0.35)] backdrop-blur-lg"
-    : "rounded-full border border-transparent px-3 py-1.5 text-sm text-purple-100/72 transition hover:border-white/20 hover:bg-white/10 hover:text-white hover:backdrop-blur-lg";
+    ? "rounded-full border border-white/[0.12] bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-white/75 backdrop-blur-md"
+    : "rounded-full border border-transparent px-2.5 py-1 text-xs text-white/42 transition hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-white/65";
 }
 
 export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
   void hideRegisterLink;
 
   return (
-    <header className="sticky top-0 z-30 bg-transparent">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3 sm:px-8 sm:py-4">
-        <Link href="/" className="relative text-2xl font-extrabold tracking-widest sm:text-3xl">
-          <span className="bg-gradient-to-r from-pink-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent drop-shadow-[0_0_25px_rgba(255,0,128,0.6)]">
-            SPACED
-          </span>
-          <span className="absolute inset-0 bg-gradient-to-r from-pink-400 via-fuchsia-400 to-cyan-400 bg-clip-text text-transparent blur-[6px]" aria-hidden>
-            SPACED
-          </span>
+    <header className="sticky top-0 z-30 border-b border-white/[0.04] bg-[#050506]/40 backdrop-blur-sm">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-2 sm:px-7 sm:py-2.5">
+        <Link
+          href="/"
+          className="relative text-base font-medium tracking-[0.28em] text-white/55 sm:text-lg"
+        >
+          <span className="text-white/60">SPACIO</span>
         </Link>
-        <nav className="relative flex items-center gap-2 overflow-hidden rounded-full border border-white/20 bg-gradient-to-r from-white/10 via-white/[0.04] to-white/[0.02] p-1 shadow-[0_18px_45px_rgba(6,10,28,0.45)] backdrop-blur-xl">
-          <div className="pointer-events-none absolute inset-[1px] rounded-full border border-white/20" />
-          <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-transparent via-white/60 to-transparent" />
+        <nav className="relative flex items-center gap-0.5 rounded-full border border-white/[0.07] bg-white/[0.03] p-0.5 backdrop-blur-md">
           <Link href="/" className={navClass(active === "home")}>
             Home
           </Link>
