@@ -9,23 +9,23 @@ type TopNavProps = {
 
 function navClass(isActive: boolean) {
   return isActive
-    ? "rounded-full border border-stone-800 bg-stone-900 px-3 py-1.5 text-sm font-medium text-white shadow-sm"
-    : "rounded-full border border-transparent px-3 py-1.5 text-sm text-stone-600 transition hover:border-stone-200 hover:bg-stone-100 hover:text-stone-900";
+    ? "rounded-full border border-white/[0.12] bg-white/[0.06] px-2.5 py-1 text-xs font-medium text-white/75 backdrop-blur-md"
+    : "rounded-full border border-transparent px-2.5 py-1 text-xs text-white/42 transition hover:border-white/[0.08] hover:bg-white/[0.04] hover:text-white/65";
 }
 
 export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
   void hideRegisterLink;
 
   return (
-    <header className="sticky top-0 z-30 border-b border-stone-200/90 bg-[#F4F1EA]/90 backdrop-blur-md">
-      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-6 py-3 sm:px-8 sm:py-4">
+    <header className="sticky top-0 z-30 border-b border-white/[0.04] bg-[#050506]/40 backdrop-blur-sm">
+      <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-2 sm:px-7 sm:py-2.5">
         <Link
           href="/"
-          className="text-xl font-bold tracking-[0.2em] text-stone-900 sm:text-2xl"
+          className="relative text-base font-medium tracking-[0.28em] text-white/55 sm:text-lg"
         >
-          SPACED
+          <span className="text-white/60">SPACIO</span>
         </Link>
-        <nav className="relative flex flex-wrap items-center justify-end gap-1.5 rounded-full border border-stone-200/90 bg-white/70 p-1 shadow-sm backdrop-blur-sm sm:gap-2">
+        <nav className="relative flex items-center gap-0.5 rounded-full border border-white/[0.07] bg-white/[0.03] p-0.5 backdrop-blur-md">
           <Link href="/" className={navClass(active === "home")}>
             Home
           </Link>

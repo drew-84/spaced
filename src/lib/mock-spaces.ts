@@ -1,5 +1,201 @@
 import type { Space } from "@/lib/types";
 
+export type SpaceCategory =
+  | "Todos"
+  | "Descanso"
+  | "Cocina"
+  | "Oficina"
+  | "Reunión"
+  | "Grabación";
+
+export const SPACE_CATEGORIES: SpaceCategory[] = [
+  "Todos",
+  "Descanso",
+  "Cocina",
+  "Oficina",
+  "Reunión",
+  "Grabación",
+];
+
+export type ListingSpace = {
+  id: string;
+  title: string;
+  category: SpaceCategory;
+  categoryLabel: string;
+  area: string;
+  hostName: string;
+  hostAvatar: string;
+  pricePer30m: number;
+  rating: number;
+  reviewCount: number;
+  imageUrl: string;
+  instantAccess: boolean;
+  amenities: string[];
+};
+
+export const listingSpaces: ListingSpace[] = [
+  {
+    id: "lst-001",
+    title: "Cuarto de descanso · Luz cálida",
+    category: "Descanso",
+    categoryLabel: "Descanso",
+    area: "Roma Norte",
+    hostName: "Andrea M.",
+    hostAvatar: "https://i.pravatar.cc/40?img=47",
+    pricePer30m: 9,
+    rating: 4.9,
+    reviewCount: 87,
+    imageUrl:
+      "https://images.unsplash.com/photo-1555041469-a586c61ea9bc?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Cama Queen", "Oscurecimiento total", "Silencio garantizado", "Toallas"],
+  },
+  {
+    id: "lst-002",
+    title: "Cocina equipada · Todo incluido",
+    category: "Cocina",
+    categoryLabel: "Cocina",
+    area: "Condesa",
+    hostName: "Luis F.",
+    hostAvatar: "https://i.pravatar.cc/40?img=12",
+    pricePer30m: 14,
+    rating: 4.7,
+    reviewCount: 53,
+    imageUrl:
+      "https://images.unsplash.com/photo-1556909114-f6e7ad7d3136?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Estufa de gas", "Horno", "Refrigerador", "Utensilios", "Especias básicas"],
+  },
+  {
+    id: "lst-003",
+    title: "Oficina privada · Piso 12",
+    category: "Oficina",
+    categoryLabel: "Oficina",
+    area: "Polanco",
+    hostName: "Carlos V.",
+    hostAvatar: "https://i.pravatar.cc/40?img=33",
+    pricePer30m: 18,
+    rating: 4.8,
+    reviewCount: 121,
+    imageUrl:
+      "https://images.unsplash.com/photo-1497366216548-37526070297c?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Wi-Fi 1Gb", "Monitor 4K", "Escritorio L", "Impresora", "Café"],
+  },
+  {
+    id: "lst-004",
+    title: "Sala de reuniones · 8 personas",
+    category: "Reunión",
+    categoryLabel: "Reunión",
+    area: "Juárez",
+    hostName: "Paola R.",
+    hostAvatar: "https://i.pravatar.cc/40?img=25",
+    pricePer30m: 22,
+    rating: 4.6,
+    reviewCount: 64,
+    imageUrl:
+      "https://images.unsplash.com/photo-1497366811353-6870744d04b2?w=700&q=80",
+    instantAccess: false,
+    amenities: ["Proyector 4K", "Pizarrón", "A/C", "8 sillas ergonómicas", "Wi-Fi"],
+  },
+  {
+    id: "lst-005",
+    title: "Estudio de grabación · Insonorizado",
+    category: "Grabación",
+    categoryLabel: "Grabación",
+    area: "Centro Histórico",
+    hostName: "Mateo S.",
+    hostAvatar: "https://i.pravatar.cc/40?img=56",
+    pricePer30m: 28,
+    rating: 5.0,
+    reviewCount: 39,
+    imageUrl:
+      "https://images.unsplash.com/photo-1598488035139-bdbb2231ce04?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Micrófonos Shure", "Interfaz de audio", "Cabina vocal", "Pro Tools", "Auriculares"],
+  },
+  {
+    id: "lst-006",
+    title: "Habitación privada · Con jardín",
+    category: "Descanso",
+    categoryLabel: "Descanso",
+    area: "Coyoacán",
+    hostName: "Sara L.",
+    hostAvatar: "https://i.pravatar.cc/40?img=44",
+    pricePer30m: 11,
+    rating: 4.5,
+    reviewCount: 72,
+    imageUrl:
+      "https://images.unsplash.com/photo-1540518614846-7eded433c457?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Jardín privado", "Cama King", "Silencio", "Cerradura digital"],
+  },
+  {
+    id: "lst-007",
+    title: "Cocina gourmet · Clase o producción",
+    category: "Cocina",
+    categoryLabel: "Cocina",
+    area: "Narvarte",
+    hostName: "Fernanda G.",
+    hostAvatar: "https://i.pravatar.cc/40?img=9",
+    pricePer30m: 20,
+    rating: 4.9,
+    reviewCount: 48,
+    imageUrl:
+      "https://images.unsplash.com/photo-1556909172-54557c7e4fb7?w=700&q=80",
+    instantAccess: false,
+    amenities: ["Isla central", "Horno profesional", "Batidora KitchenAid", "Iluminación de rodaje"],
+  },
+  {
+    id: "lst-008",
+    title: "Espacio coworking · Abierto",
+    category: "Oficina",
+    categoryLabel: "Oficina",
+    area: "Del Valle",
+    hostName: "Diego P.",
+    hostAvatar: "https://i.pravatar.cc/40?img=15",
+    pricePer30m: 10,
+    rating: 4.4,
+    reviewCount: 93,
+    imageUrl:
+      "https://images.unsplash.com/photo-1497366754035-f200968a6e72?w=700&q=80",
+    instantAccess: true,
+    amenities: ["Wi-Fi 500Mb", "Escritorio hot-desk", "Impresora", "Café y agua"],
+  },
+  {
+    id: "lst-009",
+    title: "Sala de juntas · Formal",
+    category: "Reunión",
+    categoryLabel: "Reunión",
+    area: "Santa Fe",
+    hostName: "Rodrigo T.",
+    hostAvatar: "https://i.pravatar.cc/40?img=60",
+    pricePer30m: 30,
+    rating: 4.8,
+    reviewCount: 31,
+    imageUrl:
+      "https://images.unsplash.com/photo-1431540015161-0bf868a2d407?w=700&q=80",
+    instantAccess: false,
+    amenities: ["TV 86\"", "Videoconferencia", "10 sillas ejecutivas", "Agua y café"],
+  },
+  {
+    id: "lst-010",
+    title: "Estudio podcast · Listo para grabar",
+    category: "Grabación",
+    categoryLabel: "Grabación",
+    area: "Escandón",
+    hostName: "Camila O.",
+    hostAvatar: "https://i.pravatar.cc/40?img=23",
+    pricePer30m: 16,
+    rating: 4.7,
+    reviewCount: 58,
+    imageUrl:
+      "https://images.unsplash.com/photo-1478737270239-2f02b77fc618?w=700&q=80",
+    instantAccess: true,
+    amenities: ["2 micrófonos", "Mezclador", "Sala acondicionada", "Pantallas"],
+  },
+];
+
 export const mockSpaces: Space[] = [
   {
     id: "space-001",
