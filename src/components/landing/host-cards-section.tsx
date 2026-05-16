@@ -1,5 +1,6 @@
 "use client";
 
+import Link from "next/link";
 import { useState } from "react";
 import {
   SPACE_CATEGORIES,
@@ -45,6 +46,11 @@ function RatingStars({ rating }: { rating: number }) {
 
 function ListingCard({ card }: { card: ListingSpace }) {
   return (
+    <Link
+      href={`/spaces/${card.id}`}
+      aria-label={`Ver ${card.title}`}
+      className="group/card block focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-sky-200/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070a] rounded-2xl"
+    >
     <article className="group flex flex-col overflow-hidden rounded-2xl border border-white/[0.07] bg-[#0e1016] transition-transform duration-300 hover:-translate-y-0.5 hover:border-white/[0.12]">
       {/* image */}
       <div className="relative aspect-[4/3] overflow-hidden">
@@ -133,6 +139,7 @@ function ListingCard({ card }: { card: ListingSpace }) {
         </div>
       </div>
     </article>
+    </Link>
   );
 }
 
@@ -242,28 +249,55 @@ export function HostCardsSection() {
           )}
         </div>
 
-        {/* filter chips */}
-        <div className="flex flex-wrap gap-2">
-          {SPACE_CATEGORIES.map((cat) => {
-            const isActive = active === cat;
-            return (
-              <button
-                key={cat}
-                type="button"
-                onClick={() => setActive(cat)}
-                className={[
-                  "flex items-center gap-1.5 rounded-full border px-4 py-1.5 text-[11px] font-semibold uppercase tracking-[0.22em] transition-all duration-150",
-                  isActive
-                    ? "border-sky-400/50 bg-sky-500/15 text-sky-200 shadow-[0_0_12px_rgba(56,189,248,0.2)]"
-                    : "border-white/[0.07] bg-white/[0.03] text-white/45 hover:border-white/[0.14] hover:bg-white/[0.06] hover:text-white/65",
-                ].join(" ")}
-              >
-                <span>{CATEGORY_ICONS[cat]}</span>
-                <span>{cat}</span>
-              </button>
-            );
-          })}
-          <span className="ml-auto self-center text-[11px] text-white/25">
+        {/* filter tab bar — floating frosted-glass surface */}
+        <div className="flex flex-wrap items-center justify-between gap-3">
+          <div
+            role="tablist"
+            aria-label="Filtrar por categoría"
+            className="relative inline-flex flex-wrap items-center gap-1 rounded-full border border-white/[0.06] bg-white/[0.02] p-1 shadow-[0_24px_60px_-24px_rgba(0,0,0,0.7),0_8px_24px_-12px_rgba(0,0,0,0.45),0_2px_6px_-2px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.06),inset_0_-1px_0_rgba(255,255,255,0.02)] backdrop-blur-2xl"
+          >
+            {/* inner top rim highlight */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-8 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
+            />
+            {/* inner bottom rim shadow */}
+            <span
+              aria-hidden
+              className="pointer-events-none absolute inset-x-10 bottom-0 h-px bg-gradient-to-r from-transparent via-black/40 to-transparent"
+            />
+            {SPACE_CATEGORIES.map((cat) => {
+              const isActive = active === cat;
+              return (
+                <button
+                  key={cat}
+                  type="button"
+                  role="tab"
+                  aria-selected={isActive}
+                  onClick={() => setActive(cat)}
+                  className={[
+                    "group relative flex items-center gap-1.5 rounded-full px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] outline-none",
+                    "transition-[color,background-color,border-color,box-shadow,opacity,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
+                    "focus-visible:ring-1 focus-visible:ring-sky-200/40",
+                    isActive
+                      ? "border border-sky-200/30 bg-gradient-to-b from-white/[0.11] via-white/[0.05] to-white/[0.02] text-sky-50 shadow-[0_2px_10px_-2px_rgba(56,189,248,0.4),0_0_24px_-6px_rgba(96,165,250,0.45),0_0_56px_-12px_rgba(125,211,252,0.3),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-1px_0_rgba(255,255,255,0.05)] backdrop-blur-xl"
+                      : "border border-transparent text-white/35 opacity-60 hover:text-white/80 hover:opacity-100 hover:bg-white/[0.035] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.06)]",
+                  ].join(" ")}
+                >
+                  {/* soft inner glow on active */}
+                  {isActive && (
+                    <span
+                      aria-hidden
+                      className="pointer-events-none absolute inset-0 rounded-full bg-[radial-gradient(ellipse_at_top,rgba(186,230,253,0.18),transparent_70%)]"
+                    />
+                  )}
+                  <span className="relative opacity-90">{CATEGORY_ICONS[cat]}</span>
+                  <span className="relative">{cat}</span>
+                </button>
+              );
+            })}
+          </div>
+          <span className="text-[11px] font-light tracking-[0.18em] text-white/22">
             {filtered.length} espacio{filtered.length !== 1 ? "s" : ""}
           </span>
         </div>
