@@ -1,6 +1,7 @@
 "use client";
 
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { useRouter } from "next/navigation";
 import type { FloatingCardSpace } from "./floating-space-card";
 
 type SpatialCardFieldProps = {
@@ -50,12 +51,50 @@ type VisibleCard = {
   opacity: number;
 };
 
+const OFFER_TIMINGS = ["Ahora", "Esta noche", "Manana AM", "Flexible"];
+const OFFER_AREAS = ["Roma / Condesa", "Polanco", "Juarez", "Santa Maria"];
+const OFFER_VIBES = ["Silencio", "Creativo", "Calma", "Enfoque"];
+const OFFER_REVEALS = ["Bruma gradual", "Silueta inicial", "Pulso discreto"];
+
+function offerChipClass(isActive: boolean) {
+  return [
+    "rounded-full border px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.22em] backdrop-blur-md transition-[transform,background-color,border-color,color,box-shadow] duration-200",
+    "[transform:translateZ(34px)] hover:[transform:translateZ(44px)]",
+    isActive
+      ? "border-sky-100/35 bg-sky-100/[0.12] text-sky-50 shadow-[0_14px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-14px_28px_rgba(8,18,34,0.34)]"
+      : "border-white/[0.075] bg-white/[0.04] text-white/44 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(5,12,24,0.22)] hover:border-sky-100/22 hover:bg-white/[0.065] hover:text-sky-100/76",
+  ].join(" ");
+}
+
 export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) {
   const N = spaces.length;
+  const router = useRouter();
+  const offerButtonRef = useRef<HTMLButtonElement | null>(null);
+  const offerOpenTimerRef = useRef<number | null>(null);
+  const signalInputRef = useRef<HTMLInputElement | null>(null);
   const [hoveredSpaceId, setHoveredSpaceId] = useState<string | null>(null);
   const [selectedSpaceId, setSelectedSpaceId] = useState<string | null>(null);
   const [hoveredLabel, setHoveredLabel] = useState<FooterLabel | null>(null);
+  const [offerOpen, setOfferOpen] = useState(false);
+  const [offerTiming, setOfferTiming] = useState(OFFER_TIMINGS[0]);
+  const [offerArea, setOfferArea] = useState(OFFER_AREAS[0]);
+  const [offerVibe, setOfferVibe] = useState(OFFER_VIBES[0]);
+  const [offerReveal, setOfferReveal] = useState(OFFER_REVEALS[0]);
   const [phase, setPhase] = useState(0);
+  const [signalClipCount, setSignalClipCount] = useState(0);
+
+  function handleSignalChange(event: React.ChangeEvent<HTMLInputElement>) {
+    const files = event.target.files;
+    if (!files || files.length === 0) {
+      event.target.value = "";
+      return;
+    }
+    const next = Array.from(files)
+      .filter((f) => f.type.startsWith("video/"))
+      .slice(0, 3);
+    setSignalClipCount(next.length);
+    event.target.value = "";
+  }
 
   useEffect(() => {
     let raf = 0;
@@ -70,6 +109,25 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     return () => cancelAnimationFrame(raf);
   }, []);
 
+  useEffect(() => {
+    return () => {
+      if (offerOpenTimerRef.current !== null) {
+        window.clearTimeout(offerOpenTimerRef.current);
+      }
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!offerOpen) return;
+
+    function handleKeyDown(event: KeyboardEvent) {
+      if (event.key === "Escape") setOfferOpen(false);
+    }
+
+    window.addEventListener("keydown", handleKeyDown);
+    return () => window.removeEventListener("keydown", handleKeyDown);
+  }, [offerOpen]);
+
   function labelClass(label: FooterLabel) {
     const isHovered = hoveredLabel === label;
     const isOtherHovered = hoveredLabel !== null && hoveredLabel !== label;
@@ -80,6 +138,20 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
       return "text-sky-100/35 [text-shadow:0_0_10px_rgba(110,160,255,0.18)]";
     }
     return "text-sky-100/80 [text-shadow:0_0_18px_rgba(110,160,255,0.45)]";
+  }
+
+  function handleOfferClick() {
+    /* OFRECER now opens the full-screen list-space flow at /ofrecer.
+       Prefetch on hover happens automatically once we call router.prefetch. */
+    router.push("/ofrecer");
+  }
+
+  /* Carousel cards open the property detail page. We set the local "selected"
+     state first so the click feels instantaneous (sky ring lights up) before
+     the navigation kicks in. */
+  function openSpace(id: string) {
+    setSelectedSpaceId(id);
+    router.push(`/spaces/${id}`);
   }
 
   const visibleCards: VisibleCard[] = [];
@@ -171,9 +243,12 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
 
           <button
             type="button"
-            aria-label="Activar espacio destacado"
+            aria-label="Abrir espacio destacado"
             onClick={() => {
-              if (centerCard) setSelectedSpaceId(centerCard.space.id);
+              if (centerCard) openSpace(centerCard.space.id);
+            }}
+            onMouseEnter={() => {
+              if (centerCard) router.prefetch(`/spaces/${centerCard.space.id}`);
             }}
             className="group absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2 cursor-pointer rounded-full outline-none focus-visible:ring-1 focus-visible:ring-sky-200/60"
             style={{
@@ -232,9 +307,13 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
               >
                 <button
                   type="button"
-                  onMouseEnter={() => setHoveredSpaceId(card.space.id)}
+                  onMouseEnter={() => {
+                    setHoveredSpaceId(card.space.id);
+                    router.prefetch(`/spaces/${card.space.id}`);
+                  }}
                   onMouseLeave={() => setHoveredSpaceId(null)}
-                  onClick={() => setSelectedSpaceId(card.space.id)}
+                  onClick={() => openSpace(card.space.id)}
+                  aria-label={`Abrir ${card.space.title}`}
                   aria-pressed={isSelected}
                   className={[
                     "group relative block h-full w-full overflow-hidden text-left",
@@ -385,11 +464,19 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
           />
         </svg>
         <button
+          ref={offerButtonRef}
           type="button"
-          onMouseEnter={() => setHoveredLabel("ofrecer")}
+          onMouseEnter={() => {
+            setHoveredLabel("ofrecer");
+            router.prefetch("/ofrecer");
+          }}
           onMouseLeave={() => setHoveredLabel(null)}
-          onFocus={() => setHoveredLabel("ofrecer")}
+          onFocus={() => {
+            setHoveredLabel("ofrecer");
+            router.prefetch("/ofrecer");
+          }}
           onBlur={() => setHoveredLabel(null)}
+          onClick={handleOfferClick}
           className={[
             "text-[11px] font-medium uppercase tracking-[0.5em] outline-none transition-[color,text-shadow,opacity] duration-200",
             labelClass("ofrecer"),
@@ -397,6 +484,313 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
         >
           Ofrecer
         </button>
+      </div>
+
+      <div
+        className={[
+          "fixed inset-0 z-40 transition-[opacity,backdrop-filter] duration-500 ease-out",
+          offerOpen
+            ? "pointer-events-auto opacity-100 backdrop-blur-[6px]"
+            : "pointer-events-none opacity-0 backdrop-blur-0",
+        ].join(" ")}
+        aria-hidden={!offerOpen}
+      >
+        <button
+          type="button"
+          aria-label="Cerrar activacion de espacio"
+          onClick={() => setOfferOpen(false)}
+          className="absolute inset-0 cursor-default bg-[#02050d]/62"
+        />
+        <div
+          aria-hidden
+          className="pointer-events-none absolute inset-0 opacity-80"
+          style={{
+            background:
+              "radial-gradient(ellipse 70% 48% at 54% 28%, rgba(72,132,220,0.18), transparent 62%), radial-gradient(circle at 18% 76%, rgba(80,120,210,0.12), transparent 36%), linear-gradient(to bottom, rgba(2,5,13,0.05), rgba(2,5,13,0.46))",
+          }}
+        />
+
+        <section
+          aria-label="Activar espacio en la red"
+          className={[
+            "absolute left-[clamp(2.5rem,7vw,5.5rem)] top-[22px] min-h-[min(600px,calc(100dvh-22px))] w-[min(780px,calc(100vw-clamp(2.5rem,7vw,5.5rem)-1rem))] max-[700px]:left-0 max-[700px]:w-[calc(100vw-1rem)]",
+            "origin-left overflow-hidden rounded-[38px_72px_64px_32px] border border-sky-100/[0.07] border-b-transparent border-r-transparent",
+            "bg-[#07101d]/42 p-5 pt-8 text-white shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl sm:p-6 sm:pt-9",
+            "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
+            offerOpen
+              ? "translate-x-0 scale-x-100 opacity-100"
+              : "-translate-x-8 scale-x-[0.08] opacity-0",
+          ].join(" ")}
+          style={{
+            transformStyle: "preserve-3d",
+            perspective: "1180px",
+            maskImage:
+              "radial-gradient(ellipse 112% 92% at 24% 42%, black 0%, black 58%, rgba(0,0,0,0.86) 73%, rgba(0,0,0,0.38) 90%, transparent 100%)",
+            WebkitMaskImage:
+              "radial-gradient(ellipse 112% 92% at 24% 42%, black 0%, black 58%, rgba(0,0,0,0.86) 73%, rgba(0,0,0,0.38) 90%, transparent 100%)",
+          }}
+        >
+          <div
+            aria-hidden
+            className="pointer-events-none absolute inset-0"
+            style={{
+              background:
+                "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(150,205,255,0.12), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(96,165,250,0.045))",
+            }}
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute -right-28 -top-20 h-72 w-72 rounded-full bg-[#07101d]/35 blur-3xl"
+          />
+          <div
+            aria-hidden
+            className="pointer-events-none absolute bottom-0 left-12 h-px w-1/2 bg-gradient-to-r from-transparent via-sky-100/18 to-transparent"
+          />
+
+          <div
+            className="relative grid gap-5 lg:grid-cols-[0.98fr_0.82fr]"
+            style={{
+              transform: "rotateY(-1.6deg) rotateX(0.7deg)",
+              transformStyle: "preserve-3d",
+            }}
+          >
+            <div
+              className="spatial-projection-zone relative flex min-h-[390px] flex-col justify-between gap-8 overflow-hidden rounded-[32px] border border-white/[0.055] bg-white/[0.028] p-5 shadow-[0_26px_80px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-24px_60px_rgba(2,6,16,0.28)] backdrop-blur-xl sm:p-7"
+              style={{
+                transform: "translateZ(10px)",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              <div
+                aria-hidden
+                className="pointer-events-none absolute inset-0 bg-[radial-gradient(ellipse_58%_42%_at_24%_24%,rgba(147,197,253,0.16),transparent_66%),linear-gradient(140deg,rgba(255,255,255,0.08),transparent_34%,rgba(56,189,248,0.08)_100%)]"
+              />
+              <div
+                aria-hidden
+                className="spatial-reveal-plane pointer-events-none absolute left-8 right-8 top-28 h-36 rounded-full opacity-70"
+              />
+              <div
+                aria-hidden
+                className="spatial-signal-line pointer-events-none absolute inset-x-7 bottom-24 h-px"
+              />
+
+              <button
+                type="button"
+                onClick={() => signalInputRef.current?.click()}
+                aria-label={
+                  signalClipCount === 0
+                    ? "Sube una señal en video, 1 a 3 mini clips"
+                    : `Señales activas: ${signalClipCount}`
+                }
+                className="signal-zone group absolute outline-none"
+                style={{
+                  bottom: 118,
+                  left: "50%",
+                  width: 224,
+                  height: 96,
+                  transform: "translateX(-50%) translateZ(26px)",
+                }}
+              >
+                <span aria-hidden className="signal-zone-diffusion" />
+                <span aria-hidden className="signal-zone-core" />
+                <span aria-hidden className="signal-zone-aura" />
+                <span aria-hidden className="signal-zone-content">
+                  {signalClipCount === 0 ? (
+                    <>
+                      <span className="signal-zone-pulse-dot" />
+                      <span className="signal-zone-label">
+                        SUBE UNA SEÑAL
+                      </span>
+                      <span className="signal-zone-sublabel">
+                        1–3 mini clips
+                      </span>
+                    </>
+                  ) : (
+                    <span className="signal-zone-traces">
+                      {Array.from({ length: signalClipCount }).map((_, i) => (
+                        <span
+                          key={i}
+                          className="signal-zone-trace"
+                          style={{ animationDelay: `${i * 0.45}s` }}
+                        />
+                      ))}
+                    </span>
+                  )}
+                </span>
+              </button>
+              <input
+                ref={signalInputRef}
+                type="file"
+                accept="video/*"
+                multiple
+                className="sr-only"
+                onChange={handleSignalChange}
+                tabIndex={-1}
+              />
+
+              <div className="relative" style={{ transform: "translateZ(30px)" }}>
+                <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-sky-200/54">
+                  NODO TEMPORAL
+                </p>
+                <h2 className="mt-12 text-xl font-medium uppercase tracking-[0.42em] text-white/82 sm:text-2xl">
+                  ESPACIO ACTIVO
+                </h2>
+                <p className="mt-5 text-sm font-light tracking-[0.08em] text-white/38">
+                  Tiempo, zona y{" "}
+                  <span className="atmosfera-word">
+                    atmósfera
+                    <span aria-hidden className="atmosfera-energy">
+                      <span className="atmosfera-energy-core" />
+                      <span className="atmosfera-energy-beam" />
+                    </span>
+                  </span>
+                  .
+                </p>
+              </div>
+
+              <div
+                className="relative grid grid-cols-3 gap-3 text-center"
+                style={{ transform: "translateZ(42px)" }}
+              >
+                {[
+                  ["temporal", "ventana"],
+                  ["cercano", "radio"],
+                  ["vivo", "revelado"],
+                ].map(([value, label]) => (
+                  <div
+                    key={label}
+                    className="rounded-[26px] border border-white/[0.075] bg-white/[0.035] px-3 py-4 shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)] backdrop-blur-md"
+                  >
+                    <p className="text-lg font-medium text-sky-100/85">{value}</p>
+                    <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-white/30">
+                      {label}
+                    </p>
+                  </div>
+                ))}
+              </div>
+            </div>
+
+            <div
+              className="flex flex-col gap-5 rounded-[34px] border border-sky-100/[0.075] bg-white/[0.026] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.11),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl"
+              style={{
+                transform: "translateZ(28px) rotateY(1.2deg)",
+                transformStyle: "preserve-3d",
+              }}
+            >
+              <div
+                className="flex items-start justify-between gap-4"
+                style={{ transform: "translateZ(28px)" }}
+              >
+                <div>
+                  <p className="text-[10px] uppercase tracking-[0.46em] text-white/35">
+                    senales de activacion
+                  </p>
+                  <p className="mt-2 text-sm text-white/62">
+                    Solo lo necesario para que el nodo empiece a aparecer.
+                  </p>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => setOfferOpen(false)}
+                  className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/45 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[transform,border-color,color,background-color] hover:border-sky-200/25 hover:bg-white/[0.06] hover:text-sky-100/75 hover:[transform:translateZ(8px)]"
+                >
+                  cerrar
+                </button>
+              </div>
+
+              <div
+                className="space-y-5"
+                style={{
+                  transform: "translateZ(38px)",
+                  transformStyle: "preserve-3d",
+                }}
+              >
+                <div>
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                    disponibilidad temporal
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {OFFER_TIMINGS.map((timing) => (
+                      <button
+                        key={timing}
+                        type="button"
+                        onClick={() => setOfferTiming(timing)}
+                        className={offerChipClass(offerTiming === timing)}
+                      >
+                        {timing}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                    ubicacion aproximada
+                  </p>
+                  <div className="grid grid-cols-2 gap-2">
+                    {OFFER_AREAS.map((area) => (
+                      <button
+                        key={area}
+                        type="button"
+                        onClick={() => setOfferArea(area)}
+                        className={offerChipClass(offerArea === area)}
+                      >
+                        {area}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                    atmosfera
+                  </p>
+                  <div className="flex flex-wrap gap-2">
+                    {OFFER_VIBES.map((vibe) => (
+                      <button
+                        key={vibe}
+                        type="button"
+                        onClick={() => setOfferVibe(vibe)}
+                        className={offerChipClass(offerVibe === vibe)}
+                      >
+                        {vibe}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+
+                <div>
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                    revelado espacial
+                  </p>
+                  <div className="flex flex-col gap-2">
+                    {OFFER_REVEALS.map((reveal) => (
+                      <button
+                        key={reveal}
+                        type="button"
+                        onClick={() => setOfferReveal(reveal)}
+                        className={[
+                          offerChipClass(offerReveal === reveal),
+                          "text-left",
+                        ].join(" ")}
+                      >
+                        {reveal}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+              </div>
+
+              <button
+                type="button"
+                className="mt-auto rounded-full border border-sky-100/28 bg-sky-100/[0.11] px-5 py-3.5 text-[11px] font-medium uppercase tracking-[0.34em] text-sky-50 shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-16px_32px_rgba(8,18,34,0.32)] backdrop-blur-md transition-[transform,border-color,background-color] hover:border-sky-100/45 hover:bg-sky-100/[0.15] hover:[transform:translateZ(52px)]"
+                style={{ transform: "translateZ(44px)" }}
+              >
+                emitir senal
+              </button>
+            </div>
+          </div>
+        </section>
       </div>
 
       <p className="sr-only" aria-live="polite">
