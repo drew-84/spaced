@@ -57,12 +57,16 @@ const OFFER_VIBES = ["Silencio", "Creativo", "Calma", "Enfoque"];
 const OFFER_REVEALS = ["Bruma gradual", "Silueta inicial", "Pulso discreto"];
 
 function offerChipClass(isActive: boolean) {
+  /* Compose the shared pill recipe with the 3D translateZ used inside the
+     activation pop-up so chips float forward in the modal's perspective. */
   return [
-    "rounded-full border px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.22em] backdrop-blur-md transition-[transform,background-color,border-color,color,box-shadow] duration-200",
+    "rounded-full border px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.22em] backdrop-blur-md outline-none",
+    "transition-all duration-300 ease-out motion-reduce:transition-none",
+    "focus-visible:ring-1 focus-visible:ring-white/40",
     "[transform:translateZ(34px)] hover:[transform:translateZ(44px)]",
     isActive
-      ? "border-sky-100/35 bg-sky-100/[0.12] text-sky-50 shadow-[0_14px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-14px_28px_rgba(8,18,34,0.34)]"
-      : "border-white/[0.075] bg-white/[0.04] text-white/44 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(5,12,24,0.22)] hover:border-sky-100/22 hover:bg-white/[0.065] hover:text-sky-100/76",
+      ? "border-white/40 bg-white/[0.14] text-white shadow-[0_14px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-14px_28px_rgba(8,18,34,0.34),0_0_22px_rgba(255,255,255,0.2)]"
+      : "border-white/20 bg-white/[0.04] text-white/70 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(5,12,24,0.22)] hover:border-white/40 hover:bg-white/[0.07] hover:text-white",
   ].join(" ");
 }
 
@@ -132,12 +136,12 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     const isHovered = hoveredLabel === label;
     const isOtherHovered = hoveredLabel !== null && hoveredLabel !== label;
     if (isHovered) {
-      return "text-sky-50 [text-shadow:0_0_22px_rgba(140,190,255,0.9),0_0_44px_rgba(140,190,255,0.55),0_0_70px_rgba(110,160,255,0.35)]";
+      return "text-white [text-shadow:0_0_22px_rgba(255,255,255,0.85),0_0_44px_rgba(255,255,255,0.5),0_0_70px_rgba(255,255,255,0.3)]";
     }
     if (isOtherHovered) {
-      return "text-sky-100/35 [text-shadow:0_0_10px_rgba(110,160,255,0.18)]";
+      return "text-white/40 [text-shadow:0_0_10px_rgba(255,255,255,0.2)]";
     }
-    return "text-sky-100/80 [text-shadow:0_0_18px_rgba(110,160,255,0.45)]";
+    return "text-white/80 [text-shadow:0_0_18px_rgba(255,255,255,0.45)]";
   }
 
   function handleOfferClick() {
@@ -180,7 +184,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     <div className="relative mx-auto h-[min(82vh,640px)] w-full max-w-[1180px] overflow-hidden">
       <p
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[9%] z-10 -translate-x-1/2 whitespace-nowrap text-[13px] font-light uppercase tracking-[0.6em] text-sky-100/80 [text-shadow:0_0_18px_rgba(110,160,255,0.45)]"
+        className="pointer-events-none absolute left-1/2 top-[9%] z-10 -translate-x-1/2 whitespace-nowrap text-[13px] font-light uppercase tracking-[0.6em] text-white/80 [text-shadow:0_0_18px_rgba(255,255,255,0.45)]"
       >
         ACTIVA ESPACIO AHORA
       </p>
@@ -387,12 +391,12 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                     >
                       <p
                         className={[
-                          "font-medium uppercase text-white/65",
+                          "font-medium uppercase text-white/80",
                           isCenter
                             ? "text-[10px] tracking-[0.28em]"
                             : isSide
                               ? "text-[8px] tracking-[0.24em]"
-                              : "text-[7px] tracking-[0.22em] text-white/55",
+                              : "text-[7px] tracking-[0.22em] text-white/70",
                         ].join(" ")}
                       >
                         {card.space.area}
@@ -404,7 +408,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                             ? "text-[14px] text-white"
                             : isSide
                               ? "text-[10px] text-white"
-                              : "text-[8.5px] text-white/85",
+                              : "text-[8.5px] text-white",
                         ].join(" ")}
                       >
                         {card.space.title}
@@ -447,12 +451,12 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
           fill="none"
           aria-hidden
           className={[
-            "transition-[color,opacity] duration-200",
+            "transition-colors duration-300 ease-out motion-reduce:transition-none",
             hoveredLabel === null
-              ? "text-sky-100/70"
+              ? "text-white/80"
               : hoveredLabel === "explorar"
-                ? "text-sky-50/95"
-                : "text-sky-100/30",
+                ? "text-white"
+                : "text-white/40",
           ].join(" ")}
         >
           <path
@@ -514,8 +518,8 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
           aria-label="Activar espacio en la red"
           className={[
             "absolute left-[clamp(2.5rem,7vw,5.5rem)] top-[22px] min-h-[min(600px,calc(100dvh-22px))] w-[min(780px,calc(100vw-clamp(2.5rem,7vw,5.5rem)-1rem))] max-[700px]:left-0 max-[700px]:w-[calc(100vw-1rem)]",
-            "origin-left overflow-hidden rounded-[38px_72px_64px_32px] border border-sky-100/[0.07] border-b-transparent border-r-transparent",
-            "bg-[#07101d]/42 p-5 pt-8 text-white shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl sm:p-6 sm:pt-9",
+            "origin-left overflow-hidden rounded-[38px_72px_64px_32px] border border-white/10 border-b-transparent border-r-transparent",
+            "bg-[#07101d]/42 p-5 pt-8 text-white shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:p-6 sm:pt-9",
             "transition-all duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]",
             offerOpen
               ? "translate-x-0 scale-x-100 opacity-100"
@@ -629,13 +633,13 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
               />
 
               <div className="relative" style={{ transform: "translateZ(30px)" }}>
-                <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-sky-200/54">
+                <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-white">
                   NODO TEMPORAL
                 </p>
-                <h2 className="mt-12 text-xl font-medium uppercase tracking-[0.42em] text-white/82 sm:text-2xl">
+                <h2 className="mt-12 text-xl font-medium uppercase tracking-[0.42em] text-white sm:text-2xl">
                   ESPACIO ACTIVO
                 </h2>
-                <p className="mt-5 text-sm font-light tracking-[0.08em] text-white/38">
+                <p className="mt-5 text-sm font-light tracking-[0.08em] text-white/80">
                   Tiempo, zona y{" "}
                   <span className="atmosfera-word">
                     atmósfera
@@ -661,8 +665,8 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                     key={label}
                     className="rounded-[26px] border border-white/[0.075] bg-white/[0.035] px-3 py-4 shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)] backdrop-blur-md"
                   >
-                    <p className="text-lg font-medium text-sky-100/85">{value}</p>
-                    <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-white/30">
+                    <p className="text-lg font-medium text-white">{value}</p>
+                    <p className="mt-1 text-[9px] uppercase tracking-[0.28em] text-white">
                       {label}
                     </p>
                   </div>
@@ -671,7 +675,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
             </div>
 
             <div
-              className="flex flex-col gap-5 rounded-[34px] border border-sky-100/[0.075] bg-white/[0.026] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.11),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl"
+              className="flex flex-col gap-5 rounded-[34px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl"
               style={{
                 transform: "translateZ(28px) rotateY(1.2deg)",
                 transformStyle: "preserve-3d",
@@ -682,17 +686,17 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 style={{ transform: "translateZ(28px)" }}
               >
                 <div>
-                  <p className="text-[10px] uppercase tracking-[0.46em] text-white/35">
+                  <p className="text-[10px] uppercase tracking-[0.46em] text-white">
                     senales de activacion
                   </p>
-                  <p className="mt-2 text-sm text-white/62">
+                  <p className="mt-2 text-sm text-white/80">
                     Solo lo necesario para que el nodo empiece a aparecer.
                   </p>
                 </div>
                 <button
                   type="button"
                   onClick={() => setOfferOpen(false)}
-                  className="rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/45 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[transform,border-color,color,background-color] hover:border-sky-200/25 hover:bg-white/[0.06] hover:text-sky-100/75 hover:[transform:translateZ(8px)]"
+                  className="rounded-full border border-white/15 bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white hover:[transform:translateZ(8px)]"
                 >
                   cerrar
                 </button>
@@ -706,7 +710,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 }}
               >
                 <div>
-                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-white">
                     disponibilidad temporal
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -724,7 +728,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 </div>
 
                 <div>
-                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-white">
                     ubicacion aproximada
                   </p>
                   <div className="grid grid-cols-2 gap-2">
@@ -742,7 +746,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 </div>
 
                 <div>
-                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-white">
                     atmosfera
                   </p>
                   <div className="flex flex-wrap gap-2">
@@ -760,7 +764,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 </div>
 
                 <div>
-                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
+                  <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-white">
                     revelado espacial
                   </p>
                   <div className="flex flex-col gap-2">
@@ -783,7 +787,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
 
               <button
                 type="button"
-                className="mt-auto rounded-full border border-sky-100/28 bg-sky-100/[0.11] px-5 py-3.5 text-[11px] font-medium uppercase tracking-[0.34em] text-sky-50 shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-16px_32px_rgba(8,18,34,0.32)] backdrop-blur-md transition-[transform,border-color,background-color] hover:border-sky-100/45 hover:bg-sky-100/[0.15] hover:[transform:translateZ(52px)]"
+                className="mt-auto rounded-full border border-white/30 bg-white/[0.14] px-5 py-3.5 text-[11px] font-medium uppercase tracking-[0.34em] text-white shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-16px_32px_rgba(8,18,34,0.32),0_0_30px_-6px_rgba(255,255,255,0.4)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/50 hover:bg-white/[0.2] hover:shadow-[0_22px_42px_rgba(0,0,0,0.36),inset_0_1px_0_rgba(255,255,255,0.3),0_0_42px_-4px_rgba(255,255,255,0.55)] hover:[transform:translateZ(52px)]"
                 style={{ transform: "translateZ(44px)" }}
               >
                 emitir senal

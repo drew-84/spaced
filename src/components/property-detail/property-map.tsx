@@ -2,6 +2,13 @@
 
 import { useMemo } from "react";
 import { GoogleMap, useJsApiLoader } from "@react-google-maps/api";
+import {
+  GLASS_PANEL,
+  RIM_HIGHLIGHT_TOP,
+  TEXT_EYEBROW,
+  TEXT_HINT,
+  TEXT_LABEL,
+} from "@/styles/glass";
 
 type Props = {
   lat: number;
@@ -98,13 +105,13 @@ function MapFallback({ area, city }: { area: string; city: string }) {
       />
       <div className="absolute inset-0 flex items-center justify-center px-6 text-center">
         <div>
-          <p className="text-[10px] uppercase tracking-[0.42em] text-sky-100/55">
+          <p className={`${TEXT_EYEBROW} tracking-[0.42em]`}>
             Mapa no disponible
           </p>
-          <p className="mt-2 text-sm font-light tracking-[0.04em] text-white/55">
+          <p className="mt-2 text-sm font-light tracking-[0.04em] text-white/80">
             Ubicación aproximada · {area}, {city}
           </p>
-          <p className="mt-2 text-[10px] uppercase tracking-[0.24em] text-white/30">
+          <p className={`mt-2 ${TEXT_HINT}`}>
             Agrega NEXT_PUBLIC_GOOGLE_MAPS_API_KEY para activar el mapa.
           </p>
         </div>
@@ -143,14 +150,14 @@ function GoogleMapView({
 
   if (loadError) {
     return (
-      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-rose-100/55">
+      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-rose-200/80">
         Error al cargar el mapa
       </div>
     );
   }
   if (!isLoaded) {
     return (
-      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-white/35">
+      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-white">
         Cargando mapa…
       </div>
     );
@@ -172,16 +179,16 @@ export function PropertyMap({ lat, lng, area, city }: Props) {
   return (
     <section aria-label="Ubicación aproximada" className="space-y-3">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-[10px] uppercase tracking-[0.42em] text-sky-100/55">
+        <p className={`${TEXT_EYEBROW} tracking-[0.42em]`}>
           Ubicación aproximada
         </p>
-        <p className="text-[10px] uppercase tracking-[0.24em] text-white/30">
+        <p className={TEXT_LABEL}>
           {area} · {city}
         </p>
       </div>
       <div
-        /* Outer frame mirrors the modal's right inner-card recipe */
-        className="relative h-[320px] overflow-hidden rounded-[28px] border border-sky-100/[0.075] bg-white/[0.018] shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.11),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl sm:h-[380px]"
+        /* Outer frame uses the shared glass panel recipe */
+        className={`relative h-[320px] overflow-hidden ${GLASS_PANEL} sm:h-[380px]`}
       >
         {apiKey ? (
           <GoogleMapView apiKey={apiKey} lat={lat} lng={lng} />
@@ -198,22 +205,17 @@ export function PropertyMap({ lat, lng, area, city }: Props) {
               "radial-gradient(ellipse 70% 60% at 50% 50%, rgba(2,5,13,0.05), rgba(2,5,13,0.55) 100%), linear-gradient(180deg, rgba(2,5,13,0.18) 0%, transparent 30%, transparent 70%, rgba(2,5,13,0.42) 100%)",
           }}
         />
-        {/* Glow ring marker — replaces the default Google red pin so the whole
-            map reads as glass. Animated via inline keyframes below. */}
+        {/* Glow ring marker — white pulsing glass marker */}
         <div
           aria-hidden
           className="pointer-events-none absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
         >
-          <span className="block h-32 w-32 rounded-full border border-sky-200/30 [animation:mapPulse_3.8s_ease-in-out_infinite] [box-shadow:0_0_42px_-2px_rgba(96,165,250,0.45),inset_0_0_24px_rgba(96,165,250,0.18)]" />
-          <span className="absolute left-1/2 top-1/2 block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-sky-100 shadow-[0_0_18px_rgba(186,230,253,0.95),0_0_32px_rgba(96,165,250,0.6)]" />
+          <span className="block h-32 w-32 rounded-full border border-white/30 [animation:mapPulse_3.8s_ease-in-out_infinite] [box-shadow:0_0_42px_-2px_rgba(255,255,255,0.5),inset_0_0_24px_rgba(255,255,255,0.18)]" />
+          <span className="absolute left-1/2 top-1/2 block h-3 w-3 -translate-x-1/2 -translate-y-1/2 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.95),0_0_32px_rgba(255,255,255,0.55)]" />
         </div>
-        {/* Top rim highlight */}
-        <span
-          aria-hidden
-          className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
-        />
+        <span aria-hidden className={RIM_HIGHLIGHT_TOP} />
       </div>
-      <p className="text-[10px] uppercase tracking-[0.22em] text-white/30">
+      <p className={TEXT_HINT}>
         La ubicación exacta se revela tras la confirmación de la reserva.
       </p>
 

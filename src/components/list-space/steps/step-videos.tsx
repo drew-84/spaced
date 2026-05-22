@@ -1,6 +1,7 @@
 "use client";
 
 import { type DragEvent, useRef, useState } from "react";
+import { STATUS_DOT, TEXT_BODY, TEXT_HINT } from "@/styles/glass";
 import type { ListSpaceFormData } from "../types";
 
 type Props = {
@@ -41,13 +42,11 @@ export function StepVideos({ data, onChange }: Props) {
   return (
     <div className="space-y-6">
       <div className="flex items-baseline justify-between gap-3">
-        <p className="text-sm font-light leading-relaxed tracking-[0.04em] text-white/45">
+        <p className={`text-sm leading-relaxed ${TEXT_BODY}`}>
           Sube hasta 3 mini clips. Mejor si revelan textura, luz y sonido del
           lugar.
         </p>
-        <span className="shrink-0 text-[9px] uppercase tracking-[0.28em] text-white/30">
-          {filledCount}/3
-        </span>
+        <span className={`shrink-0 ${TEXT_HINT}`}>{filledCount}/3</span>
       </div>
 
       <div className="grid gap-4 sm:grid-cols-3">
@@ -69,16 +68,16 @@ export function StepVideos({ data, onChange }: Props) {
               }}
               className={[
                 "group relative flex aspect-[3/4] items-center justify-center overflow-hidden rounded-[28px] border text-center",
-                "transition-[border-color,background-color,box-shadow,transform] duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
+                "transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none",
                 "backdrop-blur-xl",
                 filled
-                  ? "border-sky-100/30 bg-white/[0.04] shadow-[0_22px_46px_rgba(0,0,0,0.36),0_0_30px_-6px_rgba(96,165,250,0.4),inset_0_1px_0_rgba(255,255,255,0.16),inset_0_-18px_36px_rgba(3,8,18,0.3)]"
+                  ? "border-white/30 bg-white/[0.05] shadow-[0_22px_46px_rgba(0,0,0,0.36),0_0_30px_-6px_rgba(255,255,255,0.4),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-18px_36px_rgba(3,8,18,0.3)]"
                   : dragging
-                    ? "border-sky-100/55 bg-sky-100/[0.07] shadow-[0_0_42px_-6px_rgba(96,165,250,0.6),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-18px_36px_rgba(3,8,18,0.3)]"
-                    : "border-white/[0.06] bg-white/[0.012] shadow-[0_14px_30px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.05),inset_0_-16px_30px_rgba(3,8,18,0.24)] hover:border-sky-100/35 hover:bg-white/[0.04] hover:shadow-[0_22px_50px_rgba(0,0,0,0.36),0_0_42px_-8px_rgba(96,165,250,0.55),inset_0_1px_0_rgba(255,255,255,0.16),inset_0_-18px_36px_rgba(3,8,18,0.3)]",
+                    ? "border-white/45 bg-white/[0.08] shadow-[0_0_42px_-6px_rgba(255,255,255,0.55),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-18px_36px_rgba(3,8,18,0.3)]"
+                    : "border-white/15 bg-white/[0.025] shadow-[0_14px_30px_rgba(0,0,0,0.26),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-16px_30px_rgba(3,8,18,0.24)] hover:border-white/40 hover:bg-white/[0.05] hover:shadow-[0_22px_50px_rgba(0,0,0,0.36),0_0_42px_-8px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-18px_36px_rgba(3,8,18,0.3)]",
               ].join(" ")}
             >
-              {/* Soft aura — like the signal-zone-diffusion in the modal */}
+              {/* Soft aura — white instead of cyan tint */}
               <span
                 aria-hidden
                 className={[
@@ -89,7 +88,7 @@ export function StepVideos({ data, onChange }: Props) {
                 ].join(" ")}
                 style={{
                   background:
-                    "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(186,230,253,0.14), transparent 65%), radial-gradient(ellipse 50% 38% at 50% 100%, rgba(72,132,220,0.16), transparent 70%)",
+                    "radial-gradient(ellipse 60% 40% at 50% 0%, rgba(255,255,255,0.12), transparent 65%), radial-gradient(ellipse 50% 38% at 50% 100%, rgba(255,255,255,0.1), transparent 70%)",
                 }}
               />
               {/* Top rim highlight */}
@@ -140,16 +139,14 @@ export function StepVideos({ data, onChange }: Props) {
               >
                 {!filled ? (
                   <>
-                    <span className="h-2 w-2 rounded-full bg-sky-100/85 shadow-[0_0_14px_rgba(140,190,255,0.85)]" />
-                    <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.42em] text-sky-100/80 [text-shadow:0_0_14px_rgba(140,185,255,0.42)]">
+                    <span className={STATUS_DOT} />
+                    <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.42em] text-white [text-shadow:0_0_14px_rgba(255,255,255,0.4)]">
                       Clip {idx + 1}
                     </span>
-                    <span className="text-[9px] uppercase tracking-[0.28em] text-white/35">
-                      Click o arrastra aquí
-                    </span>
+                    <span className={TEXT_HINT}>Click o arrastra aquí</span>
                   </>
                 ) : (
-                  <span className="mt-auto pb-2 text-[10px] font-medium uppercase tracking-[0.34em] text-sky-50 [text-shadow:0_0_14px_rgba(140,190,255,0.7)]">
+                  <span className="mt-auto pb-2 text-[10px] font-medium uppercase tracking-[0.34em] text-white [text-shadow:0_0_14px_rgba(255,255,255,0.55)]">
                     Cambiar clip
                   </span>
                 )}
@@ -162,7 +159,7 @@ export function StepVideos({ data, onChange }: Props) {
                     e.stopPropagation();
                     setVideoAt(idx, null);
                   }}
-                  className="absolute right-3 top-3 z-20 rounded-full border border-white/[0.12] bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/65 backdrop-blur-md transition-[border-color,color] duration-200 hover:border-sky-100/35 hover:text-sky-100/85"
+                  className="absolute right-3 top-3 z-20 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/80 backdrop-blur-md transition-colors duration-300 ease-out hover:border-white/40 hover:text-white"
                 >
                   Quitar
                 </button>

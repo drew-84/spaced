@@ -106,10 +106,10 @@ export const FloatingSpaceCard = forwardRef<HTMLButtonElement, FloatingSpaceCard
           />
 
           <div className="relative flex h-full flex-col justify-end p-2.5 [text-shadow:0_1px_8px_rgba(0,0,0,0.85)]">
-            <p className="text-[8px] font-medium uppercase tracking-[0.26em] text-white/55">
+            <p className="text-[8px] font-medium uppercase tracking-[0.26em] text-white/80">
               {space.area}
             </p>
-            <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-snug text-white/[0.96]">
+            <p className="mt-0.5 line-clamp-2 text-[11px] font-medium leading-snug text-white">
               {space.title}
             </p>
           </div>

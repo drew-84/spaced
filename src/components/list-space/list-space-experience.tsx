@@ -3,6 +3,13 @@
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import {
+  CTA_SECONDARY,
+  PAGE_AMBIENT_BG,
+  PAGE_AMBIENT_SHIMMER,
+  TEXT_EYEBROW,
+  TEXT_LABEL,
+} from "@/styles/glass";
+import {
   INITIAL_DATA,
   STEPS,
   TOTAL_STEPS,
@@ -130,26 +137,22 @@ export function ListSpaceExperience() {
 
   return (
     <div className="relative min-h-[100dvh] overflow-hidden bg-[#02050d] text-white">
-      {/* Ambient backdrop — same recipe as the modal's behind-scrim */}
+      {/* Ambient backdrop — page-level glass wash */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 48% at 54% 18%, rgba(72,132,220,0.18), transparent 62%), radial-gradient(circle at 14% 84%, rgba(80,120,210,0.14), transparent 38%), radial-gradient(circle at 88% 32%, rgba(70,120,200,0.1), transparent 42%), linear-gradient(to bottom, rgba(2,5,13,0.05), rgba(2,5,13,0.55))",
-        }}
+        style={{ background: PAGE_AMBIENT_BG }}
       />
       <div
         aria-hidden
-        className="pointer-events-none absolute inset-0 opacity-[0.32] [background:repeating-linear-gradient(122deg,rgba(255,255,255,0.018)_0px,rgba(255,255,255,0.018)_1px,transparent_1px,transparent_64px)]"
+        className={`pointer-events-none absolute inset-0 ${PAGE_AMBIENT_SHIMMER}`}
       />
 
-      {/* Close — matches the modal "cerrar" pill */}
       <button
         type="button"
         onClick={() => router.push("/")}
         aria-label="Volver al inicio"
-        className="absolute right-5 top-5 z-30 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/55 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[transform,border-color,color,background-color] duration-200 hover:border-sky-200/25 hover:bg-white/[0.06] hover:text-sky-100/85 sm:right-8 sm:top-8"
+        className={`absolute right-5 top-5 z-30 ${CTA_SECONDARY} sm:right-8 sm:top-8`}
       >
         cerrar
       </button>
@@ -161,9 +164,8 @@ export function ListSpaceExperience() {
         {/* LEFT panel — static-ish context */}
         <aside
           aria-label="Contexto"
-          /* Style lifted from modal's left panel: asymmetric border-radius, transparent right/bottom borders,
-             same dark glass fill, same drop-shadow + inner highlight, same backdrop-blur level */
-          className="relative flex w-full shrink-0 flex-col gap-8 overflow-hidden rounded-[28px_56px_28px_48px] border border-sky-100/[0.07] border-b-transparent border-r-transparent bg-[#07101d]/42 p-7 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-2xl sm:p-9 lg:max-w-[36%]"
+          /* Asymmetric outer modal panel — keeps OfferScreen's structural shape */
+          className="relative flex w-full shrink-0 flex-col gap-8 overflow-hidden rounded-[28px_56px_28px_48px] border border-white/10 border-b-transparent border-r-transparent bg-[#07101d]/42 p-7 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:p-9 lg:max-w-[36%]"
           style={{
             maskImage:
               "radial-gradient(ellipse 112% 96% at 22% 42%, black 0%, black 60%, rgba(0,0,0,0.88) 80%, rgba(0,0,0,0.5) 94%, transparent 100%)",
@@ -180,41 +182,41 @@ export function ListSpaceExperience() {
                 "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(150,205,255,0.12), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(96,165,250,0.045))",
             }}
           />
-          {/* Subtle vertical light accent */}
+          {/* Subtle vertical light accent — soft white instead of sky tint */}
           <div
             aria-hidden
             className="pointer-events-none absolute bottom-16 left-9 top-32 hidden w-px sm:block"
             style={{
               background:
-                "linear-gradient(180deg, transparent, rgba(186,230,253,0.5) 30%, rgba(186,230,253,0.5) 70%, transparent)",
+                "linear-gradient(180deg, transparent, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0.5) 70%, transparent)",
               filter: "blur(0.5px)",
-              boxShadow: "0 0 12px rgba(140,185,255,0.42)",
+              boxShadow: "0 0 12px rgba(255,255,255,0.38)",
             }}
           />
 
           <div className="relative">
-            <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-sky-200/55">
+            <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>
               OFRECER ESPACIO
             </p>
-            <h1 className="mt-10 text-2xl font-medium uppercase leading-[1.15] tracking-[0.42em] text-white/85 sm:text-3xl">
+            <h1 className="mt-10 text-2xl font-medium uppercase leading-[1.15] tracking-[0.42em] text-white sm:text-3xl">
               PUBLICA TU
               <br />
               NODO
             </h1>
-            <p className="mt-5 max-w-[28ch] text-sm font-light leading-relaxed tracking-[0.06em] text-white/42">
+            <p className="mt-5 max-w-[28ch] text-sm font-light leading-relaxed tracking-[0.06em] text-white/80">
               Cada espacio entra a la red como un nodo temporal: tiempo, zona y
               atmósfera.
             </p>
           </div>
 
           <div className="relative mt-auto">
-            <p className="text-[10px] uppercase tracking-[0.46em] text-white/35">
+            <p className={`${TEXT_LABEL} tracking-[0.46em]`}>
               Paso {step} de {TOTAL_STEPS}
             </p>
-            <p className="mt-3 text-lg font-medium uppercase tracking-[0.34em] text-sky-100/85 transition-[color,opacity] duration-500">
+            <p className="mt-3 text-lg font-medium uppercase tracking-[0.34em] text-white transition-opacity duration-500">
               {stepMeta.titulo}
             </p>
-            <p className="mt-3 max-w-[30ch] text-sm font-light leading-relaxed tracking-[0.04em] text-white/40 transition-opacity duration-500">
+            <p className="mt-3 max-w-[30ch] text-sm font-light leading-relaxed tracking-[0.04em] text-white/80 transition-opacity duration-500">
               {stepMeta.subtitulo}
             </p>
           </div>
@@ -223,8 +225,9 @@ export function ListSpaceExperience() {
         {/* RIGHT panel — form for current step */}
         <section
           aria-label="Formulario"
-          /* Style lifted from modal's right panel — same radius, border, fill, layered shadows, blur */
-          className="relative flex flex-1 flex-col gap-7 overflow-hidden rounded-[32px] border border-sky-100/[0.075] bg-white/[0.026] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.11),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl sm:p-7"
+          /* Right panel — keeps structural radius/shadows from OfferScreen,
+             white-only borders for the cleaner contract */
+          className="relative flex flex-1 flex-col gap-7 overflow-hidden rounded-[32px] border border-white/10 bg-white/[0.04] p-5 shadow-[0_28px_80px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.14),inset_0_-28px_70px_rgba(2,6,16,0.32)] backdrop-blur-xl sm:p-7"
         >
           <div
             aria-hidden
@@ -234,10 +237,9 @@ export function ListSpaceExperience() {
                 "radial-gradient(ellipse 60% 38% at 78% 0%, rgba(147,197,253,0.1), transparent 60%), linear-gradient(150deg, transparent 0%, transparent 50%, rgba(96,165,250,0.04) 100%)",
             }}
           />
-          {/* Top rim highlight */}
           <span
             aria-hidden
-            className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
+            className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
           />
 
           <header className="relative">

@@ -1,6 +1,12 @@
 "use client";
 
 import { HeroLocationMap } from "@/components/hero-location-map";
+import {
+  STATUS_DOT,
+  TEXT_BODY,
+  TEXT_EYEBROW,
+  TEXT_LABEL,
+} from "@/styles/glass";
 
 const SUGGESTED_AREAS = [
   "Roma Norte",
@@ -13,28 +19,26 @@ const SUGGESTED_AREAS = [
 export function LocationSection() {
   return (
     <section className="relative overflow-hidden bg-[#07080c] py-20 sm:py-28">
-      {/* subtle top separator */}
+      {/* subtle top separator — neutral white */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 top-0 h-px"
         style={{
           background:
-            "linear-gradient(to right, transparent 0%, rgba(120,165,235,0.18) 30%, rgba(140,185,255,0.28) 50%, rgba(120,165,235,0.18) 70%, transparent 100%)",
+            "linear-gradient(to right, transparent 0%, rgba(255,255,255,0.12) 30%, rgba(255,255,255,0.22) 50%, rgba(255,255,255,0.12) 70%, transparent 100%)",
         }}
       />
 
       <div className="relative mx-auto flex w-full max-w-6xl flex-col gap-16 px-5 sm:px-8">
         {/* heading */}
         <div className="flex flex-col gap-3">
-          <p className="text-[11px] font-medium uppercase tracking-[0.55em] text-sky-300/60">
-            Cerca de ti
-          </p>
-          <h2 className="text-3xl font-semibold leading-tight text-white/90 sm:text-4xl">
+          <p className={`${TEXT_EYEBROW} tracking-[0.55em]`}>Cerca de ti</p>
+          <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
             Encuentra el espacio perfecto
             <br />
-            <span className="text-sky-200/70">en minutos</span>
+            <span className="text-white/80">en minutos</span>
           </h2>
-          <p className="max-w-md text-sm leading-relaxed text-white/42">
+          <p className={`max-w-md text-sm leading-relaxed ${TEXT_BODY}`}>
             Reserva por horas o fracciones de 30 min. Sin trámites, sin
             depósitos. Solo entra, usa y sal.
           </p>
@@ -72,32 +76,30 @@ export function LocationSection() {
               }}
             />
 
-            {/* location pin pulse */}
+            {/* location pin pulse — pure white */}
             <div
               aria-hidden
               className="absolute left-1/2 top-1/2 -translate-x-1/2 -translate-y-1/2"
             >
               <span className="relative flex h-3 w-3">
-                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-sky-300/70 opacity-75" />
-                <span className="relative inline-flex h-3 w-3 rounded-full bg-sky-300" />
+                <span className="absolute inline-flex h-full w-full animate-ping rounded-full bg-white/70 opacity-75" />
+                <span className="relative inline-flex h-3 w-3 rounded-full bg-white shadow-[0_0_18px_rgba(255,255,255,0.85)]" />
               </span>
             </div>
 
             {/* bottom info card */}
             <div className="relative mt-auto p-6">
-              <div className="rounded-2xl border border-white/[0.08] bg-white/[0.05] px-4 py-4 backdrop-blur-md">
+              <div className="rounded-2xl border border-white/10 bg-white/[0.05] px-4 py-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-md">
                 <div className="flex items-center justify-between">
                   <div>
-                    <p className="text-[10px] font-medium uppercase tracking-[0.4em] text-sky-200/60">
-                      Tu zona
-                    </p>
-                    <p className="mt-0.5 text-sm font-semibold text-white/85">
+                    <p className={`${TEXT_LABEL} tracking-[0.4em]`}>Tu zona</p>
+                    <p className="mt-0.5 text-sm font-semibold text-white">
                       Roma Norte, CDMX
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
-                    <span className="h-1.5 w-1.5 rounded-full bg-emerald-400 shadow-[0_0_8px_rgba(52,211,153,0.8)]" />
-                    <span className="text-[11px] font-medium text-emerald-300/80">
+                    <span className={STATUS_DOT} />
+                    <span className="text-[11px] font-medium text-white">
                       8 espacios listos
                     </span>
                   </div>
@@ -107,7 +109,7 @@ export function LocationSection() {
                     <button
                       key={area}
                       type="button"
-                      className="shrink-0 rounded-full border border-white/[0.1] bg-white/[0.04] px-3 py-1 text-[10px] font-medium text-white/55 transition hover:border-sky-300/30 hover:bg-sky-900/20 hover:text-sky-200/80"
+                      className="shrink-0 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1 text-[10px] font-medium text-white/70 transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
                     >
                       {area}
                     </button>
@@ -124,13 +126,13 @@ export function LocationSection() {
         </div>
       </div>
 
-      {/* subtle bottom separator */}
+      {/* subtle bottom separator — neutral white */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-x-0 bottom-0 h-px"
         style={{
           background:
-            "linear-gradient(to right, transparent 0%, rgba(120,165,235,0.12) 30%, rgba(140,185,255,0.2) 50%, rgba(120,165,235,0.12) 70%, transparent 100%)",
+            "linear-gradient(to right, transparent 0%, rgba(255,255,255,0.1) 30%, rgba(255,255,255,0.2) 50%, rgba(255,255,255,0.1) 70%, transparent 100%)",
         }}
       />
     </section>

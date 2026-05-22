@@ -8,6 +8,15 @@ import { useViewerLocation } from "@/hooks/use-viewer-location";
 import { distanceKm } from "@/lib/geo";
 import { mockSpaces } from "@/lib/mock-spaces";
 import type { Space } from "@/lib/types";
+import {
+  CTA_PRIMARY,
+  PAGE_AMBIENT_BG,
+  PAGE_AMBIENT_SHIMMER,
+  TEXT_BODY,
+  TEXT_HINT,
+  TEXT_LABEL,
+  pillClass,
+} from "@/styles/glass";
 
 const PRICE_RANGES = [
   { label: "Todos", min: 0, max: Infinity },
@@ -39,11 +48,6 @@ function sortPriceValue(space: Space): number {
   if (space.stayType === "hourly") return space.pricePer30m;
   return space.pricePerNight / 45;
 }
-
-const filterActive =
-  "border-stone-800 bg-stone-900 text-white shadow-sm";
-const filterIdle =
-  "border-stone-200 bg-white text-stone-600 hover:border-stone-300 hover:bg-stone-50";
 
 export default function SpacesPage() {
   const { origin, source } = useViewerLocation();
@@ -86,108 +90,105 @@ export default function SpacesPage() {
   }, [origin, priceFilter, sort, typeFilter]);
 
   return (
-    <div className="min-h-screen bg-[#F4F1EA] text-stone-800">
-      <TopNav active="spaces" />
-      <main className="mx-auto w-full max-w-6xl space-y-8 px-6 py-10 sm:px-8">
-        <header className="space-y-2">
-          <h1 className="text-3xl font-semibold text-stone-900">
-            Espacios y alojamientos cerca de ti
-          </h1>
-          <p className="text-stone-600">
-            {filtered.length} anuncios · renta por horas o estancias cortas por
-            noche
-          </p>
-          <p className="text-xs text-stone-500">
-            {source === "gps"
-              ? "Distancias calculadas desde tu ubicación."
-              : "Distancias aproximadas desde el centro de CDMX. Permite ubicación en el navegador para mayor precisión."}
-          </p>
-        </header>
+    <div className="relative min-h-screen overflow-hidden bg-[#02050d] text-white">
+      <div
+        aria-hidden
+        className="pointer-events-none absolute inset-0"
+        style={{ background: PAGE_AMBIENT_BG }}
+      />
+      <div
+        aria-hidden
+        className={`pointer-events-none absolute inset-0 ${PAGE_AMBIENT_SHIMMER}`}
+      />
 
-        <div className="flex flex-wrap items-start gap-6 rounded-2xl border border-stone-200/90 bg-white px-5 py-4 shadow-[0_2px_24px_rgba(28,25,23,0.06)]">
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
-              Tipo
+      <div className="relative">
+        <TopNav active="spaces" />
+        <main className="mx-auto w-full max-w-6xl space-y-8 px-6 py-10 sm:px-8">
+          <header className="space-y-2">
+            <h1 className="text-3xl font-semibold text-white">
+              Espacios y alojamientos cerca de ti
+            </h1>
+            <p className={`text-sm ${TEXT_BODY}`}>
+              {filtered.length} anuncios · renta por horas o estancias cortas
+              por noche
             </p>
-            <div className="flex flex-wrap gap-2">
-              {TYPE_FILTERS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setTypeFilter(opt.value)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
-                    typeFilter === opt.value ? filterActive : filterIdle
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
+            <p className={TEXT_HINT}>
+              {source === "gps"
+                ? "Distancias calculadas desde tu ubicación."
+                : "Distancias aproximadas desde el centro de CDMX. Permite ubicación en el navegador para mayor precisión."}
+            </p>
+          </header>
+
+          <div className="flex flex-wrap items-start gap-6 rounded-2xl border border-white/10 bg-white/[0.04] px-5 py-4 shadow-[0_22px_60px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-xl">
+            <div className="space-y-2">
+              <p className={TEXT_LABEL}>Tipo</p>
+              <div className="flex flex-wrap gap-2">
+                {TYPE_FILTERS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setTypeFilter(opt.value)}
+                    className={pillClass(typeFilter === opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
+            </div>
+
+            <div className="space-y-2">
+              <p className={TEXT_LABEL}>Precio (por hora)</p>
+              <div className="flex flex-wrap gap-2">
+                {PRICE_RANGES.map((range, i) => (
+                  <button
+                    key={range.label}
+                    type="button"
+                    onClick={() => setPriceFilter(i)}
+                    className={pillClass(priceFilter === i)}
+                  >
+                    {range.label}
+                  </button>
+                ))}
+              </div>
+              <p className={TEXT_HINT}>
+                El rango aplica a espacios por hora. Las estancias por noche se
+                muestran siempre que coincidan el tipo.
+              </p>
+            </div>
+
+            <div className="space-y-2">
+              <p className={TEXT_LABEL}>Ordenar</p>
+              <div className="flex flex-wrap gap-2">
+                {SORT_OPTIONS.map((opt) => (
+                  <button
+                    key={opt.value}
+                    type="button"
+                    onClick={() => setSort(opt.value)}
+                    className={pillClass(sort === opt.value)}
+                  >
+                    {opt.label}
+                  </button>
+                ))}
+              </div>
             </div>
           </div>
 
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
-              Precio (por hora)
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {PRICE_RANGES.map((range, i) => (
-                <button
-                  key={range.label}
-                  type="button"
-                  onClick={() => setPriceFilter(i)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
-                    priceFilter === i ? filterActive : filterIdle
-                  }`}
-                >
-                  {range.label}
-                </button>
-              ))}
-            </div>
-            <p className="text-[11px] text-stone-500">
-              El rango aplica a espacios por hora. Las estancias por noche se
-              muestran siempre que coincidan el tipo.
-            </p>
-          </div>
+          <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
+            {filtered.map(({ space, distanceKm: d }) => (
+              <SpaceCard key={space.id} space={space} distanceKm={d} />
+            ))}
+            {filtered.length === 0 && (
+              <p className={`col-span-full py-12 text-center ${TEXT_BODY}`}>
+                No se encontraron resultados con estos filtros.
+              </p>
+            )}
+          </section>
 
-          <div className="space-y-2">
-            <p className="text-xs font-medium uppercase tracking-wider text-stone-500">
-              Ordenar
-            </p>
-            <div className="flex flex-wrap gap-2">
-              {SORT_OPTIONS.map((opt) => (
-                <button
-                  key={opt.value}
-                  type="button"
-                  onClick={() => setSort(opt.value)}
-                  className={`rounded-full border px-3.5 py-1.5 text-xs font-medium transition ${
-                    sort === opt.value ? filterActive : filterIdle
-                  }`}
-                >
-                  {opt.label}
-                </button>
-              ))}
-            </div>
-          </div>
-        </div>
-
-        <section className="grid gap-5 sm:grid-cols-2 lg:grid-cols-3">
-          {filtered.map(({ space, distanceKm: d }) => (
-            <SpaceCard key={space.id} space={space} distanceKm={d} />
-          ))}
-          {filtered.length === 0 && (
-            <p className="col-span-full py-12 text-center text-stone-500">
-              No se encontraron resultados con estos filtros.
-            </p>
-          )}
-        </section>
-
-        <Link
-          href="/book"
-          className="inline-flex rounded-full bg-stone-900 px-6 py-2.5 text-sm font-semibold text-white shadow-sm transition hover:bg-stone-800"
-        >
-          Continuar a reserva
-        </Link>
-      </main>
+          <Link href="/book" className={`inline-flex ${CTA_PRIMARY}`}>
+            Continuar a reserva
+          </Link>
+        </main>
+      </div>
     </div>
   );
 }

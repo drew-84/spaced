@@ -2,6 +2,17 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
+import {
+  CTA_SECONDARY,
+  GLASS_PANEL_SOFT,
+  PAGE_AMBIENT_BG,
+  PAGE_AMBIENT_SHIMMER,
+  RIM_HIGHLIGHT_TOP,
+  TEXT_BODY,
+  TEXT_BODY_DIM,
+  TEXT_EYEBROW,
+  TEXT_HINT,
+} from "@/styles/glass";
 import { AmenityPills } from "./amenity-pills";
 import { BookingBar } from "./booking-bar";
 import { BookingModal } from "./booking-modal";
@@ -27,27 +38,17 @@ function SectionHeader({
 }) {
   return (
     <div className="flex items-baseline justify-between gap-3">
-      <p className="text-[10px] uppercase tracking-[0.42em] text-sky-100/55">
-        {eyebrow}
-      </p>
-      {hint ? (
-        <p className="text-[9px] uppercase tracking-[0.26em] text-white/30">
-          {hint}
-        </p>
-      ) : null}
+      <p className={`${TEXT_EYEBROW} tracking-[0.42em]`}>{eyebrow}</p>
+      {hint ? <p className={TEXT_HINT}>{hint}</p> : null}
     </div>
   );
 }
 
-/* Glass tile reused for description + rules — same recipe as the modal's
-   inner stat tiles, just stretched. */
+/* Glass panel reused for description + rules. */
 function GlassPanel({ children }: { children: React.ReactNode }) {
   return (
-    <div className="relative rounded-[24px] border border-white/[0.075] bg-white/[0.026] p-5 shadow-[0_22px_60px_rgba(0,0,0,0.3),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-22px_50px_rgba(2,6,16,0.3)] backdrop-blur-xl sm:p-6">
-      <span
-        aria-hidden
-        className="pointer-events-none absolute inset-x-10 top-0 h-px bg-gradient-to-r from-transparent via-white/15 to-transparent"
-      />
+    <div className={`relative ${GLASS_PANEL_SOFT} p-5 sm:p-6`}>
+      <span aria-hidden className={RIM_HIGHLIGHT_TOP} />
       {children}
     </div>
   );
@@ -59,26 +60,22 @@ export function PropertyDetailExperience({ property }: Props) {
 
   return (
     <div className="relative min-h-[100dvh] overflow-x-hidden bg-[#02050d] text-white">
-      {/* Ambient backdrop — identical recipe to /ofrecer */}
+      {/* Ambient backdrop — shared page ambient recipe */}
       <div
         aria-hidden
         className="pointer-events-none fixed inset-0"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 48% at 54% 18%, rgba(72,132,220,0.18), transparent 62%), radial-gradient(circle at 14% 84%, rgba(80,120,210,0.14), transparent 38%), radial-gradient(circle at 88% 32%, rgba(70,120,200,0.1), transparent 42%), linear-gradient(to bottom, rgba(2,5,13,0.05), rgba(2,5,13,0.55))",
-        }}
+        style={{ background: PAGE_AMBIENT_BG }}
       />
       <div
         aria-hidden
-        className="pointer-events-none fixed inset-0 opacity-[0.32] [background:repeating-linear-gradient(122deg,rgba(255,255,255,0.018)_0px,rgba(255,255,255,0.018)_1px,transparent_1px,transparent_64px)]"
+        className={`pointer-events-none fixed inset-0 ${PAGE_AMBIENT_SHIMMER}`}
       />
 
-      {/* CERRAR — fixed top-right, identical to /ofrecer cerrar pill */}
       <button
         type="button"
         onClick={() => router.back()}
         aria-label="Cerrar y volver"
-        className="fixed right-5 top-5 z-40 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/55 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[transform,border-color,color,background-color] duration-200 hover:border-sky-200/25 hover:bg-white/[0.06] hover:text-sky-100/85 sm:right-8 sm:top-8"
+        className={`fixed right-5 top-5 z-40 ${CTA_SECONDARY} sm:right-8 sm:top-8`}
       >
         cerrar
       </button>
@@ -90,13 +87,13 @@ export function PropertyDetailExperience({ property }: Props) {
       >
         {/* 1. TOP BAR — title + area */}
         <header className="mb-8 sm:mb-10">
-          <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-sky-200/55">
+          <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>
             {property.category}
           </p>
-          <h1 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[0.04em] text-white/90 sm:text-4xl">
+          <h1 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[0.04em] text-white sm:text-4xl">
             {property.title}
           </h1>
-          <p className="mt-3 text-sm font-light tracking-[0.08em] text-white/45">
+          <p className={`mt-3 text-sm tracking-[0.08em] ${TEXT_BODY}`}>
             {property.area} · {property.city}
           </p>
         </header>
@@ -121,7 +118,7 @@ export function PropertyDetailExperience({ property }: Props) {
           <section className="space-y-4">
             <SectionHeader eyebrow="Descripción" />
             <GlassPanel>
-              <p className="text-[15px] font-light leading-relaxed tracking-[0.02em] text-white/65">
+              <p className={`text-[15px] leading-relaxed ${TEXT_BODY}`}>
                 {property.description}
               </p>
             </GlassPanel>
@@ -131,12 +128,12 @@ export function PropertyDetailExperience({ property }: Props) {
           <section className="space-y-4">
             <SectionHeader eyebrow="Reglas de la casa" />
             <GlassPanel>
-              <ul className="space-y-2.5 text-[14px] font-light tracking-[0.02em] text-white/60">
+              <ul className={`space-y-2.5 text-[14px] ${TEXT_BODY_DIM}`}>
                 {property.rulesText.split("\n").map((line, i) => (
                   <li key={i} className="flex items-start gap-3">
                     <span
                       aria-hidden
-                      className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full bg-sky-100/80 shadow-[0_0_8px_rgba(140,190,255,0.7)]"
+                      className="mt-2 inline-block h-1 w-1 shrink-0 rounded-full bg-white shadow-[0_0_8px_rgba(255,255,255,0.75)]"
                     />
                     <span>{line}</span>
                   </li>

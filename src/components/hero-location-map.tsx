@@ -2,6 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
+import { GLASS_PANEL, TEXT_BODY, TEXT_HINT } from "@/styles/glass";
 import { DEFAULT_MAP_CENTER, type LatLng } from "@/lib/geo";
 
 type GeoState = "pending" | "gps" | "fallback";
@@ -23,16 +24,20 @@ function MapFallback({
   subtitle?: string;
 }) {
   return (
-    <div className="flex h-full min-h-[240px] w-full flex-col justify-between rounded-[2rem] bg-gradient-to-br from-stone-200 via-[#e8e4dc] to-amber-100/70 p-1 shadow-[0_24px_60px_-12px_rgba(28,25,23,0.18)] ring-1 ring-stone-300/40">
-      <div className="flex flex-1 flex-col items-center justify-center rounded-[1.85rem] bg-stone-100/80 px-4 text-center">
-        <p className="text-sm font-medium text-stone-700">{title}</p>
+    <div
+      className={`flex h-full min-h-[240px] w-full flex-col justify-between ${GLASS_PANEL} p-1`}
+    >
+      <div className="flex flex-1 flex-col items-center justify-center rounded-[1.85rem] bg-white/[0.03] px-4 text-center">
+        <p className="text-sm font-medium text-white">{title}</p>
         {subtitle ? (
-          <p className="mt-2 text-xs leading-relaxed text-stone-500">{subtitle}</p>
+          <p className={`mt-2 text-xs leading-relaxed ${TEXT_BODY}`}>
+            {subtitle}
+          </p>
         ) : null}
       </div>
-      <div className="rounded-2xl bg-white/85 p-4 shadow-lg ring-1 ring-stone-200/80 backdrop-blur-sm">
-        <div className="h-2 w-1/3 rounded-full bg-stone-300/80" />
-        <div className="mt-3 h-2 w-2/3 rounded-full bg-stone-200/90" />
+      <div className="rounded-2xl border border-white/10 bg-white/[0.04] p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm">
+        <div className="h-2 w-1/3 rounded-full bg-white/30" />
+        <div className="mt-3 h-2 w-2/3 rounded-full bg-white/20" />
       </div>
     </div>
   );
@@ -80,14 +85,14 @@ function GoogleMapView({ apiKey }: { apiKey: string }) {
 
   if (!isLoaded) {
     return (
-      <div className="flex h-full min-h-[240px] items-center justify-center rounded-[2rem] bg-stone-100 ring-1 ring-stone-200/80">
-        <p className="text-sm text-stone-600">Cargando mapa…</p>
+      <div className="flex h-full min-h-[240px] items-center justify-center rounded-[2rem] border border-white/10 bg-white/[0.03]">
+        <p className={`text-sm ${TEXT_BODY}`}>Cargando mapa…</p>
       </div>
     );
   }
 
   return (
-    <div className="relative h-full min-h-[240px] w-full overflow-hidden rounded-[2rem] shadow-[0_24px_60px_-12px_rgba(28,25,23,0.18)] ring-1 ring-stone-300/40 [&_.gm-style]:rounded-[2rem]">
+    <div className="relative h-full min-h-[240px] w-full overflow-hidden rounded-[2rem] border border-white/15 shadow-[0_24px_60px_-12px_rgba(0,0,0,0.5)] [&_.gm-style]:rounded-[2rem]">
       <GoogleMap
         mapContainerClassName="h-full w-full min-h-[220px]"
         center={center}
@@ -96,11 +101,15 @@ function GoogleMapView({ apiKey }: { apiKey: string }) {
       >
         <Marker position={center} title="Tu ubicación" />
       </GoogleMap>
-      <div className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl bg-white/90 px-3 py-2 text-center text-[11px] leading-snug text-stone-600 shadow-sm ring-1 ring-stone-200/80 backdrop-blur-sm">
-        {geoState === "pending" && "Obteniendo tu ubicación…"}
-        {geoState === "gps" && "Mapa centrado en tu ubicación actual."}
-        {geoState === "fallback" &&
-          "Ubicación aproximada (centro CDMX). Activa el permiso de ubicación en el navegador para ver tu posición."}
+      <div
+        className={`pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl border border-white/10 bg-[#02050d]/85 px-3 py-2 text-center text-[11px] leading-snug text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm ${TEXT_HINT.replace("text-white/70", "")}`}
+      >
+        <span className="text-white/80">
+          {geoState === "pending" && "Obteniendo tu ubicación…"}
+          {geoState === "gps" && "Mapa centrado en tu ubicación actual."}
+          {geoState === "fallback" &&
+            "Ubicación aproximada (centro CDMX). Activa el permiso de ubicación en el navegador para ver tu posición."}
+        </span>
       </div>
     </div>
   );

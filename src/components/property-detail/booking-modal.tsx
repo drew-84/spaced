@@ -1,6 +1,25 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useState } from "react";
+import {
+  CTA_GHOST,
+  CTA_PRIMARY,
+  CTA_SECONDARY,
+  FIELD_ERROR,
+  FIELD_LABEL,
+  GLASS_TILE,
+  INPUT_INNER,
+  INPUT_WRAP,
+  MODAL_AMBIENT_BG,
+  PROGRESS_FILL,
+  PROGRESS_TRACK,
+  SCRIM,
+  TEXT_EYEBROW,
+  TEXT_HINT,
+  TEXT_LABEL,
+  TEXT_META,
+  pillClass,
+} from "@/styles/glass";
 import type { PropertyDetail } from "./types";
 
 /* ─── Types ─────────────────────────────────────────────────────────────── */
@@ -31,12 +50,10 @@ type Props = {
 
 const TOTAL_STEPS = 3;
 
-/* Derive today's date string in YYYY-MM-DD */
 function todayIso(): string {
   return new Date().toISOString().slice(0, 10);
 }
 
-/* Format a date string like "2026-05-17" → "Sáb 17 May 2026" */
 function fmtDate(iso: string): string {
   if (!iso) return "—";
   const d = new Date(`${iso}T12:00:00`);
@@ -48,51 +65,24 @@ function fmtDate(iso: string): string {
   });
 }
 
-/* ─── Shared primitives re-using exact project styles ─────────────────── */
+/* ─── Modal-specific shells (compose glass.ts tokens) ───────────────────── */
 
-/** Exact modal outer-panel recipe used in the OFRECER activation modal and
- *  the placeholder booking modal. */
 const MODAL_PANEL = [
   "absolute left-1/2 top-1/2 w-[min(600px,calc(100vw-2rem))] -translate-x-1/2 -translate-y-1/2",
   "origin-center overflow-y-auto max-h-[min(760px,calc(100dvh-2rem))]",
-  "rounded-[32px_56px_48px_28px] border border-sky-100/[0.07] border-b-transparent border-r-transparent",
+  /* Asymmetric radius + outer modal recipe lifted from OfferScreen */
+  "rounded-[32px_56px_48px_28px] border border-white/10 border-b-transparent border-r-transparent",
   "bg-[#07101d]/58 p-5 pt-6 text-white",
-  "shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.1)]",
+  "shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)]",
   "backdrop-blur-2xl",
   "transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)]",
   "sm:p-7 sm:pt-8",
 ].join(" ");
 
-/** stat tile — from spatial-card-field modal + list-space/glass-field */
-const TILE =
-  "rounded-[22px] border border-white/[0.075] bg-white/[0.035] px-4 py-3 shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)] backdrop-blur-md";
-
-/** input wrapper — from glass-field.tsx */
-const INPUT_WRAP =
-  "rounded-2xl border border-white/[0.075] bg-white/[0.028] shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-14px_26px_rgba(3,8,18,0.28)] backdrop-blur-md transition-[border-color,background-color,box-shadow] duration-300 ease-out focus-within:border-sky-200/35 focus-within:bg-white/[0.05] focus-within:shadow-[0_18px_38px_rgba(0,0,0,0.34),0_0_24px_-8px_rgba(96,165,250,0.4),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-16px_30px_rgba(3,8,18,0.32)]";
-
-/** input inner — from glass-field.tsx */
-const INPUT_INNER =
-  "block w-full bg-transparent text-sm font-light tracking-[0.04em] text-white/85 placeholder:text-white/22 outline-none";
-
-/** field label — from glass-field.tsx */
-const FIELD_LABEL =
-  "mb-2 block text-[10px] uppercase tracking-[0.32em] text-sky-100/45";
-
-/** primary CTA — exact "emitir senal" button from the activation modal */
-const BTN_PRIMARY =
-  "rounded-full border border-sky-100/35 bg-sky-100/[0.14] px-5 py-3 text-[11px] font-medium uppercase tracking-[0.34em] text-sky-50 shadow-[0_18px_38px_rgba(0,0,0,0.34),0_0_30px_-6px_rgba(96,165,250,0.55),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-16px_32px_rgba(8,18,34,0.32)] backdrop-blur-md transition-[border-color,background-color,box-shadow] duration-200 hover:border-sky-100/55 hover:bg-sky-100/[0.18]";
-
-/** back / cancel ghost */
-const BTN_GHOST =
-  "rounded-full border border-transparent px-4 py-2.5 text-[10px] uppercase tracking-[0.26em] text-white/45 transition-colors duration-200 hover:text-sky-100/80";
-
-/** cerrar pill — exact from list-space-nav + activation modal */
-const BTN_CERRAR =
-  "absolute right-5 top-5 rounded-full border border-white/[0.08] bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/55 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-[border-color,color,background-color] duration-200 hover:border-sky-200/25 hover:bg-white/[0.06] hover:text-sky-100/85";
+const TILE = `${GLASS_TILE} px-4 py-3`;
 
 function FieldLabel({ children }: { children: React.ReactNode }) {
-  return <span className={FIELD_LABEL}>{children}</span>;
+  return <span className={`mb-2 block ${FIELD_LABEL}`}>{children}</span>;
 }
 
 /* ─── Step 1 — Select time ───────────────────────────────────────────────── */
@@ -124,7 +114,6 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
 
   return (
     <div className="space-y-5">
-      {/* Date */}
       <div>
         <FieldLabel>Fecha</FieldLabel>
         <div className={`${INPUT_WRAP} px-4 py-3`}>
@@ -136,10 +125,9 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             className={`${INPUT_INNER} [color-scheme:dark]`}
           />
         </div>
-        {errors.date && <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-rose-200/70">{errors.date}</p>}
+        {errors.date && <p className={FIELD_ERROR}>{errors.date}</p>}
       </div>
 
-      {/* Start time */}
       <div>
         <FieldLabel>Hora de inicio</FieldLabel>
         <div className={`${INPUT_WRAP} relative px-4 py-3`}>
@@ -154,11 +142,10 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
               </option>
             ))}
           </select>
-          <span aria-hidden className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/40">▾</span>
+          <span aria-hidden className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70">▾</span>
         </div>
       </div>
 
-      {/* Duration */}
       <div>
         <FieldLabel>Duración</FieldLabel>
         <div className={`${TILE} flex items-center justify-between gap-4`}>
@@ -167,15 +154,15 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             onClick={() => adjustDuration(-15)}
             disabled={data.durationMin <= 45}
             aria-label="Reducir 15 minutos"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm text-white/60 transition-[border-color,color] duration-200 hover:border-sky-100/30 hover:text-sky-100/85 disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/70 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
           >
             −
           </button>
           <div className="text-center">
-            <p className="text-xl font-medium tracking-tight text-sky-100/90">
-              {data.durationMin} <span className="text-[11px] font-light text-white/40">min</span>
+            <p className="text-xl font-medium tracking-tight text-white">
+              {data.durationMin} <span className="text-[11px] font-light text-white/80">min</span>
             </p>
-            <p className="mt-0.5 text-[9px] uppercase tracking-[0.24em] text-white/30">
+            <p className={`mt-0.5 ${TEXT_HINT}`}>
               {data.durationMin / 60 >= 1
                 ? `${(data.durationMin / 60).toFixed(data.durationMin % 60 === 0 ? 0 : 1)} hora${data.durationMin >= 120 ? "s" : ""}`
                 : "45 min mínimo"}
@@ -185,14 +172,13 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             type="button"
             onClick={() => adjustDuration(15)}
             aria-label="Aumentar 15 minutos"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/[0.08] bg-white/[0.04] text-sm text-white/60 transition-[border-color,color] duration-200 hover:border-sky-100/30 hover:text-sky-100/85"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/70 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
           >
             +
           </button>
         </div>
       </div>
 
-      {/* Guests */}
       <div>
         <FieldLabel>Número de personas</FieldLabel>
         <div className="flex flex-wrap gap-2">
@@ -204,13 +190,7 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
                 type="button"
                 onClick={() => onChange("guests", n)}
                 aria-pressed={active}
-                className={[
-                  "rounded-full border px-4 py-2 text-[11px] font-semibold uppercase tracking-[0.22em] backdrop-blur-md",
-                  "transition-[background-color,border-color,color,box-shadow] duration-200",
-                  active
-                    ? "border-sky-100/35 bg-sky-100/[0.12] text-sky-50 shadow-[0_14px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-14px_28px_rgba(8,18,34,0.34)]"
-                    : "border-white/[0.075] bg-white/[0.04] text-white/44 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(5,12,24,0.22)] hover:border-sky-100/22 hover:bg-white/[0.065] hover:text-sky-100/76",
-                ].join(" ")}
+                className={pillClass(active)}
               >
                 {n}
               </button>
@@ -219,17 +199,16 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
         </div>
       </div>
 
-      {/* Running total */}
       <div className={`${TILE} flex items-center justify-between gap-4`}>
         <div>
-          <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">Total estimado</p>
-          <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-white/35">
+          <p className={TEXT_LABEL}>Total estimado</p>
+          <p className={`mt-1 ${TEXT_HINT}`}>
             {data.durationMin / 15} bloques × ${pricePer15Min}
           </p>
         </div>
         <p
-          className="text-2xl font-medium tracking-tight text-sky-100/90"
-          style={{ textShadow: "0 0 18px rgba(140,190,255,0.45)" }}
+          className="text-2xl font-medium tracking-tight text-white"
+          style={{ textShadow: "0 0 18px rgba(255,255,255,0.45)" }}
         >
           ${total.toLocaleString("es-CL")}
         </p>
@@ -271,40 +250,38 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
 
   return (
     <div className="space-y-5">
-      {/* Summary */}
       <div className={`${TILE} space-y-2`}>
-        <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">Resumen</p>
-        <p className="text-sm font-medium tracking-[0.04em] text-white/85">{title}</p>
-        <p className="text-[11px] tracking-[0.04em] text-white/45">{area}</p>
+        <p className={TEXT_LABEL}>Resumen</p>
+        <p className="text-sm font-medium tracking-[0.04em] text-white">{title}</p>
+        <p className="text-[11px] tracking-[0.04em] text-white/80">{area}</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-          <span className="text-white/35 uppercase tracking-[0.22em]">Fecha</span>
-          <span className="text-white/75">{fmtDate(data.date)}</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Inicio</span>
-          <span className="text-white/75">{data.startTime}</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Duración</span>
-          <span className="text-white/75">{data.durationMin} min</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Personas</span>
-          <span className="text-white/75">{data.guests}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Fecha</span>
+          <span className="text-white">{fmtDate(data.date)}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Inicio</span>
+          <span className="text-white">{data.startTime}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Duración</span>
+          <span className="text-white">{data.durationMin} min</span>
+          <span className="text-white uppercase tracking-[0.22em]">Personas</span>
+          <span className="text-white">{data.guests}</span>
         </div>
       </div>
 
-      {/* Price breakdown */}
       <div className={`${TILE} space-y-2`}>
-        <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">Desglose</p>
+        <p className={TEXT_LABEL}>Desglose</p>
         <div className="space-y-1.5 text-[12px]">
           <div className="flex justify-between">
-            <span className="text-white/45">{data.durationMin} min × ${pricePer15Min}/15 min</span>
-            <span className="text-white/80">${subtotal.toLocaleString("es-CL")}</span>
+            <span className="text-white/80">{data.durationMin} min × ${pricePer15Min}/15 min</span>
+            <span className="text-white">${subtotal.toLocaleString("es-CL")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-white/45">Depósito de daños (50%)</span>
-            <span className="text-white/80">${deposit.toLocaleString("es-CL")}</span>
+            <span className="text-white/80">Depósito de daños (50%)</span>
+            <span className="text-white">${deposit.toLocaleString("es-CL")}</span>
           </div>
-          <div className="mt-2 flex justify-between border-t border-white/[0.06] pt-2">
-            <span className="text-[10px] uppercase tracking-[0.28em] text-sky-100/55">Total</span>
+          <div className="mt-2 flex justify-between border-t border-white/10 pt-2">
+            <span className="text-[10px] uppercase tracking-[0.28em] text-white">Total</span>
             <span
-              className="text-base font-medium text-sky-100/90"
-              style={{ textShadow: "0 0 14px rgba(140,190,255,0.4)" }}
+              className="text-base font-medium text-white"
+              style={{ textShadow: "0 0 14px rgba(255,255,255,0.5)" }}
             >
               ${total.toLocaleString("es-CL")}
             </span>
@@ -312,14 +289,13 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
         </div>
       </div>
 
-      {/* Card inputs */}
       <div className="space-y-4">
-        <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">Método de pago</p>
+        <p className={TEXT_LABEL}>Método de pago</p>
 
         <div>
           <FieldLabel>Número de tarjeta</FieldLabel>
           <div className={`${INPUT_WRAP} flex items-center gap-3 px-4 py-3`}>
-            <span className="shrink-0 text-[11px] text-white/30">💳</span>
+            <span className="shrink-0 text-[11px] text-white/70">💳</span>
             <input
               type="text"
               inputMode="numeric"
@@ -332,7 +308,7 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
               className={INPUT_INNER}
             />
           </div>
-          {errors.cardNumber && <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-rose-200/70">{errors.cardNumber}</p>}
+          {errors.cardNumber && <p className={FIELD_ERROR}>{errors.cardNumber}</p>}
         </div>
 
         <div className="grid grid-cols-2 gap-4">
@@ -351,7 +327,7 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
                 className={INPUT_INNER}
               />
             </div>
-            {errors.cardExpiry && <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-rose-200/70">{errors.cardExpiry}</p>}
+            {errors.cardExpiry && <p className={FIELD_ERROR}>{errors.cardExpiry}</p>}
           </div>
           <div>
             <FieldLabel>CVC</FieldLabel>
@@ -368,13 +344,12 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
                 className={INPUT_INNER}
               />
             </div>
-            {errors.cardCvc && <p className="mt-1 text-[10px] uppercase tracking-[0.22em] text-rose-200/70">{errors.cardCvc}</p>}
+            {errors.cardCvc && <p className={FIELD_ERROR}>{errors.cardCvc}</p>}
           </div>
         </div>
       </div>
 
-      {/* Cancellation policy */}
-      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/30">
+      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/80">
         Reembolso completo si cancelas hasta 10 minutos después del inicio de la reserva.
       </p>
     </div>
@@ -398,49 +373,45 @@ function Step3({ data, title, area, pricePer15Min, onClose }: Step3Props) {
 
   return (
     <div className="space-y-6">
-      {/* Glow checkmark */}
       <div className="flex flex-col items-center gap-3 py-2">
         <span
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-sky-100/30 bg-sky-100/[0.1] text-lg text-sky-100 shadow-[0_0_32px_rgba(96,165,250,0.45),inset_0_1px_0_rgba(255,255,255,0.18)]"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/[0.12] text-lg text-white shadow-[0_0_32px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.22)]"
           aria-hidden
         >
           ✓
         </span>
-        <p className="text-[10px] uppercase tracking-[0.42em] text-sky-200/65">
-          Reserva confirmada
-        </p>
-        <h3 className="text-center text-xl font-medium uppercase tracking-[0.28em] text-white/85">
+        <p className={TEXT_EYEBROW}>Reserva confirmada</p>
+        <h3 className="text-center text-xl font-medium uppercase tracking-[0.28em] text-white">
           ¡Todo listo!
         </h3>
-        <p className="text-center text-sm font-light leading-relaxed tracking-[0.04em] text-white/45">
-          Tu espacio en <span className="text-sky-100/85">{area}</span> está confirmado.
+        <p className="text-center text-sm font-light leading-relaxed tracking-[0.04em] text-white/80">
+          Tu espacio en <span className="text-white">{area}</span> está confirmado.
         </p>
       </div>
 
-      {/* Booking summary tile */}
       <div className={`${TILE} space-y-2`}>
-        <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">Detalle de reserva</p>
-        <p className="text-sm font-medium tracking-[0.04em] text-white/85">{title}</p>
+        <p className={TEXT_LABEL}>Detalle de reserva</p>
+        <p className="text-sm font-medium tracking-[0.04em] text-white">{title}</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-          <span className="text-white/35 uppercase tracking-[0.22em]">Fecha</span>
-          <span className="text-white/75">{fmtDate(data.date)}</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Inicio</span>
-          <span className="text-white/75">{data.startTime}</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Duración</span>
-          <span className="text-white/75">{data.durationMin} min</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Personas</span>
-          <span className="text-white/75">{data.guests}</span>
-          <span className="text-white/35 uppercase tracking-[0.22em]">Total cobrado</span>
-          <span className="text-sky-100/90">${total.toLocaleString("es-CL")}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Fecha</span>
+          <span className="text-white">{fmtDate(data.date)}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Inicio</span>
+          <span className="text-white">{data.startTime}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Duración</span>
+          <span className="text-white">{data.durationMin} min</span>
+          <span className="text-white uppercase tracking-[0.22em]">Personas</span>
+          <span className="text-white">{data.guests}</span>
+          <span className="text-white uppercase tracking-[0.22em]">Total cobrado</span>
+          <span className="text-white">${total.toLocaleString("es-CL")}</span>
         </div>
       </div>
 
-      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/30">
+      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/80">
         Recibirás la confirmación por correo. Recuerda: reembolso completo si cancelas hasta 10 minutos después del inicio.
       </p>
 
       <div className="flex justify-end">
-        <button type="button" onClick={onClose} className={BTN_PRIMARY}>
+        <button type="button" onClick={onClose} className={CTA_PRIMARY}>
           Cerrar
         </button>
       </div>
@@ -456,16 +427,14 @@ function StepProgress({ current, total }: { current: number; total: number }) {
   return (
     <div className="mb-6 space-y-2">
       <div className="flex items-center justify-between">
-        <p className="text-[10px] uppercase tracking-[0.42em] text-sky-200/65">
+        <p className={TEXT_EYEBROW}>
           Paso {current} / {total}
         </p>
-        <p className="text-[10px] uppercase tracking-[0.32em] text-white/35">
-          {labels[current - 1]}
-        </p>
+        <p className={TEXT_LABEL}>{labels[current - 1]}</p>
       </div>
-      <div className="relative h-px overflow-hidden rounded-full bg-white/[0.06]">
+      <div className={PROGRESS_TRACK}>
         <span
-          className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-sky-200/30 via-sky-100/80 to-sky-200/30 shadow-[0_0_18px_rgba(140,190,255,0.5)] transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]"
+          className={PROGRESS_FILL}
           style={{ width: `${pct}%` }}
           aria-hidden
         />
@@ -508,7 +477,6 @@ export function BookingModal({ open, onClose, property }: Props) {
   const [data, setData] = useState<BookingData>(INITIAL);
   const [errors, setErrors] = useState<Partial<Record<keyof BookingData, string>>>({});
 
-  /* Reset to step 1 whenever the modal is opened so each session is fresh. */
   useEffect(() => {
     if (open) {
       setStep(1);
@@ -547,7 +515,6 @@ export function BookingModal({ open, onClose, property }: Props) {
       return;
     }
     if (step === 2) {
-      /* Final confirmation — log to console as instructed. */
       const subtotal = (data.durationMin / 15) * property.pricePer15Min;
       console.log("[Spaced] booking confirmed", {
         property: property.title,
@@ -568,7 +535,6 @@ export function BookingModal({ open, onClose, property }: Props) {
     setStep((s) => Math.max(1, s - 1));
   }
 
-  /* Eyebrow label per step */
   const eyebrow = useMemo(() => {
     if (step === 1) return "Selecciona horario";
     if (step === 2) return "Revisión y pago";
@@ -585,25 +551,19 @@ export function BookingModal({ open, onClose, property }: Props) {
           : "pointer-events-none opacity-0 backdrop-blur-0",
       ].join(" ")}
     >
-      {/* Scrim */}
       <button
         type="button"
         aria-label="Cerrar modal"
         onClick={onClose}
-        className="absolute inset-0 cursor-default bg-[#02050d]/65"
+        className={`absolute inset-0 cursor-default ${SCRIM}`}
       />
 
-      {/* Ambient glow behind the modal */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-80"
-        style={{
-          background:
-            "radial-gradient(ellipse 70% 48% at 54% 28%, rgba(72,132,220,0.18), transparent 62%), radial-gradient(circle at 18% 76%, rgba(80,120,210,0.12), transparent 36%), linear-gradient(to bottom, rgba(2,5,13,0.05), rgba(2,5,13,0.46))",
-        }}
+        style={{ background: MODAL_AMBIENT_BG }}
       />
 
-      {/* Panel */}
       <section
         role="dialog"
         aria-modal="true"
@@ -619,49 +579,43 @@ export function BookingModal({ open, onClose, property }: Props) {
             "radial-gradient(ellipse 112% 92% at 24% 42%, black 0%, black 60%, rgba(0,0,0,0.86) 78%, rgba(0,0,0,0.38) 92%, transparent 100%)",
         }}
       >
-        {/* Inner ambient wash */}
         <div
           aria-hidden
           className="pointer-events-none absolute inset-0"
           style={{
             background:
-              "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(150,205,255,0.12), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(96,165,250,0.045))",
+              "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(255,255,255,0.1), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(255,255,255,0.045))",
           }}
         />
-        {/* Top rim highlight */}
         <span
           aria-hidden
-          className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/18 to-transparent"
+          className="pointer-events-none absolute inset-x-12 top-0 h-px bg-gradient-to-r from-transparent via-white/20 to-transparent"
         />
 
-        {/* CERRAR — only visible on steps 1 & 2; step 3 has its own close CTA */}
         {step < 3 && (
-          <button type="button" onClick={onClose} className={BTN_CERRAR}>
+          <button
+            type="button"
+            onClick={onClose}
+            className={`absolute right-5 top-5 ${CTA_SECONDARY}`}
+          >
             cerrar
           </button>
         )}
 
         <div className="relative">
-          {/* Eyebrow */}
-          <p className="text-[10px] font-medium uppercase tracking-[0.62em] text-sky-200/55">
-            {eyebrow}
-          </p>
+          <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>{eyebrow}</p>
 
-          {/* Title */}
           <h2
             id="booking-modal-title"
-            className="mt-3 text-xl font-medium uppercase tracking-[0.34em] text-white/85 sm:text-2xl"
+            className="mt-3 text-xl font-medium uppercase tracking-[0.34em] text-white sm:text-2xl"
           >
             {property.title}
           </h2>
-          <p className="mt-1 text-[11px] uppercase tracking-[0.28em] text-white/35">
-            {property.area}
-          </p>
+          <p className={`mt-1 ${TEXT_META}`}>{property.area}</p>
 
           <div className="mt-5">
             <StepProgress current={step} total={TOTAL_STEPS} />
 
-            {/* Step content — keyed so entering a new step fades in */}
             <div
               key={step}
               style={{ animation: "bmFadeIn 400ms cubic-bezier(0.16,1,0.3,1) both" }}
@@ -696,17 +650,16 @@ export function BookingModal({ open, onClose, property }: Props) {
               )}
             </div>
 
-            {/* Navigation — hidden on confirmation step (Step3 owns its close) */}
             {step < 3 && (
-              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/[0.06] pt-5">
+              <div className="mt-6 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-5">
                 <div>
                   {step > 1 && (
-                    <button type="button" onClick={goBack} className={BTN_GHOST}>
+                    <button type="button" onClick={goBack} className={CTA_GHOST}>
                       ← Atrás
                     </button>
                   )}
                 </div>
-                <button type="button" onClick={goNext} className={BTN_PRIMARY}>
+                <button type="button" onClick={goNext} className={CTA_PRIMARY}>
                   {step === 2 ? "Confirmar reserva" : "Siguiente →"}
                 </button>
               </div>

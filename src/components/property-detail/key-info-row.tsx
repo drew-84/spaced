@@ -1,3 +1,4 @@
+import { GLASS_TILE, TEXT_HINT, TEXT_LABEL } from "@/styles/glass";
 import type { PropertyDetail } from "./types";
 
 type Props = {
@@ -8,11 +9,8 @@ type Props = {
 };
 
 /**
- * Four stat tiles in a single row.
- * Tile style copied exactly from the OFRECER modal "stat tile":
- *   rounded-[26px] border border-white/[0.075] bg-white/[0.035]
- *   shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)]
- *   backdrop-blur-md
+ * Four stat tiles. Tiles use the shared GLASS_TILE recipe and the white-only
+ * text contract: bright value, dim label/note via opacity.
  */
 export function KeyInfoRow({ property }: Props) {
   const tiles: { label: string; value: string; note?: string }[] = [
@@ -39,23 +37,17 @@ export function KeyInfoRow({ property }: Props) {
   ];
 
   return (
-    <section aria-label="Información clave" className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4">
+    <section
+      aria-label="Información clave"
+      className="grid grid-cols-2 gap-3 sm:grid-cols-4 sm:gap-4"
+    >
       {tiles.map((t) => (
-        <div
-          key={t.label}
-          className="rounded-[22px] border border-white/[0.075] bg-white/[0.035] px-4 py-4 shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)] backdrop-blur-md"
-        >
-          <p className="text-[9px] uppercase tracking-[0.28em] text-sky-100/45">
-            {t.label}
-          </p>
-          <p className="mt-2 text-2xl font-medium tracking-tight text-sky-100/90">
+        <div key={t.label} className={`${GLASS_TILE} px-4 py-4`}>
+          <p className={TEXT_LABEL}>{t.label}</p>
+          <p className="mt-2 text-2xl font-medium tracking-tight text-white">
             {t.value}
           </p>
-          {t.note && (
-            <p className="mt-1 text-[9px] uppercase tracking-[0.22em] text-white/35">
-              {t.note}
-            </p>
-          )}
+          {t.note && <p className={`mt-1 ${TEXT_HINT}`}>{t.note}</p>}
         </div>
       ))}
     </section>

@@ -1,30 +1,25 @@
 "use client";
 
 import type { ReactNode } from "react";
+import {
+  FIELD_ERROR,
+  FIELD_LABEL,
+  INPUT_INNER,
+  INPUT_WRAP,
+  TEXT_HINT,
+} from "@/styles/glass";
 
 /**
- * Shared glass-field styling, lifted exactly from the OFRECER modal in
- * src/components/spatial-home/spatial-card-field.tsx (the inner stat tiles
- * and chip surfaces). Same border opacity, same layered shadow recipe,
- * same backdrop-blur language.
+ * Shared glass-field primitives.
+ *
+ * Visual contract is owned by `src/styles/glass.ts` — this module just
+ * re-exports a handful of names for backwards compatibility and composes
+ * the actual <input>/<textarea>/<select> wrappers.
  */
 
-export const GLASS_SURFACE = [
-  "rounded-2xl border border-white/[0.075] bg-white/[0.028]",
-  "shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-14px_26px_rgba(3,8,18,0.28)]",
-  "backdrop-blur-md",
-  "transition-[border-color,background-color,box-shadow] duration-300 ease-out",
-].join(" ");
-
-export const GLASS_SURFACE_FOCUS = [
-  "focus-within:border-sky-200/35 focus-within:bg-white/[0.05]",
-  "focus-within:shadow-[0_18px_38px_rgba(0,0,0,0.34),0_0_24px_-8px_rgba(96,165,250,0.4),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-16px_30px_rgba(3,8,18,0.32)]",
-].join(" ");
-
-export const FIELD_INNER = [
-  "block w-full bg-transparent text-sm font-light tracking-[0.04em] text-white/85",
-  "placeholder:text-white/22 outline-none",
-].join(" ");
+export const GLASS_SURFACE = INPUT_WRAP;
+export const GLASS_SURFACE_FOCUS = "";
+export const FIELD_INNER = INPUT_INNER;
 
 type LabelProps = {
   label: string;
@@ -35,28 +30,17 @@ type LabelProps = {
 export function FieldLabel({ label, hint, htmlFor }: LabelProps) {
   return (
     <div className="mb-2.5 flex items-baseline justify-between gap-3">
-      <label
-        htmlFor={htmlFor}
-        className="text-[10px] uppercase tracking-[0.32em] text-sky-100/45"
-      >
+      <label htmlFor={htmlFor} className={FIELD_LABEL}>
         {label}
       </label>
-      {hint ? (
-        <span className="text-[9px] uppercase tracking-[0.28em] text-white/30">
-          {hint}
-        </span>
-      ) : null}
+      {hint ? <span className={TEXT_HINT}>{hint}</span> : null}
     </div>
   );
 }
 
 export function FieldError({ error }: { error?: string | null }) {
   if (!error) return null;
-  return (
-    <p className="mt-1.5 text-[10px] uppercase tracking-[0.22em] text-rose-200/70">
-      {error}
-    </p>
-  );
+  return <p className={FIELD_ERROR}>{error}</p>;
 }
 
 type TextProps = {
@@ -91,7 +75,7 @@ export function GlassText({
           maxLength && showCount ? `${value.length}/${maxLength}` : undefined
         }
       />
-      <div className={`${GLASS_SURFACE} ${GLASS_SURFACE_FOCUS} px-4 py-3`}>
+      <div className={`${INPUT_WRAP} px-4 py-3`}>
         <input
           id={id}
           type="text"
@@ -104,7 +88,7 @@ export function GlassText({
           }
           placeholder={placeholder}
           maxLength={maxLength}
-          className={FIELD_INNER}
+          className={INPUT_INNER}
         />
       </div>
       <FieldError error={error} />
@@ -132,7 +116,7 @@ export function GlassTextarea({
           maxLength && showCount ? `${value.length}/${maxLength}` : undefined
         }
       />
-      <div className={`${GLASS_SURFACE} ${GLASS_SURFACE_FOCUS} px-4 py-3`}>
+      <div className={`${INPUT_WRAP} px-4 py-3`}>
         <textarea
           id={id}
           rows={rows}
@@ -144,7 +128,7 @@ export function GlassTextarea({
           }
           placeholder={placeholder}
           maxLength={maxLength}
-          className={`${FIELD_INNER} resize-none leading-relaxed`}
+          className={`${INPUT_INNER} resize-none leading-relaxed`}
         />
       </div>
       <FieldError error={error} />
@@ -184,11 +168,9 @@ export function GlassNumber({
   return (
     <div>
       <FieldLabel label={label} htmlFor={id} hint={hint} />
-      <div
-        className={`${GLASS_SURFACE} ${GLASS_SURFACE_FOCUS} flex items-center gap-3 px-4 py-3`}
-      >
+      <div className={`${INPUT_WRAP} flex items-center gap-3 px-4 py-3`}>
         {prefix && (
-          <span className="text-[11px] uppercase tracking-[0.28em] text-white/35">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-white">
             {prefix}
           </span>
         )}
@@ -211,10 +193,10 @@ export function GlassNumber({
           max={max}
           step={step}
           placeholder={placeholder}
-          className={`${FIELD_INNER} flex-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
+          className={`${INPUT_INNER} flex-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
         />
         {suffix && (
-          <span className="text-[11px] uppercase tracking-[0.28em] text-white/35">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-white">
             {suffix}
           </span>
         )}
@@ -246,16 +228,14 @@ export function GlassSelect({
   return (
     <div>
       <FieldLabel label={label} htmlFor={id} />
-      <div
-        className={`${GLASS_SURFACE} ${GLASS_SURFACE_FOCUS} relative px-4 py-3`}
-      >
+      <div className={`${INPUT_WRAP} relative px-4 py-3`}>
         <select
           id={id}
           value={value}
           onChange={(e) => onChange(e.target.value)}
-          className={`${FIELD_INNER} appearance-none pr-8`}
+          className={`${INPUT_INNER} appearance-none pr-8`}
         >
-          <option value="" className="bg-[#0a0f1c] text-white/55">
+          <option value="" className="bg-[#0a0f1c] text-white/40">
             {placeholder}
           </option>
           {options.map((o) => (
@@ -266,7 +246,7 @@ export function GlassSelect({
         </select>
         <span
           aria-hidden
-          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/40"
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70"
         >
           ▾
         </span>

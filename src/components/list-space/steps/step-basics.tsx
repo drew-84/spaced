@@ -1,5 +1,6 @@
 "use client";
 
+import { TEXT_LABEL } from "@/styles/glass";
 import { GlassText, GlassTextarea, FieldError } from "../glass-field";
 import { PillRadioGroup } from "../pill-toggle";
 import {
@@ -45,9 +46,7 @@ export function StepBasics({ data, errors, onChange }: Props) {
       />
 
       <div>
-        <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
-          Tipo de propiedad
-        </p>
+        <p className={`mb-2.5 ${TEXT_LABEL}`}>Tipo de propiedad</p>
         <PillRadioGroup<PropertyType>
           value={data.tipoPropiedad}
           onChange={(v) => onChange("tipoPropiedad", v)}

@@ -1,5 +1,6 @@
 "use client";
 
+import { TEXT_LABEL } from "@/styles/glass";
 import { GlassNumber, GlassTextarea } from "../glass-field";
 import type { ListSpaceFormData, StepErrors } from "../types";
 
@@ -36,14 +37,12 @@ export function StepDetails({ data, errors, onChange }: Props) {
           error={errors.capacidadMaxima}
         />
         <div>
-          <p className="mb-2.5 text-[10px] uppercase tracking-[0.32em] text-sky-100/45">
-            Sugerido
-          </p>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/[0.05] bg-white/[0.015] px-4 py-3 text-sm font-light tracking-[0.04em] text-white/55 shadow-[inset_0_1px_0_rgba(255,255,255,0.06),inset_0_-12px_22px_rgba(3,8,18,0.18)] backdrop-blur-md">
-            <span className="text-[11px] uppercase tracking-[0.28em] text-white/30">
+          <p className={`mb-2.5 ${TEXT_LABEL}`}>Sugerido</p>
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-sm font-light tracking-[0.04em] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(3,8,18,0.18)] backdrop-blur-md">
+            <span className="text-[11px] uppercase tracking-[0.28em] text-white">
               óptimo
             </span>
-            <span className="ml-auto text-[10px] uppercase tracking-[0.28em] text-white/40">
+            <span className="ml-auto text-[10px] uppercase tracking-[0.28em] text-white">
               4 personas
             </span>
           </div>
