@@ -81,14 +81,14 @@ export function BookingForm() {
             {...form.register("spaceId")}
             className={`${INPUT_INNER} appearance-none pr-8`}
           >
-            <option value="" className="bg-[#0a0f1c] text-white/40">
+            <option value="" className="bg-[#0a0f1c] text-white/35">
               Elige un espacio cercano
             </option>
             {hourlySpaces.map((space) => (
               <option
                 key={space.id}
                 value={space.id}
-                className="bg-[#0a0f1c] text-white"
+                className="bg-[#0a0f1c] text-white/95"
               >
                 {space.title} ({space.area})
               </option>
@@ -96,7 +96,7 @@ export function BookingForm() {
           </select>
           <span
             aria-hidden
-            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70"
+            className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/60"
           >
             ▾
           </span>
@@ -117,16 +117,16 @@ export function BookingForm() {
               {...form.register("durationMinutes")}
               className={`${INPUT_INNER} appearance-none pr-8`}
             >
-              <option value="30" className="bg-[#0a0f1c] text-white">
+              <option value="30" className="bg-[#0a0f1c] text-white/95">
                 30 minutos
               </option>
-              <option value="60" className="bg-[#0a0f1c] text-white">
+              <option value="60" className="bg-[#0a0f1c] text-white/95">
                 60 minutos
               </option>
             </select>
             <span
               aria-hidden
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70"
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/60"
             >
               ▾
             </span>
@@ -143,19 +143,19 @@ export function BookingForm() {
               {...form.register("extensionMinutes")}
               className={`${INPUT_INNER} appearance-none pr-8`}
             >
-              <option value="0" className="bg-[#0a0f1c] text-white">
+              <option value="0" className="bg-[#0a0f1c] text-white/95">
                 Sin ampliación
               </option>
-              <option value="15" className="bg-[#0a0f1c] text-white">
+              <option value="15" className="bg-[#0a0f1c] text-white/95">
                 +15 minutos
               </option>
-              <option value="30" className="bg-[#0a0f1c] text-white">
+              <option value="30" className="bg-[#0a0f1c] text-white/95">
                 +30 minutos
               </option>
             </select>
             <span
               aria-hidden
-              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70"
+              className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/60"
             >
               ▾
             </span>
@@ -181,9 +181,9 @@ export function BookingForm() {
         ) : null}
       </div>
 
-      <div className={`${GLASS_TILE} px-4 py-3 text-sm text-white/80`}>
+      <div className={`${GLASS_TILE} px-4 py-3 text-sm text-white/70`}>
         Total estimado:{" "}
-        <span className="font-semibold text-white">${estimatedTotal}</span>
+        <span className="font-semibold text-white/80">${estimatedTotal}</span>
       </div>
 
       <button type="submit" className={`w-full ${CTA_PRIMARY}`}>

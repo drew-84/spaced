@@ -13,6 +13,7 @@ import {
   TEXT_EYEBROW,
   TEXT_HINT,
 } from "@/styles/glass";
+import { KYCScreen } from "@/components/kyc/KYCScreen";
 import { AmenityPills } from "./amenity-pills";
 import { BookingBar } from "./booking-bar";
 import { BookingModal } from "./booking-modal";
@@ -22,6 +23,11 @@ import { PropertyMap } from "./property-map";
 import { ReviewsSection } from "./reviews-section";
 import { VideoGallery } from "./video-gallery";
 import type { PropertyDetail } from "./types";
+
+/* Temporary flag — flips the RESERVAR flow between KYC-first (new user)
+   and direct BookingModal (returning user). Replace with real auth state
+   once we have a session backend. */
+const isNewUser = true;
 
 type Props = {
   property: PropertyDetail;
@@ -57,6 +63,20 @@ function GlassPanel({ children }: { children: React.ReactNode }) {
 export function PropertyDetailExperience({ property }: Props) {
   const router = useRouter();
   const [bookingOpen, setBookingOpen] = useState(false);
+  const [kycOpen, setKycOpen] = useState(false);
+
+  function handleReserve() {
+    if (isNewUser) {
+      setKycOpen(true);
+      return;
+    }
+    setBookingOpen(true);
+  }
+
+  function handleKycComplete() {
+    setKycOpen(false);
+    setBookingOpen(true);
+  }
 
   return (
     <div className="relative min-h-[100dvh] overflow-x-hidden bg-[#02050d] text-white">
@@ -90,7 +110,7 @@ export function PropertyDetailExperience({ property }: Props) {
           <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>
             {property.category}
           </p>
-          <h1 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[0.04em] text-white sm:text-4xl">
+          <h1 className="mt-4 text-3xl font-medium leading-[1.15] tracking-[0.04em] text-white/95 sm:text-4xl">
             {property.title}
           </h1>
           <p className={`mt-3 text-sm tracking-[0.08em] ${TEXT_BODY}`}>
@@ -166,10 +186,7 @@ export function PropertyDetailExperience({ property }: Props) {
       </main>
 
       {/* Sticky booking action */}
-      <BookingBar
-        property={property}
-        onReserve={() => setBookingOpen(true)}
-      />
+      <BookingBar property={property} onReserve={handleReserve} />
 
       {/* Placeholder Reservar modal */}
       <BookingModal
@@ -177,6 +194,15 @@ export function PropertyDetailExperience({ property }: Props) {
         onClose={() => setBookingOpen(false)}
         property={property}
       />
+
+      {/* Guest KYC — shown before BookingModal for new users */}
+      {kycOpen && (
+        <KYCScreen
+          userType="guest"
+          onComplete={handleKycComplete}
+          onClose={() => setKycOpen(false)}
+        />
+      )}
     </div>
   );
 }

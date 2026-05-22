@@ -70,7 +70,7 @@ export function HostCard({ host }: Props) {
               />
               <div className="min-w-0 flex-1">
                 <p className={TEXT_LABEL}>Anfitrión</p>
-                <p className="mt-1 text-base font-medium tracking-[0.04em] text-white">
+                <p className="mt-1 text-base font-medium tracking-[0.04em] text-white/80">
                   {host.name}
                 </p>
                 <div className="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1">
@@ -78,7 +78,7 @@ export function HostCard({ host }: Props) {
                   <span className="text-[10px] tracking-[0.18em] text-white/80">
                     {host.rating.toFixed(2)}
                   </span>
-                  <span className="text-[9px] uppercase tracking-[0.22em] text-white/80">
+                  <span className="text-[9px] uppercase tracking-[0.22em] text-white/50">
                     · {host.memberSince}
                   </span>
                 </div>

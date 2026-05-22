@@ -203,12 +203,12 @@ export function ListSpaceExperience() {
             <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>
               OFRECER ESPACIO
             </p>
-            <h1 className="mt-10 text-2xl font-medium uppercase leading-[1.15] tracking-[0.42em] text-white sm:text-3xl">
+            <h1 className="mt-10 text-2xl font-medium uppercase leading-[1.15] tracking-[0.42em] text-white/95 sm:text-3xl">
               PUBLICA TU
               <br />
               NODO
             </h1>
-            <p className="mt-5 max-w-[28ch] text-sm font-light leading-relaxed tracking-[0.06em] text-white/80">
+            <p className="mt-5 max-w-[28ch] text-sm font-normal leading-relaxed tracking-[0.06em] text-white/70">
               Cada espacio entra a la red como un nodo temporal: tiempo, zona y
               atmósfera.
             </p>
@@ -218,10 +218,10 @@ export function ListSpaceExperience() {
             <p className={`${TEXT_LABEL} tracking-[0.46em]`}>
               Paso {step} de {TOTAL_STEPS}
             </p>
-            <p className="mt-3 text-lg font-medium uppercase tracking-[0.34em] text-white transition-opacity duration-500">
+            <p className="mt-3 text-lg font-medium uppercase tracking-[0.34em] text-white/80 transition-opacity duration-500">
               {stepMeta.titulo}
             </p>
-            <p className="mt-3 max-w-[30ch] text-sm font-light leading-relaxed tracking-[0.04em] text-white/80 transition-opacity duration-500">
+            <p className="mt-3 max-w-[30ch] text-sm font-normal leading-relaxed tracking-[0.04em] text-white/70 transition-opacity duration-500">
               {stepMeta.subtitulo}
             </p>
           </div>

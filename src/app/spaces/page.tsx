@@ -105,7 +105,7 @@ export default function SpacesPage() {
         <TopNav active="spaces" />
         <main className="mx-auto w-full max-w-6xl space-y-8 px-6 py-10 sm:px-8">
           <header className="space-y-2">
-            <h1 className="text-3xl font-semibold text-white">
+            <h1 className="text-3xl font-semibold text-white/95">
               Espacios y alojamientos cerca de ti
             </h1>
             <p className={`text-sm ${TEXT_BODY}`}>

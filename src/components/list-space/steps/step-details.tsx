@@ -38,11 +38,11 @@ export function StepDetails({ data, errors, onChange }: Props) {
         />
         <div>
           <p className={`mb-2.5 ${TEXT_LABEL}`}>Sugerido</p>
-          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-sm font-light tracking-[0.04em] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(3,8,18,0.18)] backdrop-blur-md">
-            <span className="text-[11px] uppercase tracking-[0.28em] text-white">
+          <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-white/[0.025] px-4 py-3 text-sm font-normal tracking-[0.04em] text-white/70 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),inset_0_-12px_22px_rgba(3,8,18,0.18)] backdrop-blur-md">
+            <span className="text-[11px] uppercase tracking-[0.28em] text-white/60">
               óptimo
             </span>
-            <span className="ml-auto text-[10px] uppercase tracking-[0.28em] text-white">
+            <span className="ml-auto text-[10px] uppercase tracking-[0.28em] text-white/60">
               4 personas
             </span>
           </div>

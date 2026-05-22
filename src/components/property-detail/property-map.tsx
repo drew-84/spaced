@@ -108,7 +108,7 @@ function MapFallback({ area, city }: { area: string; city: string }) {
           <p className={`${TEXT_EYEBROW} tracking-[0.42em]`}>
             Mapa no disponible
           </p>
-          <p className="mt-2 text-sm font-light tracking-[0.04em] text-white/80">
+          <p className="mt-2 text-sm font-normal tracking-[0.04em] text-white/70">
             Ubicación aproximada · {area}, {city}
           </p>
           <p className={`mt-2 ${TEXT_HINT}`}>
@@ -157,7 +157,7 @@ function GoogleMapView({
   }
   if (!isLoaded) {
     return (
-      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-white">
+      <div className="flex h-full items-center justify-center text-[10px] uppercase tracking-[0.3em] text-white/60">
         Cargando mapa…
       </div>
     );

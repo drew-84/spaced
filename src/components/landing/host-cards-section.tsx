@@ -44,7 +44,7 @@ function StarIcon({ filled }: { filled: boolean }) {
 
 function RatingStars({ rating }: { rating: number }) {
   return (
-    <span className="flex items-center gap-0.5 text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
+    <span className="flex items-center gap-0.5 text-white/80 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
       {[1, 2, 3, 4, 5].map((n) => (
         <StarIcon key={n} filled={n <= Math.round(rating)} />
       ))}
@@ -73,7 +73,7 @@ function ListingCard({ card }: { card: ListingSpace }) {
             <span className="text-[11px] leading-none">
               {CATEGORY_ICONS[card.category]}
             </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white">
+            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/60">
               {card.categoryLabel}
             </span>
           </div>
@@ -82,7 +82,7 @@ function ListingCard({ card }: { card: ListingSpace }) {
           {card.instantAccess && (
             <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-white/30 bg-black/55 px-2 py-1 backdrop-blur-sm">
               <span className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)]" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white">
+              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/60">
                 Acceso inmediato
               </span>
             </div>
@@ -92,10 +92,10 @@ function ListingCard({ card }: { card: ListingSpace }) {
         {/* body */}
         <div className="flex flex-1 flex-col gap-3 p-4">
           <div>
-            <h3 className="text-[13px] font-semibold leading-snug text-white line-clamp-2">
+            <h3 className="text-[13px] font-semibold leading-snug text-white/80 line-clamp-2">
               {card.title}
             </h3>
-            <p className="mt-0.5 text-[11px] text-white/80">{card.area}</p>
+            <p className="mt-0.5 text-[11px] text-white/50">{card.area}</p>
           </div>
 
           {/* amenities preview */}
@@ -103,13 +103,13 @@ function ListingCard({ card }: { card: ListingSpace }) {
             {card.amenities.slice(0, 3).map((a) => (
               <span
                 key={a}
-                className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/80"
+                className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/50"
               >
                 {a}
               </span>
             ))}
             {card.amenities.length > 3 && (
-              <span className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/80">
+              <span className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/50">
                 +{card.amenities.length - 3}
               </span>
             )}
@@ -126,22 +126,22 @@ function ListingCard({ card }: { card: ListingSpace }) {
                 height={24}
                 className="h-6 w-6 rounded-full object-cover ring-1 ring-white/15"
               />
-              <span className="text-[10px] text-white/80">{card.hostName}</span>
+              <span className="text-[10px] text-white/50">{card.hostName}</span>
             </div>
 
             {/* rating + price */}
             <div className="flex items-center gap-2">
               <div className="flex items-center gap-1">
                 <RatingStars rating={card.rating} />
-                <span className="text-[10px] text-white/80">
+                <span className="text-[10px] text-white/50">
                   ({card.reviewCount})
                 </span>
               </div>
               <div className="rounded-lg border border-white/30 bg-white/[0.1] px-2 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-                <span className="text-[11px] font-bold text-white">
+                <span className="text-[11px] font-bold text-white/80">
                   ${card.pricePer30m}
                 </span>
-                <span className="text-[9px] text-white/80"> /30m</span>
+                <span className="text-[9px] text-white/50"> /30m</span>
               </div>
             </div>
           </div>
@@ -193,10 +193,10 @@ export function HostCardsSection() {
         <div className="flex flex-col items-start gap-3 sm:flex-row sm:items-end sm:justify-between">
           <div className="flex flex-col gap-2">
             <p className={`${TEXT_EYEBROW} tracking-[0.55em]`}>Publicaciones</p>
-            <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
+            <h2 className="text-3xl font-semibold leading-tight text-white/95 sm:text-4xl">
               Espacios disponibles
               <br />
-              <span className="text-white">registrados por hosts</span>
+              <span className="text-white/95">registrados por hosts</span>
             </h2>
             <p className={`max-w-sm text-sm leading-relaxed ${TEXT_BODY}`}>
               Cada publicación fue creada por un host real. Elige el tipo de
@@ -237,14 +237,14 @@ export function HostCardsSection() {
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
             placeholder="Busca por nombre, colonia o tipo de espacio…"
-            className="flex-1 bg-transparent text-sm text-white placeholder:text-white/40 outline-none"
+            className="flex-1 bg-transparent text-sm text-white/95 placeholder:text-white/35 outline-none"
           />
           {query && (
             <button
               type="button"
               onClick={() => setQuery("")}
               aria-label="Limpiar búsqueda"
-              className="shrink-0 rounded-lg p-1 text-white/70 transition-colors duration-300 ease-out hover:text-white"
+              className="shrink-0 rounded-lg p-1 text-white/60 transition-colors duration-300 ease-out hover:text-white"
             >
               <svg width="12" height="12" viewBox="0 0 12 12" fill="none" aria-hidden>
                 <path d="M1 1L11 11M11 1L1 11" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" />
@@ -282,8 +282,8 @@ export function HostCardsSection() {
                     TRANSITION_FLUID,
                     "focus-visible:ring-1 focus-visible:ring-white/40",
                     isActive
-                      ? "border border-white/40 bg-gradient-to-b from-white/[0.18] via-white/[0.08] to-white/[0.04] text-white shadow-[0_2px_10px_-2px_rgba(255,255,255,0.35),0_0_24px_-6px_rgba(255,255,255,0.5),0_0_56px_-12px_rgba(255,255,255,0.32),inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
-                      : "border border-transparent text-white/70 hover:text-white hover:bg-white/[0.05] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
+                      ? "border border-white/40 bg-gradient-to-b from-white/[0.18] via-white/[0.08] to-white/[0.04] text-white/95 shadow-[0_2px_10px_-2px_rgba(255,255,255,0.35),0_0_24px_-6px_rgba(255,255,255,0.5),0_0_56px_-12px_rgba(255,255,255,0.32),inset_0_1px_0_rgba(255,255,255,0.28),inset_0_-1px_0_rgba(255,255,255,0.06)] backdrop-blur-xl"
+                      : "border border-transparent text-white/60 hover:text-white hover:bg-white/[0.05] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.1)]",
                   ].join(" ")}
                 >
                   {isActive && (

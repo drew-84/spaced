@@ -140,13 +140,13 @@ export function StepVideos({ data, onChange }: Props) {
                 {!filled ? (
                   <>
                     <span className={STATUS_DOT} />
-                    <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.42em] text-white [text-shadow:0_0_14px_rgba(255,255,255,0.4)]">
+                    <span className="mt-1.5 text-[10px] font-medium uppercase tracking-[0.42em] text-white/80 [text-shadow:0_0_14px_rgba(255,255,255,0.4)]">
                       Clip {idx + 1}
                     </span>
                     <span className={TEXT_HINT}>Click o arrastra aquí</span>
                   </>
                 ) : (
-                  <span className="mt-auto pb-2 text-[10px] font-medium uppercase tracking-[0.34em] text-white [text-shadow:0_0_14px_rgba(255,255,255,0.55)]">
+                  <span className="mt-auto pb-2 text-[10px] font-medium uppercase tracking-[0.34em] text-white/95 [text-shadow:0_0_14px_rgba(255,255,255,0.55)]">
                     Cambiar clip
                   </span>
                 )}
@@ -159,7 +159,7 @@ export function StepVideos({ data, onChange }: Props) {
                     e.stopPropagation();
                     setVideoAt(idx, null);
                   }}
-                  className="absolute right-3 top-3 z-20 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/70 backdrop-blur-md transition-colors duration-300 ease-out hover:border-white/40 hover:text-white"
+                  className="absolute right-3 top-3 z-20 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/60 backdrop-blur-md transition-colors duration-300 ease-out hover:border-white/40 hover:text-white"
                 >
                   Quitar
                 </button>

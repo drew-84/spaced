@@ -28,17 +28,17 @@ function Stars({ rating }: { rating: number }) {
       {Array.from({ length: full }, (_, i) => (
         <span
           key={i}
-          className="text-white drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
+          className="text-white/80 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]"
         >
           &#9733;
         </span>
       ))}
       {half && (
-        <span className="text-white/80 drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]">
+        <span className="text-white/60 drop-shadow-[0_0_6px_rgba(255,255,255,0.35)]">
           &#9733;
         </span>
       )}
-      <span className="ml-1 text-white/80">({rating})</span>
+      <span className="ml-1 text-white/50">({rating})</span>
     </span>
   );
 }
@@ -56,30 +56,30 @@ export function SpaceCard({ space, distanceKm }: SpaceCardProps) {
           />
           <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/20 to-transparent" />
           {space.instantAccess && (
-            <span className="absolute right-3 top-3 rounded-full border border-white/30 bg-black/55 px-2.5 py-1 text-xs font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md">
+            <span className="absolute right-3 top-3 rounded-full border border-white/30 bg-black/55 px-2.5 py-1 text-xs font-medium text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md">
               Acceso inmediato
             </span>
           )}
           <div className="absolute bottom-3 left-3 flex flex-wrap gap-1.5">
-            <span className="rounded-full border border-white/25 bg-black/55 px-2.5 py-1 text-xs font-medium text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md">
+            <span className="rounded-full border border-white/25 bg-black/55 px-2.5 py-1 text-xs font-medium text-white/60 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)] backdrop-blur-md">
               {typeLabel[space.type]}
             </span>
-            <span className="rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-1 text-xs font-medium text-white backdrop-blur-md">
+            <span className="rounded-full border border-white/20 bg-white/[0.08] px-2.5 py-1 text-xs font-medium text-white/60 backdrop-blur-md">
               {isHourly ? "Por hora" : "Por noche"}
             </span>
           </div>
           <div className="absolute bottom-3 right-3">
             {isHourly ? (
-              <span className="rounded-lg border border-white/30 bg-white/[0.1] px-3 py-1.5 text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md">
+              <span className="rounded-lg border border-white/30 bg-white/[0.1] px-3 py-1.5 text-sm font-bold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md">
                 ${space.pricePer30m}
-                <span className="ml-0.5 text-[10px] font-normal text-white/80">
+                <span className="ml-0.5 text-[10px] font-normal text-white/50">
                   /30m
                 </span>
               </span>
             ) : (
-              <span className="rounded-lg border border-white/30 bg-white/[0.1] px-3 py-1.5 text-sm font-bold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md">
+              <span className="rounded-lg border border-white/30 bg-white/[0.1] px-3 py-1.5 text-sm font-bold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md">
                 ${space.pricePerNight.toLocaleString("es-MX")}
-                <span className="ml-0.5 text-[10px] font-normal text-white/80">
+                <span className="ml-0.5 text-[10px] font-normal text-white/50">
                   /noche
                 </span>
               </span>
@@ -88,27 +88,27 @@ export function SpaceCard({ space, distanceKm }: SpaceCardProps) {
         </div>
         <div className="p-4">
           <div className="flex items-start justify-between gap-2">
-            <h3 className="text-base font-semibold text-white">{space.title}</h3>
+            <h3 className="text-base font-semibold text-white/80">{space.title}</h3>
             <Stars rating={space.rating} />
           </div>
-          <p className="mt-1 text-sm text-white/80">
+          <p className="mt-1 text-sm text-white/50">
             {space.area} &middot; {distanceKm.toFixed(1)} km
           </p>
           <div className="mt-3 flex items-center justify-between border-t border-white/10 pt-3">
-            <p className="text-xs text-white/80">
+            <p className="text-xs text-white/50">
               {space.reviewCount} resenas
             </p>
             {isHourly ? (
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-white/80">
                 ${space.pricePer30m}
-                <span className="ml-1 text-xs font-normal text-white/80">
+                <span className="ml-1 text-xs font-normal text-white/50">
                   / 30 min
                 </span>
               </p>
             ) : (
-              <p className="text-lg font-bold text-white">
+              <p className="text-lg font-bold text-white/80">
                 ${space.pricePerNight.toLocaleString("es-MX")}
-                <span className="ml-1 text-xs font-normal text-white/80">
+                <span className="ml-1 text-xs font-normal text-white/50">
                   / noche
                 </span>
               </p>

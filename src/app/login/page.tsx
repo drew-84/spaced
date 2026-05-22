@@ -46,7 +46,7 @@ export default function LoginPage() {
         <main className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center justify-center px-6 py-10 sm:px-8">
           <section className={`w-full max-w-md space-y-7 ${GLASS_PANEL} p-6 sm:p-8`}>
             <header className="space-y-2.5">
-              <h1 className="text-3xl font-semibold text-white">
+              <h1 className="text-3xl font-semibold text-white/95">
                 Iniciar sesión
               </h1>
               <p className={`text-sm ${TEXT_BODY}`}>

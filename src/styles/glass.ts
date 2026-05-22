@@ -6,19 +6,22 @@
  * homepage, OfferScreen (/ofrecer), Property Detail (/spaces/[id]), and
  * Booking modal.
  *
- * COLOR CONTRACT
- *   - All text is pure bright white (#FFFFFF). Hierarchy is expressed
- *     exclusively through opacity:
- *       • Headings / titles / primary values .... text-white     (100%)
- *       • Body / descriptive text ............... text-white/80  (80%)
- *       • Section eyebrows / labels / interactive rest .. text-white/70 (70%)
- *       • Placeholder ........................... text-white/40  (40%)
- *   - Eyebrows and field labels rest at 70%, brightening to full 100%
- *     white on hover/focus only when they are interactive.
- *   - Interactive elements (links, pills, ghost buttons) rest at 70% and
- *     brighten to full 100% white on hover/focus/active with a smooth
- *     200–300 ms ease.
- *   - Borders: subtle white at 10/15% at rest, 30/40% when active/focused.
+ * COLOR CONTRACT — 7-tier opacity hierarchy
+ *   All text is pure bright white (#FFFFFF). Visual hierarchy is expressed
+ *   exclusively through opacity:
+ *       • Primary headlines (page titles, hero text, main H1s) ......... 95%
+ *       • Secondary headlines (H2s, subsection titles, prices) ......... 80%
+ *       • Body text (descriptions, paragraphs, longer text) ............ 70%
+ *       • Section labels (small uppercase tracking-wide labels) ........ 60%
+ *       • Meta info (counters, timestamps, tags, auxiliary text) ....... 50%
+ *       • Placeholder text in input fields ............................. 35%
+ *       • Inactive / disabled states ................................... 25%
+ *
+ *   Interactive elements (pills, links, ghost buttons) stay at their
+ *   hierarchy-appropriate opacity at rest and brighten to full 100% white
+ *   on hover/focus/active with a smooth 200–300 ms ease.
+ *
+ *   Borders: subtle white at 10/15% at rest, 30/40% when active/focused.
  *
  * STRUCTURAL TOKENS (preserved verbatim from existing OfferScreen +
  * BookingModal so layouts stay pixel-stable):
@@ -87,40 +90,68 @@ export const PAGE_AMBIENT_BG =
 export const PAGE_AMBIENT_SHIMMER =
   "opacity-[0.32] [background:repeating-linear-gradient(122deg,rgba(255,255,255,0.018)_0px,rgba(255,255,255,0.018)_1px,transparent_1px,transparent_64px)]";
 
-/* ────────────────────────── TYPOGRAPHY ─────────────────────────────── */
+/* ────────────────────────── TYPOGRAPHY TOKENS ────────────────────── */
 
-/** Big heading — uppercase, wide tracking, full bright white. */
+/* New camelCase opacity tokens — drop these directly onto any element to
+ * place it on the correct rung of the 7-tier hierarchy. */
+
+/** Primary headlines — page titles, hero text, main H1s (95%). */
+export const textPrimary = "text-white/95";
+
+/** Secondary headlines — H2s, subsection titles, prices, key values (80%). */
+export const textSecondary = "text-white/80";
+
+/** Body text — descriptions, paragraphs, longer-form copy (70%). */
+export const textBody = "text-white/70";
+
+/** Section labels — small uppercase tracking-wide labels (60%). */
+export const textLabel = "text-white/60";
+
+/** Meta info — counters, timestamps, tags, auxiliary text (50%). */
+export const textMeta = "text-white/50";
+
+/** Placeholder text inside input fields (35%). */
+export const textPlaceholder = "text-white/35";
+
+/** Inactive / disabled state (25%). */
+export const textInactive = "text-white/25";
+
+/* Legacy UPPER_CASE tokens — kept for back-compat with existing imports.
+ * Each is now anchored to the 7-tier scale above so the whole app
+ * inherits the new hierarchy automatically. */
+
+/** Big heading — uppercase, wide tracking (primary tier, 95%). */
 export const TEXT_HEADING =
-  "text-white font-medium uppercase tracking-widest";
+  "text-white/95 font-medium uppercase tracking-widest";
 
-/** Section eyebrow — uppercase, very wide tracking, white at 70% per
- *  the contract (sits above a 100% headline). */
+/** Section eyebrow — uppercase, very wide tracking, label tier (60%). */
 export const TEXT_EYEBROW =
-  "text-[10px] font-medium uppercase tracking-[0.42em] text-white/70";
+  "text-[10px] font-medium uppercase tracking-[0.42em] text-white/60";
 
-/** Smaller eyebrow used inside dense forms — white at 70%. */
+/** Smaller eyebrow used inside dense forms — label tier (60%). */
 export const TEXT_EYEBROW_SM =
-  "text-[10px] uppercase tracking-[0.32em] text-white/70";
+  "text-[10px] uppercase tracking-[0.32em] text-white/60";
 
-/** Field label — same family as eyebrow, white at 70%. */
+/** Field label — same family as eyebrow, label tier (60%). */
 export const TEXT_LABEL =
-  "text-[10px] uppercase tracking-[0.32em] text-white/70";
+  "text-[10px] uppercase tracking-[0.32em] text-white/60";
 
-/** Body — paragraph text at 80% white, light weight, slight tracking. */
+/** Body paragraph copy — body tier (70%). Uses font-normal so the
+ *  strokes carry enough optical mass to read as white on dark glass. */
 export const TEXT_BODY =
-  "text-white/80 font-light tracking-[0.04em]";
+  "text-white/70 font-normal tracking-[0.04em]";
 
-/** Secondary body — slightly dimmer paragraph (body family, 80%). */
+/** Secondary body — alias of TEXT_BODY kept for back-compat. */
 export const TEXT_BODY_DIM =
-  "text-white/80 font-light tracking-[0.04em]";
+  "text-white/70 font-normal tracking-[0.04em]";
 
-/** Hint / counter / footnote — body-weight at 80% white. */
+/** Hint / counter / footnote — meta tier (50%). */
 export const TEXT_HINT =
-  "text-[9px] uppercase tracking-[0.26em] text-white/80";
+  "text-[9px] uppercase tracking-[0.26em] text-white/50";
 
-/** Inline metadata — body-weight at 80% white. */
+/** Inline metadata — meta tier (50%). */
 export const TEXT_META =
-  "text-[10px] uppercase tracking-[0.22em] text-white/80";
+  "text-[10px] uppercase tracking-[0.22em] text-white/50";
 
 /* ────────────────────────── TRANSITIONS ────────────────────────────── */
 
@@ -147,17 +178,17 @@ export const PILL_BASE = [
   "focus-visible:ring-1 focus-visible:ring-white/40",
 ].join(" ");
 
-/** Inactive (rest) pill — white at 70%, brightens to full white on hover. */
+/** Inactive (rest) pill — label tier (60%), brightens to full white on hover. */
 export const PILL_REST = [
-  "border-white/20 bg-white/[0.04] text-white/70",
+  "border-white/20 bg-white/[0.04] text-white/60",
   "shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)]",
   "hover:border-white/40 hover:bg-white/[0.08] hover:text-white",
   "hover:shadow-[0_14px_28px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.16),0_0_18px_rgba(255,255,255,0.18)]",
 ].join(" ");
 
-/** Active (selected) pill — full white text, stronger border, brighter fill. */
+/** Active (selected) pill — primary tier (95%), stronger border, brighter fill. */
 export const PILL_ACTIVE = [
-  "border-white/40 bg-white/[0.14] text-white",
+  "border-white/40 bg-white/[0.14] text-white/95",
   "shadow-[0_14px_34px_rgba(0,0,0,0.32),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-14px_28px_rgba(8,18,34,0.34),0_0_22px_rgba(255,255,255,0.22)]",
 ].join(" ");
 
@@ -166,10 +197,11 @@ export function pillClass(isActive: boolean): string {
   return `${PILL_BASE} ${isActive ? PILL_ACTIVE : PILL_REST}`;
 }
 
-/** Display-only pill (informational, never interactive — e.g. amenity list). */
+/** Display-only pill (informational, never interactive — e.g. amenity list).
+ *  Label tier (60%) since it carries the same label-class info as a chip. */
 export const PILL_DISPLAY = [
   "inline-flex items-center rounded-full border border-white/25 bg-white/[0.08]",
-  "px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.22em] text-white",
+  "px-3.5 py-2 text-[10px] font-medium uppercase tracking-[0.22em] text-white/60",
   "shadow-[0_12px_28px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.18),inset_0_-12px_24px_rgba(8,18,34,0.3)]",
   "backdrop-blur-md",
 ].join(" ");
@@ -187,10 +219,11 @@ export const INPUT_WRAP = [
   "focus-within:shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-16px_30px_rgba(3,8,18,0.32),0_0_24px_-6px_rgba(255,255,255,0.4)]",
 ].join(" ");
 
-/** Inner <input>/<textarea>/<select> — bright white, dim placeholder. */
+/** Inner <input>/<textarea>/<select> — filled value at primary tier (95%),
+ *  placeholder at 35%. Uses font-normal so the white reads crisp. */
 export const INPUT_INNER = [
-  "block w-full bg-transparent text-sm font-light tracking-[0.04em] text-white",
-  "placeholder:text-white/40 outline-none",
+  "block w-full bg-transparent text-sm font-normal tracking-[0.04em] text-white/95",
+  "placeholder:text-white/35 outline-none",
 ].join(" ");
 
 /** Label sitting above an input. */
@@ -202,10 +235,10 @@ export const FIELD_ERROR =
 
 /* ────────────────────────── CTAs / BUTTONS ─────────────────────────── */
 
-/** Primary CTA — "Reservar", "Publicar", "Siguiente". */
+/** Primary CTA — "Reservar", "Publicar", "Siguiente". Primary tier (95%). */
 export const CTA_PRIMARY = [
   "rounded-full border border-white/30 bg-white/[0.14] px-5 py-3",
-  "text-[11px] font-medium uppercase tracking-[0.34em] text-white",
+  "text-[11px] font-medium uppercase tracking-[0.34em] text-white/95",
   "shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.22),inset_0_-16px_32px_rgba(8,18,34,0.32),0_0_30px_-6px_rgba(255,255,255,0.4)]",
   "backdrop-blur-md",
   "transition-all duration-300 ease-out motion-reduce:transition-none",
@@ -215,10 +248,10 @@ export const CTA_PRIMARY = [
   "disabled:cursor-not-allowed disabled:opacity-40",
 ].join(" ");
 
-/** Secondary CTA — "Atrás", "Cerrar" pill. */
+/** Secondary CTA — "Atrás", "Cerrar" pill. Label tier (60%), brightens on hover. */
 export const CTA_SECONDARY = [
   "rounded-full border border-white/15 bg-white/[0.04] px-4 py-2.5",
-  "text-[10px] uppercase tracking-[0.26em] text-white/70",
+  "text-[10px] uppercase tracking-[0.26em] text-white/60",
   "shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)]",
   "backdrop-blur-md",
   "transition-all duration-300 ease-out motion-reduce:transition-none",
@@ -226,10 +259,10 @@ export const CTA_SECONDARY = [
   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",
 ].join(" ");
 
-/** Ghost button — "Guardar borrador", "Cancelar". */
+/** Ghost button — "Guardar borrador", "Cancelar". Label tier (60%), brightens on hover. */
 export const CTA_GHOST = [
   "rounded-full border border-transparent px-4 py-2.5",
-  "text-[10px] uppercase tracking-[0.26em] text-white/70",
+  "text-[10px] uppercase tracking-[0.26em] text-white/60",
   "transition-colors duration-300 ease-out motion-reduce:transition-none",
   "hover:text-white",
   "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40",

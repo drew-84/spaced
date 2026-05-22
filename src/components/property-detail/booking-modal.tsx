@@ -137,12 +137,12 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             className={`${INPUT_INNER} appearance-none pr-7`}
           >
             {START_TIMES.map((t) => (
-              <option key={t} value={t} className="bg-[#0a0f1c] text-white">
+              <option key={t} value={t} className="bg-[#0a0f1c] text-white/95">
                 {t}
               </option>
             ))}
           </select>
-          <span aria-hidden className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70">▾</span>
+          <span aria-hidden className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/60">▾</span>
         </div>
       </div>
 
@@ -154,13 +154,13 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             onClick={() => adjustDuration(-15)}
             disabled={data.durationMin <= 45}
             aria-label="Reducir 15 minutos"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/70 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-30"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/60 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white disabled:cursor-not-allowed disabled:opacity-25"
           >
             −
           </button>
           <div className="text-center">
-            <p className="text-xl font-medium tracking-tight text-white">
-              {data.durationMin} <span className="text-[11px] font-light text-white/80">min</span>
+            <p className="text-xl font-medium tracking-tight text-white/80">
+              {data.durationMin} <span className="text-[11px] font-normal text-white/50">min</span>
             </p>
             <p className={`mt-0.5 ${TEXT_HINT}`}>
               {data.durationMin / 60 >= 1
@@ -172,7 +172,7 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
             type="button"
             onClick={() => adjustDuration(15)}
             aria-label="Aumentar 15 minutos"
-            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/70 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
+            className="flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/20 bg-white/[0.04] text-sm text-white/60 transition-all duration-300 ease-out hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
           >
             +
           </button>
@@ -207,7 +207,7 @@ function Step1({ data, maxGuests, pricePer15Min, onChange, errors }: Step1Props)
           </p>
         </div>
         <p
-          className="text-2xl font-medium tracking-tight text-white"
+          className="text-2xl font-medium tracking-tight text-white/80"
           style={{ textShadow: "0 0 18px rgba(255,255,255,0.45)" }}
         >
           ${total.toLocaleString("es-CL")}
@@ -252,17 +252,17 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
     <div className="space-y-5">
       <div className={`${TILE} space-y-2`}>
         <p className={TEXT_LABEL}>Resumen</p>
-        <p className="text-sm font-medium tracking-[0.04em] text-white">{title}</p>
-        <p className="text-[11px] tracking-[0.04em] text-white/80">{area}</p>
+        <p className="text-sm font-medium tracking-[0.04em] text-white/80">{title}</p>
+        <p className="text-[11px] tracking-[0.04em] text-white/50">{area}</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-          <span className="text-white uppercase tracking-[0.22em]">Fecha</span>
-          <span className="text-white">{fmtDate(data.date)}</span>
-          <span className="text-white uppercase tracking-[0.22em]">Inicio</span>
-          <span className="text-white">{data.startTime}</span>
-          <span className="text-white uppercase tracking-[0.22em]">Duración</span>
-          <span className="text-white">{data.durationMin} min</span>
-          <span className="text-white uppercase tracking-[0.22em]">Personas</span>
-          <span className="text-white">{data.guests}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Fecha</span>
+          <span className="text-white/80">{fmtDate(data.date)}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Inicio</span>
+          <span className="text-white/80">{data.startTime}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Duración</span>
+          <span className="text-white/80">{data.durationMin} min</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Personas</span>
+          <span className="text-white/80">{data.guests}</span>
         </div>
       </div>
 
@@ -270,17 +270,17 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
         <p className={TEXT_LABEL}>Desglose</p>
         <div className="space-y-1.5 text-[12px]">
           <div className="flex justify-between">
-            <span className="text-white/80">{data.durationMin} min × ${pricePer15Min}/15 min</span>
-            <span className="text-white">${subtotal.toLocaleString("es-CL")}</span>
+            <span className="text-white/70">{data.durationMin} min × ${pricePer15Min}/15 min</span>
+            <span className="text-white/80">${subtotal.toLocaleString("es-CL")}</span>
           </div>
           <div className="flex justify-between">
-            <span className="text-white/80">Depósito de daños (50%)</span>
-            <span className="text-white">${deposit.toLocaleString("es-CL")}</span>
+            <span className="text-white/70">Depósito de daños (50%)</span>
+            <span className="text-white/80">${deposit.toLocaleString("es-CL")}</span>
           </div>
           <div className="mt-2 flex justify-between border-t border-white/10 pt-2">
-            <span className="text-[10px] uppercase tracking-[0.28em] text-white">Total</span>
+            <span className="text-[10px] uppercase tracking-[0.28em] text-white/60">Total</span>
             <span
-              className="text-base font-medium text-white"
+              className="text-base font-medium text-white/95"
               style={{ textShadow: "0 0 14px rgba(255,255,255,0.5)" }}
             >
               ${total.toLocaleString("es-CL")}
@@ -295,7 +295,7 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
         <div>
           <FieldLabel>Número de tarjeta</FieldLabel>
           <div className={`${INPUT_WRAP} flex items-center gap-3 px-4 py-3`}>
-            <span className="shrink-0 text-[11px] text-white/70">💳</span>
+            <span className="shrink-0 text-[11px] text-white/60">💳</span>
             <input
               type="text"
               inputMode="numeric"
@@ -349,7 +349,7 @@ function Step2({ data, title, area, pricePer15Min, onChange, errors }: Step2Prop
         </div>
       </div>
 
-      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/80">
+      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/50">
         Reembolso completo si cancelas hasta 10 minutos después del inicio de la reserva.
       </p>
     </div>
@@ -375,38 +375,38 @@ function Step3({ data, title, area, pricePer15Min, onClose }: Step3Props) {
     <div className="space-y-6">
       <div className="flex flex-col items-center gap-3 py-2">
         <span
-          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/[0.12] text-lg text-white shadow-[0_0_32px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.22)]"
+          className="flex h-12 w-12 items-center justify-center rounded-full border border-white/40 bg-white/[0.12] text-lg text-white/95 shadow-[0_0_32px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.22)]"
           aria-hidden
         >
           ✓
         </span>
         <p className={TEXT_EYEBROW}>Reserva confirmada</p>
-        <h3 className="text-center text-xl font-medium uppercase tracking-[0.28em] text-white">
+        <h3 className="text-center text-xl font-medium uppercase tracking-[0.28em] text-white/95">
           ¡Todo listo!
         </h3>
-        <p className="text-center text-sm font-light leading-relaxed tracking-[0.04em] text-white/80">
-          Tu espacio en <span className="text-white">{area}</span> está confirmado.
+        <p className="text-center text-sm font-normal leading-relaxed tracking-[0.04em] text-white/70">
+          Tu espacio en <span className="text-white/95">{area}</span> está confirmado.
         </p>
       </div>
 
       <div className={`${TILE} space-y-2`}>
         <p className={TEXT_LABEL}>Detalle de reserva</p>
-        <p className="text-sm font-medium tracking-[0.04em] text-white">{title}</p>
+        <p className="text-sm font-medium tracking-[0.04em] text-white/80">{title}</p>
         <div className="mt-2 grid grid-cols-2 gap-x-4 gap-y-1 text-[11px]">
-          <span className="text-white uppercase tracking-[0.22em]">Fecha</span>
-          <span className="text-white">{fmtDate(data.date)}</span>
-          <span className="text-white uppercase tracking-[0.22em]">Inicio</span>
-          <span className="text-white">{data.startTime}</span>
-          <span className="text-white uppercase tracking-[0.22em]">Duración</span>
-          <span className="text-white">{data.durationMin} min</span>
-          <span className="text-white uppercase tracking-[0.22em]">Personas</span>
-          <span className="text-white">{data.guests}</span>
-          <span className="text-white uppercase tracking-[0.22em]">Total cobrado</span>
-          <span className="text-white">${total.toLocaleString("es-CL")}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Fecha</span>
+          <span className="text-white/80">{fmtDate(data.date)}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Inicio</span>
+          <span className="text-white/80">{data.startTime}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Duración</span>
+          <span className="text-white/80">{data.durationMin} min</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Personas</span>
+          <span className="text-white/80">{data.guests}</span>
+          <span className="text-white/60 uppercase tracking-[0.22em]">Total cobrado</span>
+          <span className="text-white/95">${total.toLocaleString("es-CL")}</span>
         </div>
       </div>
 
-      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/80">
+      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/50">
         Recibirás la confirmación por correo. Recuerda: reembolso completo si cancelas hasta 10 minutos después del inicio.
       </p>
 
@@ -607,7 +607,7 @@ export function BookingModal({ open, onClose, property }: Props) {
 
           <h2
             id="booking-modal-title"
-            className="mt-3 text-xl font-medium uppercase tracking-[0.34em] text-white sm:text-2xl"
+            className="mt-3 text-xl font-medium uppercase tracking-[0.34em] text-white/95 sm:text-2xl"
           >
             {property.title}
           </h2>

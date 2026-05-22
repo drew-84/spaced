@@ -44,7 +44,7 @@ export function KeyInfoRow({ property }: Props) {
       {tiles.map((t) => (
         <div key={t.label} className={`${GLASS_TILE} px-4 py-4`}>
           <p className={TEXT_LABEL}>{t.label}</p>
-          <p className="mt-2 text-2xl font-medium tracking-tight text-white">
+          <p className="mt-2 text-2xl font-medium tracking-tight text-white/80">
             {t.value}
           </p>
           {t.note && <p className={`mt-1 ${TEXT_HINT}`}>{t.note}</p>}

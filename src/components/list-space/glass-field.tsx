@@ -170,7 +170,7 @@ export function GlassNumber({
       <FieldLabel label={label} htmlFor={id} hint={hint} />
       <div className={`${INPUT_WRAP} flex items-center gap-3 px-4 py-3`}>
         {prefix && (
-          <span className="text-[11px] uppercase tracking-[0.28em] text-white">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-white/60">
             {prefix}
           </span>
         )}
@@ -196,7 +196,7 @@ export function GlassNumber({
           className={`${INPUT_INNER} flex-1 [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none`}
         />
         {suffix && (
-          <span className="text-[11px] uppercase tracking-[0.28em] text-white">
+          <span className="text-[11px] uppercase tracking-[0.28em] text-white/60">
             {suffix}
           </span>
         )}
@@ -235,18 +235,18 @@ export function GlassSelect({
           onChange={(e) => onChange(e.target.value)}
           className={`${INPUT_INNER} appearance-none pr-8`}
         >
-          <option value="" className="bg-[#0a0f1c] text-white/40">
+          <option value="" className="bg-[#0a0f1c] text-white/35">
             {placeholder}
           </option>
           {options.map((o) => (
-            <option key={o} value={o} className="bg-[#0a0f1c] text-white">
+            <option key={o} value={o} className="bg-[#0a0f1c] text-white/95">
               {o}
             </option>
           ))}
         </select>
         <span
           aria-hidden
-          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/70"
+          className="pointer-events-none absolute right-4 top-1/2 -translate-y-1/2 text-[10px] text-white/60"
         >
           ▾
         </span>

@@ -2,7 +2,7 @@
 
 import { useEffect, useMemo, useState } from "react";
 import { GoogleMap, Marker, useJsApiLoader } from "@react-google-maps/api";
-import { GLASS_PANEL, TEXT_BODY, TEXT_HINT } from "@/styles/glass";
+import { GLASS_PANEL, TEXT_BODY } from "@/styles/glass";
 import { DEFAULT_MAP_CENTER, type LatLng } from "@/lib/geo";
 
 type GeoState = "pending" | "gps" | "fallback";
@@ -28,7 +28,7 @@ function MapFallback({
       className={`flex h-full min-h-[240px] w-full flex-col justify-between ${GLASS_PANEL} p-1`}
     >
       <div className="flex flex-1 flex-col items-center justify-center rounded-[1.85rem] bg-white/[0.03] px-4 text-center">
-        <p className="text-sm font-medium text-white">{title}</p>
+        <p className="text-sm font-medium text-white/80">{title}</p>
         {subtitle ? (
           <p className={`mt-2 text-xs leading-relaxed ${TEXT_BODY}`}>
             {subtitle}
@@ -102,9 +102,9 @@ function GoogleMapView({ apiKey }: { apiKey: string }) {
         <Marker position={center} title="Tu ubicación" />
       </GoogleMap>
       <div
-        className={`pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl border border-white/10 bg-[#02050d]/85 px-3 py-2 text-center text-[11px] leading-snug text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm ${TEXT_HINT.replace("text-white/70", "")}`}
+        className="pointer-events-none absolute bottom-3 left-3 right-3 rounded-xl border border-white/10 bg-[#02050d]/85 px-3 py-2 text-center text-[11px] leading-snug shadow-[inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-sm"
       >
-        <span className="text-white/80">
+        <span className="text-white/70">
           {geoState === "pending" && "Obteniendo tu ubicación…"}
           {geoState === "gps" && "Mapa centrado en tu ubicación actual."}
           {geoState === "fallback" &&

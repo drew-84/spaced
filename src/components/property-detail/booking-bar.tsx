@@ -32,9 +32,9 @@ export function BookingBar({ property, onReserve }: Props) {
           <div className="flex min-w-0 items-center gap-3 sm:gap-4">
             <div className="hidden flex-col sm:flex">
               <span className={TEXT_LABEL}>Desde</span>
-              <span className="text-lg font-medium tracking-tight text-white">
+              <span className="text-lg font-medium tracking-tight text-white/80">
                 ${property.pricePer45Min}
-                <span className="ml-1 text-[10px] uppercase tracking-[0.24em] text-white/80">
+                <span className="ml-1 text-[10px] uppercase tracking-[0.24em] text-white/50">
                   / 45 min
                 </span>
               </span>
@@ -48,7 +48,7 @@ export function BookingBar({ property, onReserve }: Props) {
                   <span className="relative h-2 w-2 rounded-full bg-white shadow-[0_0_10px_rgba(255,255,255,0.85)]" />
                 </span>
                 <div className="min-w-0">
-                  <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-white [text-shadow:0_0_14px_rgba(255,255,255,0.4)]">
+                  <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/60 [text-shadow:0_0_14px_rgba(255,255,255,0.4)]">
                     Reserva instantánea
                   </p>
                   <p className={`hidden sm:block ${TEXT_HINT}`}>
@@ -58,7 +58,7 @@ export function BookingBar({ property, onReserve }: Props) {
               </div>
             ) : (
               <div className="min-w-0">
-                <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-white">
+                <p className="text-[10px] font-medium uppercase tracking-[0.32em] text-white/60">
                   Aprobación del anfitrión
                 </p>
                 <p className={`truncate ${TEXT_HINT}`}>

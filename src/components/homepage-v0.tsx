@@ -87,7 +87,7 @@ export default function HomepageV0() {
           <section className="grid items-center gap-12 pb-12 pt-10 lg:grid-cols-2 lg:gap-16 lg:pb-16 lg:pt-12">
             <div>
               <h1
-                className={`${display.className} font-normal leading-[1.12] text-white text-[clamp(1.875rem,4vw,2.75rem)]`}
+                className={`${display.className} font-normal leading-[1.12] text-white/95 text-[clamp(1.875rem,4vw,2.75rem)]`}
               >
                 Encuentra un espacio cerca, ahora.
               </h1>
@@ -112,15 +112,15 @@ export default function HomepageV0() {
           <section className="mt-2">
             <div className="grid gap-6 md:grid-cols-3">
               <div className={`${GLASS_TILE} p-8`}>
-                <p className="text-base font-medium text-white">Cerca de ti</p>
+                <p className="text-base font-medium text-white/80">Cerca de ti</p>
               </div>
               <div className={`${GLASS_TILE} p-8`}>
-                <p className="text-base font-medium text-white">
+                <p className="text-base font-medium text-white/80">
                   Reserva rápida
                 </p>
               </div>
               <div className={`${GLASS_TILE} p-8`}>
-                <p className="text-base font-medium text-white">
+                <p className="text-base font-medium text-white/80">
                   Por el tiempo que necesitas
                 </p>
               </div>
@@ -129,7 +129,7 @@ export default function HomepageV0() {
 
           <section className="mt-16">
             <h2
-              className={`${display.className} text-2xl font-normal text-white sm:text-[1.75rem]`}
+              className={`${display.className} text-2xl font-normal text-white/80 sm:text-[1.75rem]`}
             >
               Tu recorrido en la app
             </h2>
@@ -141,7 +141,7 @@ export default function HomepageV0() {
                   >
                     Paso {index + 1}
                   </p>
-                  <h3 className="mt-2 text-base font-semibold text-white">
+                  <h3 className="mt-2 text-base font-semibold text-white/80">
                     {step.title}
                   </h3>
                   <p className={`mt-2 text-sm leading-relaxed ${TEXT_BODY}`}>
@@ -154,25 +154,25 @@ export default function HomepageV0() {
 
           <section className="mt-20">
             <h2
-              className={`${display.className} text-2xl font-normal text-white sm:text-[1.75rem]`}
+              className={`${display.className} text-2xl font-normal text-white/80 sm:text-[1.75rem]`}
             >
               Cómo funciona
             </h2>
             <ol className="mt-10 grid list-none gap-10 p-0 sm:grid-cols-3 sm:gap-8">
               <li className="flex flex-col gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
                   1
                 </span>
                 <span className={`text-base ${TEXT_BODY}`}>Encuentra</span>
               </li>
               <li className="flex flex-col gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
                   2
                 </span>
                 <span className={`text-base ${TEXT_BODY}`}>Reserva</span>
               </li>
               <li className="flex flex-col gap-4">
-                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
+                <span className="flex h-12 w-12 items-center justify-center rounded-full border border-white/30 bg-white/[0.1] text-sm font-semibold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.22)] backdrop-blur-md">
                   3
                 </span>
                 <span className={`text-base ${TEXT_BODY}`}>Entra</span>
@@ -183,7 +183,7 @@ export default function HomepageV0() {
           <section className="mt-20 space-y-6">
             <div className="flex flex-wrap items-end justify-between gap-4">
               <h2
-                className={`${display.className} text-2xl font-normal text-white sm:text-[1.75rem]`}
+                className={`${display.className} text-2xl font-normal text-white/80 sm:text-[1.75rem]`}
               >
                 Para momentos reales
               </h2>
@@ -197,7 +197,7 @@ export default function HomepageV0() {
             <div className="grid gap-6 md:grid-cols-3">
               {useCases.map((item) => (
                 <article key={item.title} className={`${GLASS_PANEL} p-6`}>
-                  <h3 className="text-lg font-semibold text-white">
+                  <h3 className="text-lg font-semibold text-white/80">
                     {item.title}
                   </h3>
                   <p className={`mt-2 text-sm leading-relaxed ${TEXT_BODY}`}>
@@ -210,19 +210,19 @@ export default function HomepageV0() {
 
           <section className={`mt-16 grid gap-4 ${GLASS_PANEL} p-6 sm:grid-cols-3 sm:p-8`}>
             <article className="text-center">
-              <p className={`${display.className} text-3xl text-white`}>
+              <p className={`${display.className} text-3xl text-white/80`}>
                 {averageRating.toFixed(1)} / 5
               </p>
               <p className={`mt-1 text-sm ${TEXT_BODY}`}>Valoración media</p>
             </article>
             <article className="text-center">
-              <p className={`${display.className} text-3xl text-white`}>
+              <p className={`${display.className} text-3xl text-white/80`}>
                 {totalReviews}+
               </p>
               <p className={`mt-1 text-sm ${TEXT_BODY}`}>Reseñas</p>
             </article>
             <article className="text-center">
-              <p className={`${display.className} text-3xl text-white`}>
+              <p className={`${display.className} text-3xl text-white/80`}>
                 {instantAccessCount}
               </p>
               <p className={`mt-1 text-sm ${TEXT_BODY}`}>
@@ -233,7 +233,7 @@ export default function HomepageV0() {
 
           <section className={`mt-16 ${GLASS_PANEL_OUTER} px-6 py-12 text-center sm:px-10`}>
             <h2
-              className={`${display.className} text-2xl font-normal text-white sm:text-3xl`}
+              className={`${display.className} text-2xl font-normal text-white/80 sm:text-3xl`}
             >
               Tu espacio puede estar a minutos
             </h2>

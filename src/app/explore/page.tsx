@@ -24,7 +24,7 @@ export default function ExplorePage() {
         <TopNav />
         <main className="mx-auto max-w-2xl px-6 py-24 sm:px-8">
           <p className={`${TEXT_EYEBROW} tracking-[0.28em]`}>Explorar</p>
-          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-white">
+          <h1 className="mt-4 text-2xl font-semibold tracking-tight text-white/95">
             Fase 1
           </h1>
           <p className={`mt-3 text-sm leading-relaxed ${TEXT_BODY}`}>

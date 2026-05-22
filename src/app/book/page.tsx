@@ -32,7 +32,7 @@ export default function BookPage() {
         <TopNav active="book" />
         <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10 sm:px-8 lg:grid-cols-[1.3fr_1fr]">
           <section className="space-y-5">
-            <h1 className="text-3xl font-semibold text-white">
+            <h1 className="text-3xl font-semibold text-white/95">
               Reserva tu sesión
             </h1>
             <p className={`text-sm ${TEXT_BODY}`}>
@@ -42,7 +42,7 @@ export default function BookPage() {
           </section>
 
           <aside className={`h-fit space-y-3 ${GLASS_PANEL} p-5`}>
-            <h2 className="text-lg font-semibold text-white">
+            <h2 className="text-lg font-semibold text-white/80">
               Resumen del borrador
             </h2>
             <p className={`text-sm ${TEXT_BODY}`}>
@@ -50,15 +50,15 @@ export default function BookPage() {
             </p>
             <ul className={`space-y-2 text-sm ${TEXT_BODY}`}>
               <li>
-                <span className="font-medium text-white">Espacio: </span>
+                <span className="font-medium text-white/60">Espacio: </span>
                 {selectedSpace?.title ?? "No seleccionado"}
               </li>
               <li>
-                <span className="font-medium text-white">Duración: </span>
+                <span className="font-medium text-white/60">Duración: </span>
                 {draft.durationMinutes} min
               </li>
               <li>
-                <span className="font-medium text-white">Ampliación: </span>+
+                <span className="font-medium text-white/60">Ampliación: </span>+
                 {draft.extensionMinutes} min
               </li>
             </ul>

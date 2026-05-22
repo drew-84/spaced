@@ -33,10 +33,10 @@ export function LocationSection() {
         {/* heading */}
         <div className="flex flex-col gap-3">
           <p className={`${TEXT_EYEBROW} tracking-[0.55em]`}>Cerca de ti</p>
-          <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
+          <h2 className="text-3xl font-semibold leading-tight text-white/95 sm:text-4xl">
             Encuentra el espacio perfecto
             <br />
-            <span className="text-white">en minutos</span>
+            <span className="text-white/95">en minutos</span>
           </h2>
           <p className={`max-w-md text-sm leading-relaxed ${TEXT_BODY}`}>
             Reserva por horas o fracciones de 30 min. Sin trámites, sin
@@ -93,13 +93,13 @@ export function LocationSection() {
                 <div className="flex items-center justify-between">
                   <div>
                     <p className={`${TEXT_LABEL} tracking-[0.4em]`}>Tu zona</p>
-                    <p className="mt-0.5 text-sm font-semibold text-white">
+                    <p className="mt-0.5 text-sm font-semibold text-white/80">
                       Roma Norte, CDMX
                     </p>
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={STATUS_DOT} />
-                    <span className="text-[11px] font-medium text-white/80">
+                    <span className="text-[11px] font-medium text-white/50">
                       8 espacios listos
                     </span>
                   </div>
@@ -109,7 +109,7 @@ export function LocationSection() {
                     <button
                       key={area}
                       type="button"
-                      className="shrink-0 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1 text-[10px] font-medium text-white/70 transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
+                      className="shrink-0 rounded-full border border-white/20 bg-white/[0.04] px-3 py-1 text-[10px] font-medium text-white/50 transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white"
                     >
                       {area}
                     </button>

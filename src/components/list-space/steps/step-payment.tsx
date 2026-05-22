@@ -54,7 +54,7 @@ export function StepPayment({ data, errors, onChange }: Props) {
         autoComplete="off"
         error={errors.numeroCuenta}
       />
-      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/80">
+      <p className="text-[10px] leading-relaxed tracking-[0.18em] text-white/50">
         Tus datos bancarios se guardan cifrados y solo se usan para
         transferirte los pagos por tus reservas.
       </p>
