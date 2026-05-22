@@ -196,7 +196,7 @@ export function HostCardsSection() {
             <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
               Espacios disponibles
               <br />
-              <span className="text-white/80">registrados por hosts</span>
+              <span className="text-white">registrados por hosts</span>
             </h2>
             <p className={`max-w-sm text-sm leading-relaxed ${TEXT_BODY}`}>
               Cada publicación fue creada por un host real. Elige el tipo de

@@ -104,7 +104,7 @@ export default function LoginPage() {
               ¿No tienes cuenta?{" "}
               <Link
                 href="/register"
-                className="font-medium text-white/80 underline underline-offset-2 transition-colors duration-300 ease-out hover:text-white"
+                className="font-medium text-white/70 underline underline-offset-2 transition-colors duration-300 ease-out hover:text-white"
               >
                 Registrarse
               </Link>

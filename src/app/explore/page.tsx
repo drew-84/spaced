@@ -34,7 +34,7 @@ export default function ExplorePage() {
           </p>
           <Link
             href="/"
-            className="mt-10 inline-block text-sm text-white/80 underline decoration-white/30 underline-offset-4 transition-colors duration-300 ease-out hover:text-white hover:decoration-white/60"
+            className="mt-10 inline-block text-sm text-white/70 underline decoration-white/30 underline-offset-4 transition-colors duration-300 ease-out hover:text-white hover:decoration-white/60"
           >
             Volver al campo
           </Link>

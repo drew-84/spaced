@@ -9,13 +9,15 @@
  * COLOR CONTRACT
  *   - All text is pure bright white (#FFFFFF). Hierarchy is expressed
  *     exclusively through opacity:
- *       • Headings ........ text-white          (100%)
- *       • Labels / eyebrows / section headers ... text-white  (100%)
- *       • Body / descriptive text ............... text-white/80 (80%)
- *       • Interactive rest ...................... text-white/70 (70%)
- *       • Placeholder ........................... text-white/40 (40%)
- *   - Interactive elements rest at 70–80% white. On hover/focus/active
- *     they brighten to full 100% white with a smooth 300 ms ease.
+ *       • Headings / titles / primary values .... text-white     (100%)
+ *       • Body / descriptive text ............... text-white/80  (80%)
+ *       • Section eyebrows / labels / interactive rest .. text-white/70 (70%)
+ *       • Placeholder ........................... text-white/40  (40%)
+ *   - Eyebrows and field labels rest at 70%, brightening to full 100%
+ *     white on hover/focus only when they are interactive.
+ *   - Interactive elements (links, pills, ghost buttons) rest at 70% and
+ *     brighten to full 100% white on hover/focus/active with a smooth
+ *     200–300 ms ease.
  *   - Borders: subtle white at 10/15% at rest, 30/40% when active/focused.
  *
  * STRUCTURAL TOKENS (preserved verbatim from existing OfferScreen +
@@ -91,18 +93,18 @@ export const PAGE_AMBIENT_SHIMMER =
 export const TEXT_HEADING =
   "text-white font-medium uppercase tracking-widest";
 
-/** Section eyebrow — uppercase, very wide tracking, FULL bright white
- *  (section headers / labels per contract). */
+/** Section eyebrow — uppercase, very wide tracking, white at 70% per
+ *  the contract (sits above a 100% headline). */
 export const TEXT_EYEBROW =
-  "text-[10px] font-medium uppercase tracking-[0.42em] text-white";
+  "text-[10px] font-medium uppercase tracking-[0.42em] text-white/70";
 
-/** Smaller eyebrow used inside dense forms — full bright white. */
+/** Smaller eyebrow used inside dense forms — white at 70%. */
 export const TEXT_EYEBROW_SM =
-  "text-[10px] uppercase tracking-[0.32em] text-white";
+  "text-[10px] uppercase tracking-[0.32em] text-white/70";
 
-/** Field label — same family as eyebrow, full bright white. */
+/** Field label — same family as eyebrow, white at 70%. */
 export const TEXT_LABEL =
-  "text-[10px] uppercase tracking-[0.32em] text-white";
+  "text-[10px] uppercase tracking-[0.32em] text-white/70";
 
 /** Body — paragraph text at 80% white, light weight, slight tracking. */
 export const TEXT_BODY =
@@ -216,7 +218,7 @@ export const CTA_PRIMARY = [
 /** Secondary CTA — "Atrás", "Cerrar" pill. */
 export const CTA_SECONDARY = [
   "rounded-full border border-white/15 bg-white/[0.04] px-4 py-2.5",
-  "text-[10px] uppercase tracking-[0.26em] text-white/80",
+  "text-[10px] uppercase tracking-[0.26em] text-white/70",
   "shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)]",
   "backdrop-blur-md",
   "transition-all duration-300 ease-out motion-reduce:transition-none",

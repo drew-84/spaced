@@ -36,7 +36,7 @@ export function LocationSection() {
           <h2 className="text-3xl font-semibold leading-tight text-white sm:text-4xl">
             Encuentra el espacio perfecto
             <br />
-            <span className="text-white/80">en minutos</span>
+            <span className="text-white">en minutos</span>
           </h2>
           <p className={`max-w-md text-sm leading-relaxed ${TEXT_BODY}`}>
             Reserva por horas o fracciones de 30 min. Sin trámites, sin
@@ -99,7 +99,7 @@ export function LocationSection() {
                   </div>
                   <div className="flex items-center gap-2">
                     <span className={STATUS_DOT} />
-                    <span className="text-[11px] font-medium text-white">
+                    <span className="text-[11px] font-medium text-white/80">
                       8 espacios listos
                     </span>
                   </div>

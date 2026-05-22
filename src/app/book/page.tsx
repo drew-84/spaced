@@ -64,7 +64,7 @@ export default function BookPage() {
             </ul>
             <Link
               href="/spaces"
-              className="inline-flex text-sm font-medium text-white/80 underline underline-offset-4 transition-colors duration-300 ease-out hover:text-white"
+              className="inline-flex text-sm font-medium text-white/70 underline underline-offset-4 transition-colors duration-300 ease-out hover:text-white"
             >
               Volver a espacios
             </Link>

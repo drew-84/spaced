@@ -164,35 +164,40 @@ export function ListSpaceExperience() {
         {/* LEFT panel — static-ish context */}
         <aside
           aria-label="Contexto"
-          /* Asymmetric outer modal panel — keeps OfferScreen's structural shape */
-          className="relative flex w-full shrink-0 flex-col gap-8 overflow-hidden rounded-[28px_56px_28px_48px] border border-white/10 border-b-transparent border-r-transparent bg-[#07101d]/42 p-7 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:p-9 lg:max-w-[36%]"
-          style={{
-            maskImage:
-              "radial-gradient(ellipse 112% 96% at 22% 42%, black 0%, black 60%, rgba(0,0,0,0.88) 80%, rgba(0,0,0,0.5) 94%, transparent 100%)",
-            WebkitMaskImage:
-              "radial-gradient(ellipse 112% 96% at 22% 42%, black 0%, black 60%, rgba(0,0,0,0.88) 80%, rgba(0,0,0,0.5) 94%, transparent 100%)",
-          }}
+          /* Asymmetric outer modal panel — keeps OfferScreen's structural shape.
+             The mask is scoped to the inner bg layer below so text is never clipped. */
+          className="relative flex w-full shrink-0 flex-col gap-8 rounded-[28px_56px_28px_48px] border border-white/10 border-b-transparent border-r-transparent bg-[#07101d]/42 p-7 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:p-9 lg:max-w-[36%]"
         >
-          {/* Ambient gradient wash — same recipe as the modal */}
+          {/* Decorative bg layers — mask applied here only, so text is unaffected */}
           <div
             aria-hidden
-            className="pointer-events-none absolute inset-0"
+            className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px_56px_28px_48px]"
             style={{
-              background:
-                "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(150,205,255,0.12), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(96,165,250,0.045))",
+              maskImage:
+                "radial-gradient(ellipse 112% 96% at 22% 42%, black 0%, black 60%, rgba(0,0,0,0.88) 80%, rgba(0,0,0,0.5) 94%, transparent 100%)",
+              WebkitMaskImage:
+                "radial-gradient(ellipse 112% 96% at 22% 42%, black 0%, black 60%, rgba(0,0,0,0.88) 80%, rgba(0,0,0,0.5) 94%, transparent 100%)",
             }}
-          />
-          {/* Subtle vertical light accent — soft white instead of sky tint */}
-          <div
-            aria-hidden
-            className="pointer-events-none absolute bottom-16 left-9 top-32 hidden w-px sm:block"
-            style={{
-              background:
-                "linear-gradient(180deg, transparent, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0.5) 70%, transparent)",
-              filter: "blur(0.5px)",
-              boxShadow: "0 0 12px rgba(255,255,255,0.38)",
-            }}
-          />
+          >
+            {/* Ambient gradient wash */}
+            <div
+              className="absolute inset-0"
+              style={{
+                background:
+                  "radial-gradient(ellipse 52% 42% at 18% 0%, rgba(150,205,255,0.12), transparent 68%), linear-gradient(120deg, rgba(255,255,255,0.075), transparent 30%, transparent 62%, rgba(96,165,250,0.045))",
+              }}
+            />
+            {/* Subtle vertical light accent */}
+            <div
+              className="absolute bottom-16 left-9 top-32 hidden w-px sm:block"
+              style={{
+                background:
+                  "linear-gradient(180deg, transparent, rgba(255,255,255,0.5) 30%, rgba(255,255,255,0.5) 70%, transparent)",
+                filter: "blur(0.5px)",
+                boxShadow: "0 0 12px rgba(255,255,255,0.38)",
+              }}
+            />
+          </div>
 
           <div className="relative">
             <p className={`${TEXT_EYEBROW} tracking-[0.62em]`}>

@@ -141,7 +141,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     if (isOtherHovered) {
       return "text-white/40 [text-shadow:0_0_10px_rgba(255,255,255,0.2)]";
     }
-    return "text-white/80 [text-shadow:0_0_18px_rgba(255,255,255,0.45)]";
+    return "text-white/70 [text-shadow:0_0_18px_rgba(255,255,255,0.4)]";
   }
 
   function handleOfferClick() {
@@ -184,14 +184,14 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     <div className="relative mx-auto h-[min(82vh,640px)] w-full max-w-[1180px] overflow-hidden">
       <p
         aria-hidden
-        className="pointer-events-none absolute left-1/2 top-[9%] z-10 -translate-x-1/2 whitespace-nowrap text-[13px] font-light uppercase tracking-[0.6em] text-white/80 [text-shadow:0_0_18px_rgba(255,255,255,0.45)]"
+        className="pointer-events-none absolute left-1/2 top-[9%] z-10 -translate-x-1/2 whitespace-nowrap text-[13px] font-light uppercase tracking-[0.6em] text-white [text-shadow:0_0_18px_rgba(255,255,255,0.5)]"
       >
         ACTIVA ESPACIO AHORA
       </p>
 
       <p
         aria-hidden
-        className="pointer-events-none absolute right-[6%] top-[16%] z-10 text-[10px] font-medium uppercase tracking-[0.34em] text-white/[0.32]"
+        className="pointer-events-none absolute right-[6%] top-[16%] z-10 text-[10px] font-medium uppercase tracking-[0.34em] text-white/80"
       >
         {readyCount} Listos
       </p>
@@ -396,7 +396,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                             ? "text-[10px] tracking-[0.28em]"
                             : isSide
                               ? "text-[8px] tracking-[0.24em]"
-                              : "text-[7px] tracking-[0.22em] text-white/70",
+                              : "text-[7px] tracking-[0.22em]",
                         ].join(" ")}
                       >
                         {card.space.area}
@@ -451,9 +451,9 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
           fill="none"
           aria-hidden
           className={[
-            "transition-colors duration-300 ease-out motion-reduce:transition-none",
+            "transition-colors duration-200 ease-out motion-reduce:transition-none",
             hoveredLabel === null
-              ? "text-white/80"
+              ? "text-white/70"
               : hoveredLabel === "explorar"
                 ? "text-white"
                 : "text-white/40",
@@ -696,7 +696,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
                 <button
                   type="button"
                   onClick={() => setOfferOpen(false)}
-                  className="rounded-full border border-white/15 bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/80 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white hover:[transform:translateZ(8px)]"
+                  className="rounded-full border border-white/15 bg-white/[0.04] px-3 py-2 text-[10px] uppercase tracking-[0.26em] text-white/70 shadow-[0_10px_24px_rgba(0,0,0,0.24),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/40 hover:bg-white/[0.08] hover:text-white hover:[transform:translateZ(8px)]"
                 >
                   cerrar
                 </button>

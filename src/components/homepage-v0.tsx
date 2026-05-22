@@ -189,7 +189,7 @@ export default function HomepageV0() {
               </h2>
               <Link
                 href="/spaces"
-                className="text-sm font-semibold text-white/80 underline-offset-4 transition-colors duration-300 ease-out hover:text-white hover:underline"
+                className="text-sm font-semibold text-white/70 underline-offset-4 transition-colors duration-300 ease-out hover:text-white hover:underline"
               >
                 Ver disponibles
               </Link>

@@ -159,7 +159,7 @@ export function StepVideos({ data, onChange }: Props) {
                     e.stopPropagation();
                     setVideoAt(idx, null);
                   }}
-                  className="absolute right-3 top-3 z-20 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/80 backdrop-blur-md transition-colors duration-300 ease-out hover:border-white/40 hover:text-white"
+                  className="absolute right-3 top-3 z-20 rounded-full border border-white/20 bg-black/45 px-2.5 py-1 text-[9px] uppercase tracking-[0.26em] text-white/70 backdrop-blur-md transition-colors duration-300 ease-out hover:border-white/40 hover:text-white"
                 >
                   Quitar
                 </button>
