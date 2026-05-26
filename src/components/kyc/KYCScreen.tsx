@@ -1,16 +1,21 @@
 "use client";
 
-import { useEffect } from "react";
+import { useCallback, useEffect, useState } from "react";
 import {
   CTA_SECONDARY,
   MODAL_AMBIENT_BG,
-  PROGRESS_TRACK,
   RIM_HIGHLIGHT_TOP,
   SCRIM,
   textBody,
   textLabel,
   textPrimary,
 } from "@/styles/glass";
+import { DEFAULT_COUNTRY, type Country } from "@/lib/kyc/countries";
+import { StepEmail } from "./steps/StepEmail";
+import { StepPhone } from "./steps/StepPhone";
+import { StepCode } from "./steps/StepCode";
+import { StepId } from "./steps/StepId";
+import { StepVerify } from "./steps/StepVerify";
 
 /**
  * SPACED — KYCScreen
@@ -31,27 +36,46 @@ import {
 
 export type KYCUserType = "guest" | "host";
 
+/** Full payload handed back to the parent on a successful KYC pass. The
+ *  parent typically ignores it for now (handlers are `() => void`), but
+ *  the shape is defined so the data is available the moment a backend
+ *  hook is wired in. */
+export type KYCCompletePayload = {
+  email: string;
+  phone: string;
+  country: Country;
+  verified: boolean;
+  /** Data URL for the front side of the cédula. */
+  idFront: string | null;
+  /** Data URL for the reverse side of the cédula. */
+  idBack: string | null;
+};
+
 type KYCScreenProps = {
   userType: KYCUserType;
   /** 1-based index of the active step (1..TOTAL_STEPS). */
   currentStep?: number;
-  /** Fires when the verification flow completes successfully. */
-  onComplete: () => void;
+  /** Fires when the verification flow completes successfully. Carries the
+   *  full set of collected data. Callers that only care about closing
+   *  the modal can declare the handler as `() => void`. */
+  onComplete: (payload?: KYCCompletePayload) => void;
   /** Fires when the user dismisses the screen without finishing. */
   onClose: () => void;
 };
 
 /* ─── Step model ────────────────────────────────────────────────────────── */
 
-const TOTAL_STEPS = 6;
+/* The KYC flow has 5 logical steps. ID front + back share one screen, and
+   verification processing + success share one screen, so the progress bar
+   advances in five increments. */
+const TOTAL_STEPS = 5;
 
-/* Step names indexed 0..5 (currentStep is 1-based, so subtract 1). */
+/* Step names indexed 0..4 (currentStep is 1-based, so subtract 1). */
 const STEP_NAMES = [
   "EMAIL",
   "TELÉFONO",
   "CÓDIGO",
-  "CÉDULA · FRENTE",
-  "CÉDULA · REVERSO",
+  "CÉDULA",
   "VERIFICACIÓN",
 ] as const;
 
@@ -108,15 +132,182 @@ function clampStep(step: number): number {
   return Math.min(TOTAL_STEPS, Math.max(1, Math.round(step)));
 }
 
+/* ─── Step renderer ─────────────────────────────────────────────────────
+   Centralises the step-number → component mapping so it can be used both
+   for the active step and for the outgoing-step overlay during a
+   transition. The handlers + state setters travel as a single bag to
+   keep call sites readable. */
+type StepHandlers = {
+  email: string;
+  setEmail: (next: string) => void;
+  handleEmailSubmit: (value: string) => void;
+  country: Country;
+  setCountry: (c: Country) => void;
+  phone: string;
+  setPhone: (digits: string) => void;
+  handlePhoneSubmit: (payload: { country: Country; phone: string }) => void;
+  handleCodeSubmit: () => void;
+  idFront: string | null;
+  setIdFront: (next: string | null) => void;
+  idBack: string | null;
+  setIdBack: (next: string | null) => void;
+  handleIdSubmit: () => void;
+  handleVerifyComplete: () => void;
+  navigateTo: (next: number) => void;
+};
+
+function renderStep(step: number, h: StepHandlers) {
+  switch (step) {
+    case 1:
+      return (
+        <StepEmail
+          email={h.email}
+          onEmailChange={h.setEmail}
+          onSubmit={h.handleEmailSubmit}
+        />
+      );
+    case 2:
+      return (
+        <StepPhone
+          country={h.country}
+          onCountryChange={h.setCountry}
+          phone={h.phone}
+          onPhoneChange={h.setPhone}
+          onSubmit={h.handlePhoneSubmit}
+          onBack={() => h.navigateTo(1)}
+        />
+      );
+    case 3:
+      return (
+        <StepCode
+          country={h.country}
+          phone={h.phone}
+          onSubmit={h.handleCodeSubmit}
+          onBack={() => h.navigateTo(2)}
+        />
+      );
+    case 4:
+      return (
+        <StepId
+          idFront={h.idFront}
+          idBack={h.idBack}
+          onIdFrontChange={h.setIdFront}
+          onIdBackChange={h.setIdBack}
+          onSubmit={h.handleIdSubmit}
+          onBack={() => h.navigateTo(3)}
+        />
+      );
+    case 5:
+      return (
+        <StepVerify email={h.email} onSubmit={h.handleVerifyComplete} />
+      );
+    default:
+      return null;
+  }
+}
+
 export function KYCScreen({
   userType,
   currentStep = 1,
+  onComplete,
   onClose,
 }: KYCScreenProps) {
-  const step = clampStep(currentStep);
-  const fillPct = (step / TOTAL_STEPS) * 100;
-  const stepName = STEP_NAMES[step - 1];
   const copy = COPY[userType];
+
+  /* ─── Step navigation ─────────────────────────────────────────────────
+     activeStep is internally owned so the orchestrator can advance the
+     flow itself. The `currentStep` prop seeds the initial value but
+     subsequent changes happen here. */
+  const [activeStep, setActiveStep] = useState<number>(() =>
+    clampStep(currentStep),
+  );
+
+  /* Drives the slide-in/slide-out animation for the step content. When
+     non-null, the previous step is briefly rendered over the new one
+     using the "out" keyframe while the new one plays the "in" keyframe. */
+  const [transition, setTransition] = useState<{
+    from: number;
+    direction: "forward" | "back";
+  } | null>(null);
+
+  const navigateTo = useCallback(
+    (next: number) => {
+      const target = clampStep(next);
+      if (target === activeStep) return;
+      setTransition({
+        from: activeStep,
+        direction: target > activeStep ? "forward" : "back",
+      });
+      setActiveStep(target);
+    },
+    [activeStep],
+  );
+
+  /* Clear the outgoing-step overlay once the 300 ms animation is done so
+     it doesn't keep eating pointer events or RAF cycles. */
+  useEffect(() => {
+    if (!transition) return;
+    const timer = window.setTimeout(() => setTransition(null), 320);
+    return () => window.clearTimeout(timer);
+  }, [transition]);
+
+  const fillPct = (activeStep / TOTAL_STEPS) * 100;
+  const stepName = STEP_NAMES[activeStep - 1];
+
+  /* ─── Per-step form state ─────────────────────────────────────────────
+     Lifted to the orchestrator so going back to a previous step
+     preserves what the user already entered. ID images are data URLs
+     for now (no server upload yet). */
+  const [email, setEmail] = useState("");
+  const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
+  const [phone, setPhone] = useState("");
+  const [idFront, setIdFront] = useState<string | null>(null);
+  const [idBack, setIdBack] = useState<string | null>(null);
+
+  function handleEmailSubmit(_value: string) {
+    /* The email is already in parent state via onEmailChange — just
+       advance. The console.log lives in StepEmail. */
+    navigateTo(2);
+  }
+
+  function handlePhoneSubmit(_payload: { country: Country; phone: string }) {
+    /* Real SMS sending will be wired when the backend exists; for now
+       just advance so the progress bar + transition can be verified. */
+    console.log("[KYC] phone valid, moving to step 3", _payload);
+    navigateTo(3);
+  }
+
+  function handleCodeSubmit() {
+    /* The 6-digit code matched the gold path inside StepCode. The
+       backend hook for marking the phone "verified" lands later. */
+    console.log("[KYC] code verified, moving to step 4");
+    navigateTo(4);
+  }
+
+  function handleIdSubmit() {
+    /* Both cédula photos captured. Step 5 owns the processing → success
+       animation; once the user presses CONTINUAR there we hand off to
+       the parent via handleVerifyComplete. */
+    console.log("[KYC] ID images captured, moving to step 5");
+    navigateTo(5);
+  }
+
+  function handleVerifyComplete() {
+    /* User pressed CONTINUAR on the success screen. Bundle everything
+       collected during the flow and hand it back to the parent so they
+       can either open BookingModal (guest) or route to /ofrecer
+       (host) — see PropertyDetailExperience.handleKycComplete and
+       SpatialCardField.handleKycComplete for the consumer side. */
+    console.log("[KYC] flow complete, handing off to parent");
+    onComplete({
+      email,
+      phone,
+      country,
+      verified: true,
+      idFront,
+      idBack,
+    });
+  }
 
   // Esc dismisses the screen, mirroring BookingModal behaviour.
   useEffect(() => {
@@ -288,28 +479,36 @@ export function KYCScreen({
           {/* Progress bar + step-name row. Sits at the top of the right
               panel and spans 100% of its content area. */}
           <header
-            className="relative flex flex-col gap-2"
-            aria-label={`Paso ${step} de ${TOTAL_STEPS}`}
+            className="relative flex flex-col gap-2.5"
+            aria-label={`Paso ${activeStep} de ${TOTAL_STEPS}`}
           >
-            {/* Track — uses the shared PROGRESS_TRACK token (h-px,
-                bg-white/10) so unfilled state matches the rest of the app. */}
+            {/* Track — 6 px tall pill, subtle inset shadow gives the
+                "recessed into the panel" depth cue. */}
             <div
-              className={PROGRESS_TRACK}
+              className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08] shadow-[inset_0_1px_2px_rgba(0,0,0,0.45),inset_0_-1px_0_rgba(255,255,255,0.04)]"
               role="progressbar"
               aria-valuemin={0}
               aria-valuemax={TOTAL_STEPS}
-              aria-valuenow={step}
+              aria-valuenow={activeStep}
               aria-valuetext={stepName}
             >
-              {/* Fill — bright white with a soft outer glow. Width is
-                  inline so the bar reacts instantly to currentStep, and the
-                  300 ms ease transition is set explicitly per spec. */}
+              {/* Fill — bright-white liquid with a brighter leading edge.
+                  At 100% (final step) the glow blooms a touch wider and
+                  the opacity ticks up to 1.0 so completion reads as a
+                  small but satisfying moment. */}
               <span
                 aria-hidden
-                className="absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-white/55 via-white to-white shadow-[0_0_18px_rgba(255,255,255,0.6)]"
+                className={[
+                  "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-white/70 via-white/85 to-white",
+                  activeStep === TOTAL_STEPS
+                    ? "shadow-[0_0_10px_rgba(255,255,255,0.7),0_0_26px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.78)]"
+                    : "shadow-[0_0_8px_rgba(255,255,255,0.55),0_0_18px_rgba(255,255,255,0.32),inset_0_1px_0_rgba(255,255,255,0.6)]",
+                ].join(" ")}
                 style={{
                   width: `${fillPct}%`,
-                  transition: "width 300ms ease-out",
+                  transition:
+                    "width 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms ease-out",
+                  opacity: activeStep === TOTAL_STEPS ? 1 : 0.9,
                 }}
               />
             </div>
@@ -317,14 +516,89 @@ export function KYCScreen({
             {/* Step name — right-aligned, label tier (60%). Decorative
                 hierarchy only; no step number, per spec. */}
             <p
-              className={`self-end text-[10px] uppercase tracking-[0.32em] ${textLabel}`}
+              className={`self-end text-[10px] uppercase tracking-widest ${textLabel}`}
             >
               {stepName}
             </p>
           </header>
 
-          {/* Step content lives below the progress bar — added in a
-              follow-up prompt. */}
+          {/* Step content area — vertically centered in the remaining
+              space. Width constraints live on each step component so
+              wider steps (e.g. ID upload with two side-by-side zones)
+              can opt-in independently. The relative inner box is the
+              animation stage for the slide-in / slide-out crossfade. */}
+          <div className="relative flex flex-1 items-center justify-center px-2 sm:px-6">
+            <div className="relative w-full">
+              {/* Outgoing step — overlays the new one for ~300 ms while
+                  it slides out. Pointer-events-none so it doesn't block
+                  the incoming step's focus / clicks. */}
+              {transition && (
+                <div
+                  aria-hidden
+                  className="pointer-events-none absolute inset-0"
+                  style={{
+                    animation: `kycStepOut${
+                      transition.direction === "forward" ? "Fwd" : "Back"
+                    } 300ms ease both`,
+                  }}
+                >
+                  {renderStep(transition.from, {
+                    email,
+                    setEmail,
+                    handleEmailSubmit,
+                    country,
+                    setCountry,
+                    phone,
+                    setPhone,
+                    handlePhoneSubmit,
+                    handleCodeSubmit,
+                    idFront,
+                    setIdFront,
+                    idBack,
+                    setIdBack,
+                    handleIdSubmit,
+                    handleVerifyComplete,
+                    navigateTo,
+                  })}
+                </div>
+              )}
+
+              {/* Active step — keyed by step number so React mounts a
+                  fresh instance per step and the enter animation fires
+                  each time. */}
+              <div
+                key={activeStep}
+                style={
+                  transition
+                    ? {
+                        animation: `kycStepIn${
+                          transition.direction === "forward" ? "Fwd" : "Back"
+                        } 300ms ease both`,
+                      }
+                    : undefined
+                }
+              >
+                {renderStep(activeStep, {
+                  email,
+                  setEmail,
+                  handleEmailSubmit,
+                  country,
+                  setCountry,
+                  phone,
+                  setPhone,
+                  handlePhoneSubmit,
+                  handleCodeSubmit,
+                  idFront,
+                  setIdFront,
+                  idBack,
+                  setIdBack,
+                  handleIdSubmit,
+                  handleVerifyComplete,
+                  navigateTo,
+                })}
+              </div>
+            </div>
+          </div>
         </section>
       </main>
 
@@ -336,6 +610,48 @@ export function KYCScreen({
         @keyframes kycSpacioBreath {
           0%, 100% { transform: scale(1);    opacity: 0.85; }
           50%      { transform: scale(1.02); opacity: 1;    }
+        }
+        @keyframes kycChipFadeIn {
+          from { opacity: 0; transform: translate(-50%, 4px); }
+          to   { opacity: 1; transform: translate(-50%, 0);   }
+        }
+        /* Step crossfade — forward = next step slides in from the right,
+           current step slides out to the left. Back = mirror image. */
+        @keyframes kycStepInFwd {
+          from { opacity: 0; transform: translateX(40px); }
+          to   { opacity: 1; transform: translateX(0);    }
+        }
+        @keyframes kycStepOutFwd {
+          from { opacity: 1; transform: translateX(0);     }
+          to   { opacity: 0; transform: translateX(-40px); }
+        }
+        @keyframes kycStepInBack {
+          from { opacity: 0; transform: translateX(-40px); }
+          to   { opacity: 1; transform: translateX(0);     }
+        }
+        @keyframes kycStepOutBack {
+          from { opacity: 1; transform: translateX(0);    }
+          to   { opacity: 0; transform: translateX(40px); }
+        }
+        /* Step 5 — verification screen
+           Phase crossfade, rotating spinner, checkmark scale-in, and
+           checkmark stroke draw. Animation names are all kycVerify*
+           prefixed so they never collide with other step keyframes. */
+        @keyframes kycVerifyPhaseIn {
+          from { opacity: 0; transform: translateY(6px); }
+          to   { opacity: 1; transform: translateY(0);    }
+        }
+        @keyframes kycVerifySpin {
+          to { transform: rotate(360deg); }
+        }
+        @keyframes kycVerifyCheckIn {
+          0%   { opacity: 0; transform: scale(0.7); }
+          60%  { opacity: 1; transform: scale(1.06); }
+          100% { opacity: 1; transform: scale(1);    }
+        }
+        @keyframes kycVerifyCheckDraw {
+          from { stroke-dashoffset: 60; }
+          to   { stroke-dashoffset: 0;  }
         }
         @media (prefers-reduced-motion: reduce) {
           [data-kyc-spacio] { animation: none !important; }
