@@ -29,7 +29,7 @@ export default function BookPage() {
       />
 
       <div className="relative">
-        <TopNav active="book" />
+        <TopNav />
         <main className="mx-auto grid w-full max-w-6xl gap-6 px-6 py-10 sm:px-8 lg:grid-cols-[1.3fr_1fr]">
           <section className="space-y-5">
             <h1 className="text-3xl font-semibold text-white/95">

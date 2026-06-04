@@ -168,7 +168,13 @@ export function HostCardsSection() {
   });
 
   return (
-    <section className="relative overflow-hidden bg-[#06070a] py-24 sm:py-32">
+    <section
+      id="spaces"
+      /* `scroll-mt-16` clears the sticky TopNav (~3.5rem tall) so the
+         anchor target lands just above the heading + search bar + pill
+         filters instead of behind the nav bar. */
+      className="relative scroll-mt-16 overflow-hidden bg-[#06070a] py-24 sm:py-32"
+    >
       {/* top line — neutral white wash */}
       <div
         aria-hidden

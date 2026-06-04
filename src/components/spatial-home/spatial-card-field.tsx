@@ -163,6 +163,18 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     router.push("/ofrecer");
   }
 
+  /* EXPLORAR scrolls down to the property grid section (HostCardsSection)
+     which mounts further down the homepage with id="spaces" — the same
+     destination as the "Spaces" link in TopNav, so both entry points
+     feel like one affordance. */
+  function handleExplorarClick() {
+    const target = document.getElementById("spaces");
+    if (target) {
+      target.scrollIntoView({ behavior: "smooth", block: "start" });
+      history.replaceState(null, "", "#spaces");
+    }
+  }
+
   function handleKycComplete() {
     setKycOpen(false);
     router.push("/ofrecer");
@@ -455,6 +467,7 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
           onMouseLeave={() => setHoveredLabel(null)}
           onFocus={() => setHoveredLabel("explorar")}
           onBlur={() => setHoveredLabel(null)}
+          onClick={handleExplorarClick}
           className={[
             "text-[11px] font-medium uppercase tracking-[0.5em] outline-none transition-[color,text-shadow,opacity] duration-200",
             labelClass("explorar"),
