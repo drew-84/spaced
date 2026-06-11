@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   CTA_PRIMARY,
   DIVIDER_VERTICAL,
@@ -14,6 +14,7 @@ import {
   TEXT_LABEL,
 } from "@/styles/glass";
 import { COUNTRIES, type Country } from "@/lib/kyc/countries";
+import { validateEmailDomain } from "@/lib/email-validation";
 import { CountryPicker } from "./CountryPicker";
 
 /**
@@ -52,14 +53,13 @@ import { CountryPicker } from "./CountryPicker";
    `tone` drives ONLY styling intensity — it's fully decoupled from the
    message text:
      • "error" → full-strength amber caption + amber border on the field
-                 (an alarm: wrong content, too long/short, or a blocked submit)
+                 (an alarm: wrong content, too long/short, dead domain)
      • "hint"  → softer amber caption, NO field border
-                 (a gentle reminder: empty but expected, not yet submitted)
+                 (a gentle reminder: empty but expected)
      • null    → silent
-   Both tones share identical typography (see FIELD_HINT / FIELD_ERROR_AMBER);
-   the same message string can surface in either tone. e.g. "Ingresa tu email"
-   is a hint when merely touched, but escalates to error tone once the user
-   clicks CONTINUAR. */
+   Both tones share identical typography (see FIELD_HINT / FIELD_ERROR_AMBER).
+   e.g. "Ingresa tu email" is a soft hint once the empty field has been
+   touched. */
 type FieldState = {
   tone: "error" | "hint" | null;
   message: string | null;
@@ -71,53 +71,57 @@ const SILENT: FieldState = { tone: null, message: null };
  * Email message state — distinguishes incomplete from invalid (see
  * classifyEmail), mirroring the phone field.
  * @param showFormatError gate from the debounce/blur timing layer — true once
- *        the user has paused typing (~1s), blurred, or attempted submit. Keeps
- *        the incomplete/invalid message from flashing on every keystroke.
- * @param submitted true once CONTINUAR was clicked — escalates the empty
- *        reminder from hint tone to error tone.
+ *        the user has paused typing (~1s) or blurred. Keeps the incomplete/
+ *        invalid message from flashing on every keystroke.
+ * @param domainInvalid true when the background domain check has resolved as
+ *        invalid for the CURRENT address (structurally complete, but the
+ *        domain doesn't exist). Lowest-priority error — only reachable once the
+ *        format is valid.
  */
 function emailFieldState(
   emailClass: EmailClass,
   touched: boolean,
   showFormatError: boolean,
-  submitted: boolean,
+  domainInvalid: boolean,
 ): FieldState {
   if (!touched) return SILENT;
-  if (emailClass === "empty")
-    return { tone: submitted ? "error" : "hint", message: "Ingresa tu email" };
-  if (emailClass === "valid") return SILENT; // clears instantly, regardless of timing
-  /* incomplete | invalid — both gated behind the debounce/blur/submit timing
-     so the message never chases the cursor mid-keystroke. */
-  if (!showFormatError) return SILENT;
-  if (emailClass === "incomplete") return { tone: "error", message: "Email incompleto" };
-  return { tone: "error", message: "Formato de email inválido" }; // invalid
+  // 1. Empty + touched → soft hint.
+  if (emailClass === "empty") return { tone: "hint", message: "Ingresa tu email" };
+  // 2 & 3. Structurally invalid / incomplete — gated behind the debounce/blur
+  //        timing so the message never chases the cursor mid-keystroke.
+  if (emailClass === "invalid" || emailClass === "incomplete") {
+    if (!showFormatError) return SILENT;
+    return emailClass === "incomplete"
+      ? { tone: "error", message: "Email incompleto" }
+      : { tone: "error", message: "Formato de email inválido" };
+  }
+  // emailClass === "valid" (structurally complete past this point):
+  // 4. Domain check failed — silent while the check is pending (no result yet).
+  if (domainInvalid) return { tone: "error", message: "Email inválido" };
+  // 5. Valid + domain ok (or not yet checked) → silent.
+  return SILENT;
 }
 
 /**
  * Phone message state — length-aware, distinguishing incomplete from invalid.
  * @param expectedDigits exact valid national digit count for the country.
- * @param validateNow forces validation of a sub-expected number; set on blur,
- *        country change, or submit. While false, a too-short number reads as
- *        "still typing" and stays quiet.
- * @param submitted true once CONTINUAR was clicked — escalates the empty
- *        reminder from hint tone to error tone. (An empty field stays a hint
- *        on a mere blur; only a submit attempt turns it into an alarm.)
+ * @param validateNow forces validation of a sub-expected number; set on blur
+ *        or country change. While false, a too-short number reads as "still
+ *        typing" and stays quiet.
  */
 function phoneFieldState(
   phone: string,
   touched: boolean,
   expectedDigits: number,
   validateNow: boolean,
-  submitted: boolean,
 ): FieldState {
   if (!touched) return SILENT;
-  if (phone.length === 0)
-    return { tone: submitted ? "error" : "hint", message: "Ingresa tu número" };
+  if (phone.length === 0) return { tone: "hint", message: "Ingresa tu número" };
   if (phone.length > expectedDigits)
     return { tone: "error", message: "Número de teléfono inválido" }; // too long
   if (phone.length === expectedDigits) return SILENT; // exact → valid
-  // Some digits but fewer than expected: quiet while typing, but a blur or a
-  // submit reveals it as an unfinished entry — not "wrong", just incomplete.
+  // Some digits but fewer than expected: quiet while typing, but a blur reveals
+  // it as an unfinished entry — not "wrong", just incomplete.
   if (validateNow) return { tone: "error", message: "Número incompleto" };
   return SILENT;
 }
@@ -337,10 +341,19 @@ export function StepContacto({
   onSubmit,
 }: StepContactoProps) {
   const emailInputRef = useRef<HTMLInputElement | null>(null);
+  const phoneInputRef = useRef<HTMLInputElement | null>(null);
+
+  /* Deferred Enter-to-advance: when the user hits Enter on a structurally
+     valid email whose silent domain check hasn't resolved yet, we stash that
+     address here and advance to the phone input the moment the check confirms
+     it (see the effect below). null = no pending advance. */
+  const advanceOnValidRef = useRef<string | null>(null);
 
   /* Per-field "blurred at least once" flags. A field also counts as touched
      the moment it holds typed content (see emailTouched / phoneTouched), so
-     hints surface live without waiting for a blur. */
+     hints surface live without waiting for a blur. Each flag is set ONLY by
+     direct interaction with its own field (that field's blur) or by CONTINUAR
+     — never by interaction with the other field. */
   const [emailBlurred, setEmailBlurred] = useState(false);
   const [phoneBlurred, setPhoneBlurred] = useState(false);
 
@@ -351,9 +364,21 @@ export function StepContacto({
   const [emailShowError, setEmailShowError] = useState(false);
   const [phoneValidateNow, setPhoneValidateNow] = useState(false);
 
-  /* Set once CONTINUAR is clicked. Escalates the empty-field reminders from
-     hint tone to error tone (a blur alone leaves them as soft hints). */
-  const [submitted, setSubmitted] = useState(false);
+  /* Background domain check result, keyed to the EXACT address it was run for.
+     Keying by email is the race guard: a result only counts when its `email`
+     still equals the current field value, so stale in-flight responses for a
+     since-edited address are simply ignored. null = never resolved yet. */
+  const [domainResult, setDomainResult] = useState<{
+    email: string;
+    valid: boolean;
+  } | null>(null);
+
+  /* Mirrors the latest email value for the async staleness check (read inside
+     a resolved promise, where the `email` closure would be stale). */
+  const emailRef = useRef(email);
+  useEffect(() => {
+    emailRef.current = email;
+  }, [email]);
 
   const config = getPhoneConfig(country.iso2);
   const formattedPhone = config.format(phone);
@@ -362,20 +387,36 @@ export function StepContacto({
   const typoFix = useMemo(() => detectTypoFix(email), [email]);
 
   const emailClass = classifyEmail(email);
-  const emailValid = emailClass === "valid";
   const phoneValid = phone.length === config.expectedDigits;
+
+  /* Domain check verdicts for the CURRENT address only — a result for a since-
+     edited email no longer matches and is treated as "not yet known". */
+  const domainValidForCurrent =
+    domainResult?.email === email && domainResult.valid;
+  const domainInvalidForCurrent =
+    domainResult?.email === email && !domainResult.valid;
+
+  /* Email is fully valid only once the format passes AND the domain check has
+     come back clean. While the check is pending (structurally complete but no
+     matching result yet) the email is NOT yet valid, so CONTINUAR stays off —
+     silently, with no message. */
+  const emailValid = emailClass === "valid" && domainValidForCurrent;
   const bothValid = emailValid && phoneValid;
 
   const emailTouched = emailBlurred || email.length > 0;
   const phoneTouched = phoneBlurred || phone.length > 0;
 
-  const emailState = emailFieldState(emailClass, emailTouched, emailShowError, submitted);
+  const emailState = emailFieldState(
+    emailClass,
+    emailTouched,
+    emailShowError,
+    domainInvalidForCurrent,
+  );
   const phoneState = phoneFieldState(
     phone,
     phoneTouched,
     config.expectedDigits,
     phoneValidateNow,
-    submitted,
   );
 
   /* Email debounce: each edit (via handleEmailChange) hides the format error
@@ -389,6 +430,44 @@ export function StepContacto({
     const t = setTimeout(() => setEmailShowError(true), 1000);
     return () => clearTimeout(t);
   }, [email]);
+
+  /* Background domain check — completely silent. Runs validateEmailDomain for
+     a target address and only commits the verdict if the field still holds
+     that exact value when the promise resolves (the staleness guard). */
+  const checkDomain = useCallback((target: string) => {
+    void validateEmailDomain(target).then((valid) => {
+      if (emailRef.current !== target) return; // user moved on → discard
+      setDomainResult({ email: target, valid });
+    });
+  }, []);
+
+  /* Fire the domain check 4500ms after the user pauses on a structurally
+     complete address (the long debounce gives slower / older typists ample
+     room to finish). The format check is the gate: if the email isn't
+     structurally "valid", no domain check runs. Editing restarts the timer, so
+     a value the user types through is never checked. Blur and Enter trigger it
+     immediately (see surfaceEmailValidation and handleEmailKeyDown). */
+  useEffect(() => {
+    if (emailClass !== "valid") return;
+    const target = email;
+    const t = setTimeout(() => checkDomain(target), 4500);
+    return () => clearTimeout(t);
+  }, [email, emailClass, checkDomain]);
+
+  /* Deferred Enter-to-advance: if Enter was pressed on a valid-format email
+     whose domain check was still pending, advance to the phone input as soon
+     as that exact address resolves valid — but only if the user is still in
+     the email field (don't yank focus if they've moved on or edited). */
+  useEffect(() => {
+    if (
+      advanceOnValidRef.current === email &&
+      emailValid &&
+      document.activeElement === emailInputRef.current
+    ) {
+      advanceOnValidRef.current = null;
+      phoneInputRef.current?.focus();
+    }
+  }, [emailValid, email]);
 
   /* Single funnel for every email mutation — resets the debounce gate so the
      format error hides while the value is changing, then the effect's timer
@@ -404,37 +483,59 @@ export function StepContacto({
     requestAnimationFrame(() => emailInputRef.current?.focus());
   }
 
-  function attemptSubmit() {
-    /* CONTINUAR forces a full-form validation. Mark every field touched and
-       flip on both timing gates so each invalid field surfaces its error
-       immediately — even fields the user never focused (e.g. an untouched,
-       empty email). From here on the live-validation gates take over again
-       as the user edits, but the touched flags stay true so errors keep
-       showing while they fix things. */
-    setSubmitted(true);
-    setEmailBlurred(true);
-    setPhoneBlurred(true);
-    setEmailShowError(true);
-    setPhoneValidateNow(true);
+  /* Advance to Step 2. Only ever reached when the whole form is valid — the
+     button is truly `disabled` otherwise, and the Enter handlers guard on
+     bothValid. No force-validation here: the live per-field hints/errors have
+     already told the user what's wrong. */
+  function submitContacto() {
+    if (!bothValid) return;
+    console.log("[KYC] contacto valid, moving to step 2", { email, phone });
+    onSubmit();
+  }
 
-    if (bothValid) {
-      console.log("[KYC] contacto valid, moving to step 2", { email, phone });
-      onSubmit();
-    }
+  /* Surface the email field's validation immediately (the same effect a blur
+     has): reveal any format error and kick the silent domain check if the
+     address is structurally complete. Reused by onBlur and by Enter on an
+     not-yet-valid address. Touches ONLY the email field — never the phone. */
+  function surfaceEmailValidation() {
+    setEmailBlurred(true);
+    setEmailShowError(true);
+    if (emailClass === "valid") checkDomain(email);
   }
 
   function handleEmailKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
-    if (e.key === "Enter") {
-      e.preventDefault();
-      attemptSubmit();
-      return;
-    }
-    if (!suggestion) return;
-    /* Tab, ArrowRight and Space accept the ghost suggestion. Space is
-       intercepted so the literal " " never lands in the input. */
-    if (e.key === "Tab" || e.key === "ArrowRight" || e.key === " ") {
+    /* Ghost suggestion: Tab / ArrowRight / Space accept it (Space is swallowed
+       so the literal " " never lands in the input). Takes priority. */
+    if (suggestion && (e.key === "Tab" || e.key === "ArrowRight" || e.key === " ")) {
       e.preventDefault();
       acceptSuggestion();
+      return;
+    }
+
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (emailValid) {
+        /* Format + domain both confirmed → jump to the phone NUMBER input. */
+        phoneInputRef.current?.focus();
+      } else if (emailClass === "valid") {
+        /* Structurally complete but the silent domain check hasn't resolved
+           yet. Kick it now and auto-advance the instant it confirms valid
+           (deferred-advance effect). No error is surfaced — the format is
+           fine; we're only waiting on the domain. */
+        checkDomain(email);
+        advanceOnValidRef.current = email;
+      }
+      /* Empty / incomplete / invalid → Enter does nothing. The live hints and
+         errors already tell the user what's wrong. */
+      return;
+    }
+
+    /* Tab with no pending suggestion: skip the country selector and land
+       straight on the phone NUMBER input. The selector stays reachable via
+       Shift+Tab from the phone input (natural order) or by clicking. */
+    if (e.key === "Tab" && !e.shiftKey) {
+      e.preventDefault();
+      phoneInputRef.current?.focus();
     }
   }
 
@@ -450,7 +551,10 @@ export function StepContacto({
   function handlePhoneKeyDown(e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Enter") {
       e.preventDefault();
-      attemptSubmit();
+      /* Enter submits only when the whole form is valid (same as clicking the
+         now-enabled CONTINUAR). Otherwise it does nothing — the live errors
+         already say what's wrong. */
+      submitContacto();
     }
   }
 
@@ -499,10 +603,7 @@ export function StepContacto({
               aria-label="Correo electrónico"
               onChange={(e) => handleEmailChange(e.target.value)}
               onKeyDown={handleEmailKeyDown}
-              onBlur={() => {
-                setEmailBlurred(true);
-                setEmailShowError(true); // blur validates immediately, no debounce wait
-              }}
+              onBlur={surfaceEmailValidation}
               className={`relative z-10 h-14 ${EMAIL_FIELD_PAD_X} ${EMAIL_FIELD_TEXT} ${INPUT_INNER}`}
             />
 
@@ -570,6 +671,7 @@ export function StepContacto({
           <span aria-hidden className={`my-3 ${DIVIDER_VERTICAL}`} />
 
           <input
+            ref={phoneInputRef}
             type="tel"
             inputMode="tel"
             pattern="[0-9]*"
@@ -600,18 +702,17 @@ export function StepContacto({
         )}
       </div>
 
-      {/* CONTINUAR — right-aligned, disabled until both fields are valid. */}
+      {/* CONTINUAR — right-aligned, TRULY disabled until the whole form is
+          valid. CTA_PRIMARY supplies disabled:opacity-40 +
+          disabled:cursor-not-allowed, and its transition-all eases the
+          dim→bright swap (~300ms) when the last field becomes valid. A
+          disabled button takes no clicks and is skipped in tab order. */}
       <div className="mt-8 flex justify-end">
-        {/* Always clickable so a click can force-validate every field. It
-            reads as "not ready" while invalid (dimmed + aria-disabled), but
-            still receives the click that surfaces the errors. */}
         <button
           type="button"
-          onClick={attemptSubmit}
-          aria-disabled={!bothValid}
-          className={`group inline-flex items-center gap-2 ${CTA_PRIMARY} ${
-            bothValid ? "" : "opacity-40"
-          }`}
+          onClick={submitContacto}
+          disabled={!bothValid}
+          className={`group inline-flex items-center gap-2 ${CTA_PRIMARY}`}
         >
           CONTINUAR
           <span
