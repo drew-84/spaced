@@ -205,6 +205,8 @@ const AREA_COORDS: Record<string, { lat: number; lng: number }> = {
   Coyoacán: { lat: 19.3467, lng: -99.162 },
   "Santa Fe": { lat: 19.3666, lng: -99.2603 },
   Escandón: { lat: 19.4106, lng: -99.1814 },
+  Narvarte: { lat: 19.3952, lng: -99.1597 },
+  "Del Valle": { lat: 19.3867, lng: -99.1625 },
 };
 
 const SAMPLE_DESCRIPTIONS_BY_CATEGORY: Record<SpaceCategory, string> = {

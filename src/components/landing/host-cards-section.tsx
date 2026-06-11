@@ -1,13 +1,16 @@
 "use client";
 
 import Link from "next/link";
-import { useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
+import { useJsApiLoader } from "@react-google-maps/api";
 import {
   SPACE_CATEGORIES,
   listingSpaces,
   type SpaceCategory,
-  type ListingSpace,
 } from "@/lib/mock-spaces";
+import { buildPropertyDetailFromListing } from "@/components/property-detail/types";
+import { distanceKm, type LatLng } from "@/lib/geo";
+import { CATEGORY_ICONS, ListingCard } from "./listing-card";
 import {
   CTA_PRIMARY,
   CTA_SECONDARY,
@@ -17,144 +20,164 @@ import {
   TRANSITION_FLUID,
 } from "@/styles/glass";
 
-const CATEGORY_ICONS: Record<SpaceCategory, string> = {
-  Todos: "◈",
-  Descanso: "🛏",
-  Cocina: "🍳",
-  Oficina: "💻",
-  Reunión: "🤝",
-  Grabación: "🎙",
+type PreviewMedia = {
+  url: string;
+  poster: string;
+  lat: number;
+  lng: number;
 };
 
-function StarIcon({ filled }: { filled: boolean }) {
-  return (
-    <svg
-      width="10"
-      height="10"
-      viewBox="0 0 10 10"
-      fill={filled ? "currentColor" : "none"}
-      stroke="currentColor"
-      strokeWidth="1"
-      aria-hidden
-    >
-      <polygon points="5,1 6.2,3.8 9.5,4.1 7.2,6.2 7.9,9.5 5,7.9 2.1,9.5 2.8,6.2 0.5,4.1 3.8,3.8" />
-    </svg>
-  );
+/* Format a metric distance per spec: under 1 km → "125 metros",
+   otherwise one-decimal km → "1.2 km". */
+function formatDistance(meters: number): string {
+  if (meters < 1000) return `${Math.round(meters)} metros`;
+  return `${(meters / 1000).toFixed(1)} km`;
 }
 
-function RatingStars({ rating }: { rating: number }) {
-  return (
-    <span className="flex items-center gap-0.5 text-white/80 drop-shadow-[0_0_6px_rgba(255,255,255,0.45)]">
-      {[1, 2, 3, 4, 5].map((n) => (
-        <StarIcon key={n} filled={n <= Math.round(rating)} />
-      ))}
-    </span>
-  );
-}
-
-function ListingCard({ card }: { card: ListingSpace }) {
-  return (
-    <Link
-      href={`/spaces/${card.id}`}
-      aria-label={`Ver ${card.title}`}
-      className="group/card block focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070a] rounded-2xl"
-    >
-      <article className="group flex flex-col overflow-hidden rounded-2xl border border-white/10 bg-[#0e1016] transition-all duration-300 ease-out hover:-translate-y-0.5 hover:border-white/30 hover:shadow-[0_22px_50px_rgba(0,0,0,0.36),0_0_30px_-10px_rgba(255,255,255,0.25)]">
-        {/* image */}
-        <div className="relative aspect-[4/3] overflow-hidden">
-          <div
-            className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.04]"
-            style={{ backgroundImage: `url(${card.imageUrl})` }}
-          />
-          <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-transparent to-transparent" />
-
-          {/* category pill — same glass language as PILL_DISPLAY but compact */}
-          <div className="absolute left-3 top-3 flex items-center gap-1.5 rounded-full border border-white/25 bg-black/50 px-2.5 py-1 backdrop-blur-md">
-            <span className="text-[11px] leading-none">
-              {CATEGORY_ICONS[card.category]}
-            </span>
-            <span className="text-[10px] font-semibold uppercase tracking-[0.24em] text-white/60">
-              {card.categoryLabel}
-            </span>
-          </div>
-
-          {/* instant access badge */}
-          {card.instantAccess && (
-            <div className="absolute right-3 top-3 flex items-center gap-1 rounded-full border border-white/30 bg-black/55 px-2 py-1 backdrop-blur-sm">
-              <span className="h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)]" />
-              <span className="text-[9px] font-semibold uppercase tracking-[0.2em] text-white/60">
-                Acceso inmediato
-              </span>
-            </div>
-          )}
-        </div>
-
-        {/* body */}
-        <div className="flex flex-1 flex-col gap-3 p-4">
-          <div>
-            <h3 className="text-[13px] font-semibold leading-snug text-white/80 line-clamp-2">
-              {card.title}
-            </h3>
-            <p className="mt-0.5 text-[11px] text-white/50">{card.area}</p>
-          </div>
-
-          {/* amenities preview */}
-          <div className="flex flex-wrap gap-1">
-            {card.amenities.slice(0, 3).map((a) => (
-              <span
-                key={a}
-                className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/50"
-              >
-                {a}
-              </span>
-            ))}
-            {card.amenities.length > 3 && (
-              <span className="rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/50">
-                +{card.amenities.length - 3}
-              </span>
-            )}
-          </div>
-
-          {/* footer row */}
-          <div className="mt-auto flex items-center justify-between border-t border-white/10 pt-3">
-            {/* host */}
-            <div className="flex items-center gap-2">
-              <img
-                src={card.hostAvatar}
-                alt={card.hostName}
-                width={24}
-                height={24}
-                className="h-6 w-6 rounded-full object-cover ring-1 ring-white/15"
-              />
-              <span className="text-[10px] text-white/50">{card.hostName}</span>
-            </div>
-
-            {/* rating + price */}
-            <div className="flex items-center gap-2">
-              <div className="flex items-center gap-1">
-                <RatingStars rating={card.rating} />
-                <span className="text-[10px] text-white/50">
-                  ({card.reviewCount})
-                </span>
-              </div>
-              <div className="rounded-lg border border-white/30 bg-white/[0.1] px-2 py-1 shadow-[inset_0_1px_0_rgba(255,255,255,0.18)]">
-                <span className="text-[11px] font-bold text-white/80">
-                  ${card.pricePer30m}
-                </span>
-                <span className="text-[9px] text-white/50"> /30m</span>
-              </div>
-            </div>
-          </div>
-        </div>
-      </article>
-    </Link>
-  );
+/** Dev-only distance diagnostics — never logs in production. Helps
+ *  distinguish "GPS blocked" from "Distance Matrix not enabled". */
+function devDistanceLog(
+  level: "warn" | "debug",
+  message: string,
+  detail?: unknown,
+) {
+  if (process.env.NODE_ENV !== "development") return;
+  const prefix = "[Spaced · distances]";
+  if (level === "warn") {
+    console.warn(prefix, message, detail ?? "");
+  } else {
+    console.debug(prefix, message, detail ?? "");
+  }
 }
 
 export function HostCardsSection() {
   const [active, setActive] = useState<SpaceCategory>("Todos");
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
+
+  /* Distance cache for the session, keyed by listing id. Populated once
+     by a single batched Distance Matrix request. */
+  const [distances, setDistances] = useState<Record<string, string>>({});
+
+  /* Card preview media + coordinates, derived once from the same
+     PropertyDetail recipe the detail page uses — so a card's preview
+     clip is exactly that property's first clip, and its coordinates
+     match the detail map. */
+  const previews = useMemo(() => {
+    const map = new Map<string, PreviewMedia>();
+    for (const listing of listingSpaces) {
+      const detail = buildPropertyDetailFromListing(listing);
+      const first = detail.videos[0];
+      map.set(listing.id, {
+        url: first?.url ?? "",
+        poster: first?.poster ?? listing.imageUrl,
+        lat: detail.lat,
+        lng: detail.lng,
+      });
+    }
+    return map;
+  }, []);
+
+  /* Load the Maps JS API (Distance Matrix lives in core). Same loader
+     id/key/options as HeroLocationMap + PropertyMap so they all share
+     one script singleton. */
+  const apiKey = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+  const { isLoaded } = useJsApiLoader({
+    id: "spaced-google-maps-script",
+    googleMapsApiKey: apiKey ?? "",
+    language: "es",
+    region: "MX",
+  });
+
+  /* One batched Distance Matrix call per session. requestedRef guards
+     against re-firing on re-renders (filtering, typing, etc.). */
+  const requestedRef = useRef(false);
+  useEffect(() => {
+    if (!isLoaded) return;
+    if (!apiKey) {
+      devDistanceLog(
+        "warn",
+        "NEXT_PUBLIC_GOOGLE_MAPS_API_KEY is missing — card distances disabled.",
+      );
+      return;
+    }
+    if (requestedRef.current) return;
+    if (typeof navigator === "undefined" || !navigator.geolocation) {
+      devDistanceLog(
+        "debug",
+        "Geolocation unavailable in this browser — card distances hidden.",
+      );
+      return;
+    }
+    requestedRef.current = true;
+
+    navigator.geolocation.getCurrentPosition(
+      (pos) => {
+        const origin: LatLng = {
+          lat: pos.coords.latitude,
+          lng: pos.coords.longitude,
+        };
+        /* Batch ALL listings into ONE request (≤25 destinations). */
+        const ordered = listingSpaces.map((l) => previews.get(l.id)!);
+        const service = new google.maps.DistanceMatrixService();
+        service.getDistanceMatrix(
+          {
+            origins: [origin],
+            destinations: ordered.map((p) => ({ lat: p.lat, lng: p.lng })),
+            travelMode: google.maps.TravelMode.WALKING,
+          },
+          (res, status) => {
+            if (status !== "OK" || !res) {
+              devDistanceLog(
+                "warn",
+                "Distance Matrix request failed — enable Distance Matrix API on the key and check billing/referrer restrictions.",
+                { status },
+              );
+              return;
+            }
+            const row = res.rows[0];
+            if (!row) return;
+            const next: Record<string, string> = {};
+            let fallbackCount = 0;
+            row.elements.forEach((el, i) => {
+              const listing = listingSpaces[i];
+              const p = ordered[i];
+              let meters: number;
+              if (el.status === "OK" && el.distance) {
+                meters = el.distance.value;
+              } else {
+                fallbackCount += 1;
+                /* WALKING can return no route for far points — fall back
+                   to straight-line distance so the card still shows
+                   something sensible. */
+                meters = distanceKm(origin, { lat: p.lat, lng: p.lng }) * 1000;
+              }
+              next[listing.id] = formatDistance(meters);
+            });
+            setDistances(next);
+            devDistanceLog(
+              "debug",
+              `Walking distances loaded for ${Object.keys(next).length} listings.`,
+              fallbackCount > 0
+                ? { straightLineFallbacks: fallbackCount }
+                : undefined,
+            );
+          },
+        );
+      },
+      (err) => {
+        /* Permission denied → leave distances empty so cards hide the
+           distance line. The GPS-denied neighborhood selector is a
+           separate feature. */
+        devDistanceLog(
+          "debug",
+          "Geolocation denied or unavailable — card distances hidden (expected if you blocked location).",
+          { code: err.code, message: err.message },
+        );
+      },
+      { enableHighAccuracy: false, maximumAge: 120_000, timeout: 12_000 },
+    );
+  }, [isLoaded, apiKey, previews]);
 
   const filtered = listingSpaces.filter((s) => {
     const matchesCategory = active === "Todos" || s.category === active;
@@ -311,9 +334,17 @@ export function HostCardsSection() {
 
         {/* cards grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>*:nth-child(n+5)]:hidden [&>*:nth-child(n+5)]:xl:block sm:[&>*:nth-child(n+5)]:block">
-          {filtered.map((card) => (
-            <ListingCard key={card.id} card={card} />
-          ))}
+          {filtered.map((card) => {
+            const preview = previews.get(card.id)!;
+            return (
+              <ListingCard
+                key={card.id}
+                card={card}
+                media={{ url: preview.url, poster: preview.poster }}
+                distanceText={distances[card.id] ?? null}
+              />
+            );
+          })}
         </div>
 
         {/* bottom CTA */}

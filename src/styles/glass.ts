@@ -167,6 +167,18 @@ export const TRANSITION_COLOR =
 export const TRANSITION_FLUID =
   "transition-all duration-500 ease-[cubic-bezier(0.16,1,0.3,1)] motion-reduce:transition-none";
 
+/* ────────────────────────── FOCUS RINGS ────────────────────────────── */
+
+/** Standard keyboard focus ring (white/40, 1px) shared across interactives.
+ *  This is the same ring baked into CTA_SECONDARY / CTA_GHOST / PILL_BASE. */
+export const FOCUS_RING =
+  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40";
+
+/** Focus ring + offset for cards sitting on the homepage grid surface.
+ *  The offset color matches SURFACE_GRID so the ring reads cleanly. */
+export const FOCUS_RING_CARD =
+  "focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40 focus-visible:ring-offset-2 focus-visible:ring-offset-[#06070a]";
+
 /* ────────────────────────── PILL BUTTONS ───────────────────────────── */
 
 /** Base classes shared by every pill toggle / chip. */
@@ -226,12 +238,59 @@ export const INPUT_INNER = [
   "placeholder:text-white/35 outline-none",
 ].join(" ");
 
+/** Error variant of INPUT_WRAP — warm amber border + amber glow. No
+ *  focus-within override so the error tone persists while the user fixes
+ *  the field. Pair with INPUT_INNER for the inner control. */
+export const INPUT_WRAP_ERROR = [
+  "rounded-2xl border border-amber-200/45 bg-white/[0.04]",
+  "shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28),0_0_24px_-4px_rgba(252,211,77,0.4)]",
+  "backdrop-blur-md",
+  "transition-all duration-300 ease-out motion-reduce:transition-none",
+].join(" ");
+
+/** Pill-shaped field container — same glass tone as INPUT_WRAP but a
+ *  full-radius pill that can house several inline regions (e.g. a country
+ *  selector + number input sharing one border). focus-within lights up. */
+export const FIELD_PILL = [
+  "relative flex items-stretch rounded-full border border-white/10 bg-white/[0.04]",
+  "shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28)]",
+  "backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none",
+  "focus-within:border-white/40 focus-within:bg-white/[0.06]",
+  "focus-within:shadow-[0_18px_38px_rgba(0,0,0,0.34),inset_0_1px_0_rgba(255,255,255,0.2),inset_0_-16px_30px_rgba(3,8,18,0.32),0_0_24px_-6px_rgba(255,255,255,0.4)]",
+].join(" ");
+
+/** Error variant of FIELD_PILL — warm amber border + amber glow. */
+export const FIELD_PILL_ERROR = [
+  "relative flex items-stretch rounded-full border border-amber-200/45 bg-white/[0.04]",
+  "shadow-[0_16px_34px_rgba(0,0,0,0.28),inset_0_1px_0_rgba(255,255,255,0.12),inset_0_-14px_26px_rgba(3,8,18,0.28),0_0_24px_-4px_rgba(252,211,77,0.4)]",
+  "backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none",
+].join(" ");
+
+/** Thin vertical hairline used to separate inline regions inside a pill. */
+export const DIVIDER_VERTICAL = "w-px self-stretch bg-white/10";
+
 /** Label sitting above an input. */
 export const FIELD_LABEL = TEXT_LABEL;
 
-/** Error text under an input. */
+/** Error text under an input — rose tier, used by the booking + list-space
+ *  forms. */
 export const FIELD_ERROR =
   "mt-1.5 text-[10px] uppercase tracking-[0.22em] text-rose-200/80";
+
+/** Error caption in the KYC flow — warm amber to match the amber field
+ *  borders used during identity verification. Pairs with the amber border
+ *  treatment (INPUT_WRAP_ERROR / FIELD_PILL_ERROR) for "what you typed is
+ *  wrong" states. */
+export const FIELD_ERROR_AMBER =
+  "mt-2.5 px-2 text-[11px] font-medium uppercase tracking-[0.22em] text-amber-200/85";
+
+/** Hint caption in the KYC flow — IDENTICAL typography to FIELD_ERROR_AMBER
+ *  (same size, weight, uppercase, tracking) so all field messages read as one
+ *  family. The ONLY differences are color intensity (lower amber opacity) and
+ *  that the field carries NO amber border. Reads as a gentle "you still need
+ *  to do this" nudge for empty-but-touched fields rather than an alarm. */
+export const FIELD_HINT =
+  "mt-2.5 px-2 text-[11px] font-medium uppercase tracking-[0.22em] text-amber-200/60";
 
 /* ────────────────────────── CTAs / BUTTONS ─────────────────────────── */
 
@@ -276,6 +335,18 @@ export const PROGRESS_TRACK =
 export const PROGRESS_FILL =
   "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-white/40 via-white/90 to-white/40 shadow-[0_0_18px_rgba(255,255,255,0.55)] transition-[width] duration-700 ease-[cubic-bezier(0.16,1,0.3,1)]";
 
+/** Step legend typography (no color) — pair with an opacity tier token so
+ *  the active step can sit brighter than the rest. Used beside the KYC
+ *  progress bar. */
+export const STEP_LEGEND_TYPE =
+  "text-[9px] font-medium uppercase tracking-[0.24em]";
+
+/** Flag chip skin — clips the SVG flag to a small rounded rectangle with a
+ *  hairline ring so it reads as a crisp badge on dark glass. Pair with an
+ *  explicit width/height (e.g. `h-3.5 w-5`). */
+export const FLAG_CHIP =
+  "shrink-0 overflow-hidden rounded-[3px] shadow-[0_0_0_1px_rgba(255,255,255,0.14)]";
+
 /* ────────────────────────── GLOWS & ACCENTS ────────────────────────── */
 
 /** Soft white hover glow used on upload zones and selectable cards. */
@@ -289,3 +360,84 @@ export const ACTIVE_GLOW =
 /** Tiny dot used as a status indicator (active item, signal, etc.). */
 export const STATUS_DOT =
   "h-2 w-2 rounded-full bg-white shadow-[0_0_14px_rgba(255,255,255,0.85)]";
+
+/** Small status dot — sibling of STATUS_DOT for tighter overlays/badges. */
+export const STATUS_DOT_SM =
+  "h-1.5 w-1.5 rounded-full bg-white shadow-[0_0_6px_rgba(255,255,255,0.95)]";
+
+/* ────────────────────────── SURFACES (raw palette) ─────────────────── */
+
+/** Opaque media-card surface (slightly lifted from the page/grid bg). */
+export const SURFACE_CARD = "bg-[#0e1016]";
+
+/** Homepage property-grid section background. */
+export const SURFACE_GRID = "bg-[#06070a]";
+
+/* ──────────────────── IMAGE-OVERLAY / MEDIA CARDS ──────────────────── */
+
+/** Opaque media-card shell — hairline border, lift + soft glow on hover.
+ *  Pair with structural classes (flex / overflow-hidden / rounded) on the
+ *  element; this token owns the themeable border / surface / hover skin. */
+export const CARD_MEDIA = [
+  "border border-white/10 bg-[#0e1016]",
+  "transition-all duration-300 ease-out motion-reduce:transition-none",
+  "hover:-translate-y-0.5 hover:border-white/30",
+  "hover:shadow-[0_22px_50px_rgba(0,0,0,0.36),0_0_30px_-10px_rgba(255,255,255,0.25)]",
+].join(" ");
+
+/** Very light top + bottom darkening over card media so overlaid text
+ *  stays legible on any image. Apply as an inline `style.background`. */
+export const CARD_MEDIA_SCRIM =
+  "linear-gradient(to bottom, rgba(0,0,0,0.42) 0%, transparent 24%, transparent 70%, rgba(0,0,0,0.5) 100%)";
+
+/** Drop-shadow for white text sitting over imagery (inline `style.textShadow`). */
+export const OVERLAY_TEXT_SHADOW = "0 1px 8px rgba(0,0,0,0.7)";
+
+/** Overlay text at rest (75%) — brightens to full white on card hover. */
+export const OVERLAY_TEXT_REST =
+  "text-white opacity-75 transition-opacity duration-[250ms] ease-out group-hover:opacity-100 motion-reduce:transition-none";
+
+/** Overlay text pinned bright — used when a card is the actively-viewed one. */
+export const OVERLAY_TEXT_ACTIVE =
+  "text-white opacity-100 transition-opacity duration-[250ms] ease-out motion-reduce:transition-none";
+
+/** Dark translucent pill floating over card media (category tag, badge). */
+export const OVERLAY_PILL =
+  "inline-flex items-center rounded-full border border-white/25 bg-black/45 backdrop-blur-md";
+
+/** Category-tag label typography for media overlays. */
+export const OVERLAY_LABEL =
+  "text-[10px] font-semibold uppercase tracking-[0.24em]";
+
+/** Smaller overlay label typography (instant-access badge). */
+export const OVERLAY_LABEL_SM =
+  "text-[9px] font-semibold uppercase tracking-[0.2em]";
+
+/** Emoji/icon sizing inside an overlay pill. */
+export const OVERLAY_ICON = "text-[11px] leading-none";
+
+/** Overlay info line (neighborhood, distance) — secondary weight. */
+export const OVERLAY_INFO = "text-[12px] font-medium";
+
+/** Inline star glyph row in a card overlay. */
+export const OVERLAY_RATING_STARS = "text-[11px] leading-none tracking-[0.08em]";
+
+/** Numeric rating value in a card overlay. */
+export const OVERLAY_RATING_VALUE = "text-[12px] font-semibold leading-none";
+
+/** Card body title — secondary tier (80%, per the heading/price contract). */
+export const CARD_TITLE =
+  "text-[14px] font-semibold leading-snug text-white/80";
+
+/** Display-only amenity chip inside a card body. */
+export const CARD_AMENITY_CHIP =
+  "rounded-md border border-white/15 bg-white/[0.04] px-2 py-0.5 text-[9px] font-medium text-white/50";
+
+/** Card price value — secondary tier (80%, prices per the contract). */
+export const CARD_PRICE = "text-[15px] font-bold text-white/80";
+
+/** Card price unit suffix — meta tier (50%). */
+export const CARD_PRICE_UNIT = "text-[11px] text-white/50";
+
+/** Hairline top divider (e.g. above a card's price row). */
+export const DIVIDER_TOP = "border-t border-white/10";

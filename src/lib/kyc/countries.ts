@@ -14,7 +14,7 @@
  * → "56"). When `suffixes.length > 1` (e.g. USA, Russia, Kazakhstan),
  * those suffixes are area codes inside a shared country code, so we use
  * just `root` (e.g. USA "+1"). Entries with no IDD root at all (e.g.
- * Antarctica) are dropped — they can't receive an SMS.
+ * Antarctica) are dropped — they have no international dial code.
  */
 
 import rawCountries from "world-countries";

@@ -3,6 +3,7 @@
 import { useEffect, useMemo, useRef, useState } from "react";
 import { textLabel } from "@/styles/glass";
 import type { Country } from "@/lib/kyc/countries";
+import { FlagIcon } from "./FlagIcon";
 
 /**
  * SPACED — KYC CountryPicker
@@ -101,9 +102,7 @@ export function CountryPicker({
         aria-label={`País: ${selected.name}, +${selected.dialCode}`}
         className="flex h-14 items-center gap-2 rounded-l-full px-4 text-sm font-normal tracking-[0.02em] text-white/95 transition-colors duration-200 ease-out motion-reduce:transition-none hover:bg-white/[0.04] focus-visible:bg-white/[0.04] focus-visible:outline-none sm:px-5"
       >
-        <span aria-hidden className="text-lg leading-none">
-          {selected.emoji}
-        </span>
+        <FlagIcon code={selected.iso2} className="h-3.5 w-5" />
         <span className="tabular-nums">+{selected.dialCode}</span>
         <ChevronDown open={open} />
       </button>
@@ -164,9 +163,7 @@ export function CountryPicker({
                           : "text-white/80 hover:bg-white/[0.05] hover:text-white/95",
                       ].join(" ")}
                     >
-                      <span aria-hidden className="text-lg leading-none">
-                        {c.emoji}
-                      </span>
+                      <FlagIcon code={c.iso2} className="h-3.5 w-5" />
                       <span className="flex-1 truncate">{c.name}</span>
                       <span
                         className={`tabular-nums text-xs ${

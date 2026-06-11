@@ -9,32 +9,35 @@ import {
 } from "@/styles/glass";
 
 /**
- * SPACED — KYC Step 5 of 5: Verification processing + success
+ * SPACED — KYC Step 4 of 4: Verification processing + success
  * ─────────────────────────────────────────────────────────────────────────
  *
- * Final step in the KYC flow. Runs two phases back to back:
+ * Final step in the KYC flow. It runs two phases back to back, but — unlike
+ * the other steps — the phase is DRIVEN BY THE PARENT (`phase` prop) so the
+ * progress bar's slow creep to 100% and this screen's "one-beat" success
+ * flip land on the exact same frame. KYCScreen owns the timeline.
  *
  *   PHASE A — "VERIFICANDO" (processing)
  *     A circular glass spinner with a soft white glow chases its own tail
- *     for 2.5 s while reassuring copy sits below it. This sells the moment
- *     of identity confirmation without spamming the user with progress
- *     numbers — the bar at the top is already at 100%.
+ *     while the bar slowly creeps toward 100%.
  *
  *   PHASE B — "VERIFICADO" (success)
- *     A large glowing checkmark scales in with a slight overshoot, the
- *     personalised welcome line greets the user by first name (derived
- *     from the email username when KYC data isn't available yet), and a
- *     centered CONTINUAR pill hands control back to the parent.
+ *     The spinner stops and a large glowing checkmark scales in (the
+ *     "✓ VERIFICADO" beat). A moment later the personalised welcome line +
+ *     brand line + centered CONTINUAR pill stagger in.
  *
  * No back navigation: once a user lands here, verification is done — the
  * only escape is the global CERRAR pill in the corner of KYCScreen.
  */
 
-const PROCESSING_MS = 2500;
+/** Delay between the "✓ VERIFICADO" beat and the welcome/CTA reveal. */
+const WELCOME_REVEAL_MS = 480;
 
 type StepVerifyProps = {
   /** Used to derive a first name for the welcome line. */
   email: string;
+  /** Driven by KYCScreen so the bar creep + success flip stay in sync. */
+  phase: "processing" | "success";
   /** Fires when the user clicks CONTINUAR on the success screen. */
   onSubmit: () => void;
 };
@@ -54,20 +57,7 @@ function extractFirstName(email: string): string {
   return cleaned.charAt(0).toUpperCase() + cleaned.slice(1).toLowerCase();
 }
 
-export function StepVerify({ email, onSubmit }: StepVerifyProps) {
-  const [phase, setPhase] = useState<"processing" | "success">("processing");
-
-  /* Auto-transition from processing to success after PROCESSING_MS. The
-     2.5 s window is long enough to feel like real work is happening but
-     short enough that the user never wonders if they should reload. */
-  useEffect(() => {
-    const t = window.setTimeout(() => {
-      console.log("[KYC] verification phase → success");
-      setPhase("success");
-    }, PROCESSING_MS);
-    return () => window.clearTimeout(t);
-  }, []);
-
+export function StepVerify({ email, phase, onSubmit }: StepVerifyProps) {
   const firstName = extractFirstName(email);
 
   return (
@@ -191,6 +181,15 @@ type SuccessPhaseProps = {
 };
 
 function SuccessPhase({ firstName, onSubmit }: SuccessPhaseProps) {
+  /* Stagger the welcome block in just after the "✓ VERIFICADO" beat so the
+     checkmark + label register as the climax, then the warmer copy + CTA
+     arrive a beat later. */
+  const [revealWelcome, setRevealWelcome] = useState(false);
+  useEffect(() => {
+    const t = window.setTimeout(() => setRevealWelcome(true), WELCOME_REVEAL_MS);
+    return () => window.clearTimeout(t);
+  }, []);
+
   return (
     <>
       <CheckmarkIcon />
@@ -201,38 +200,52 @@ function SuccessPhase({ firstName, onSubmit }: SuccessPhaseProps) {
         VERIFICADO
       </p>
 
-      <p
-        className={`mt-6 text-base tracking-[0.02em] ${textSecondary}`}
-        style={{ lineHeight: 1.5 }}
+      {/* Welcome + brand line + CONTINUAR — held back until revealWelcome,
+          then faded up together. Kept mounted (invisible) so the layout
+          never jumps. */}
+      <div
+        className="flex w-full flex-col items-center"
+        style={
+          revealWelcome
+            ? { animation: "kycVerifyPhaseIn 420ms ease-out both" }
+            : { opacity: 0 }
+        }
+        aria-hidden={!revealWelcome}
       >
-        Bienvenido/a{firstName ? `, ${firstName}` : ""}.
-      </p>
-
-      <p
-        className={`mt-4 text-[13px] tracking-[0.02em] ${textBody}`}
-        style={{ lineHeight: 1.65 }}
-      >
-        Tu identidad ha sido confirmada.
-        <br />
-        Spacio es más seguro gracias a ti.
-      </p>
-
-      {/* CONTINUAR — centered horizontally per spec; this is the moment
-          that matters. Same pill shape and hover behaviour as the other
-          step CTAs, so the language is consistent across the flow. */}
-      <button
-        type="button"
-        onClick={onSubmit}
-        className="group mt-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.04] px-7 py-3 text-[11px] font-medium uppercase tracking-[0.32em] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_18px_-6px_rgba(0,0,0,0.42)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/45 hover:bg-white/[0.09] hover:text-white/95 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_28px_-6px_rgba(255,255,255,0.5),0_10px_22px_-6px_rgba(0,0,0,0.42)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
-      >
-        CONTINUAR
-        <span
-          aria-hidden
-          className="transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-0.5"
+        <p
+          className={`mt-6 text-base tracking-[0.02em] ${textSecondary}`}
+          style={{ lineHeight: 1.5 }}
         >
-          →
-        </span>
-      </button>
+          Bienvenido/a{firstName ? `, ${firstName}` : ""}.
+        </p>
+
+        <p
+          className={`mt-4 text-[13px] tracking-[0.02em] ${textBody}`}
+          style={{ lineHeight: 1.65 }}
+        >
+          Tu identidad ha sido confirmada.
+          <br />
+          Spacio es más seguro gracias a ti.
+        </p>
+
+        {/* CONTINUAR — centered horizontally per spec; this is the moment
+            that matters. Same pill shape and hover behaviour as the other
+            step CTAs, so the language is consistent across the flow. */}
+        <button
+          type="button"
+          onClick={onSubmit}
+          disabled={!revealWelcome}
+          className="group mt-10 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.04] px-7 py-3 text-[11px] font-medium uppercase tracking-[0.32em] text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.1),0_8px_18px_-6px_rgba(0,0,0,0.42)] backdrop-blur-md transition-all duration-300 ease-out motion-reduce:transition-none hover:border-white/45 hover:bg-white/[0.09] hover:text-white/95 hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_28px_-6px_rgba(255,255,255,0.5),0_10px_22px_-6px_rgba(0,0,0,0.42)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+        >
+          CONTINUAR
+          <span
+            aria-hidden
+            className="transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-0.5"
+          >
+            →
+          </span>
+        </button>
+      </div>
     </>
   );
 }

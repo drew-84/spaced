@@ -18,7 +18,7 @@ const SUGGESTED_AREAS = [
 
 export function LocationSection() {
   return (
-    <section className="relative overflow-hidden bg-[#07080c] py-20 sm:py-28">
+    <section className="relative overflow-hidden bg-[#07080c] pt-11 pb-20 sm:pt-16 sm:pb-28">
       {/* subtle top separator — neutral white */}
       <div
         aria-hidden

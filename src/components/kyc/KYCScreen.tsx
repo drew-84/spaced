@@ -1,18 +1,21 @@
 "use client";
 
-import { useCallback, useEffect, useState } from "react";
+import { Fragment, useCallback, useEffect, useRef, useState } from "react";
 import {
   CTA_SECONDARY,
   MODAL_AMBIENT_BG,
+  PROGRESS_FILL,
+  PROGRESS_TRACK,
   RIM_HIGHLIGHT_TOP,
   SCRIM,
+  STEP_LEGEND_TYPE,
   textBody,
-  textLabel,
+  textInactive,
+  textMeta,
   textPrimary,
 } from "@/styles/glass";
 import { DEFAULT_COUNTRY, type Country } from "@/lib/kyc/countries";
-import { StepEmail } from "./steps/StepEmail";
-import { StepPhone } from "./steps/StepPhone";
+import { StepContacto } from "./steps/StepContacto";
 import { StepCode } from "./steps/StepCode";
 import { StepId } from "./steps/StepId";
 import { StepVerify } from "./steps/StepVerify";
@@ -24,22 +27,24 @@ import { StepVerify } from "./steps/StepVerify";
  * Full-screen identity-verification surface that sits above the rest of the
  * app. Visually mirrors OfferScreen (asymmetric outer modal panel + radial
  * mask + glass blur) and BookingModal (scrim + ambient wash) so the four
- * canonical surfaces — OfferScreen, BookingModal, PropertyDetail, and this
- * one — share the same dark-glass language.
+ * canonical surfaces share the same dark-glass language.
  *
  * Layout: two side-by-side glass panels
  *   • LEFT  35% — lighter glass tone; SPACIO wordmark + contextual copy
- *   • RIGHT 65% — darker glass tone; progress bar + (future) step content
+ *   • RIGHT 65% — darker glass tone; progress bar + step content
+ *
+ * Flow (4 steps):
+ *   1 CONTACTO     — email + phone on one screen (user-driven)
+ *   2 CÓDIGO       — 6-box email verification code (user-driven)
+ *   3 CÉDULA       — ID upload, front + back (user-driven)
+ *   4 VERIFICACIÓN — automatic processing → success
  *
  * Animation: 300 ms opacity fade-in on mount.
  */
 
 export type KYCUserType = "guest" | "host";
 
-/** Full payload handed back to the parent on a successful KYC pass. The
- *  parent typically ignores it for now (handlers are `() => void`), but
- *  the shape is defined so the data is available the moment a backend
- *  hook is wired in. */
+/** Full payload handed back to the parent on a successful KYC pass. */
 export type KYCCompletePayload = {
   email: string;
   phone: string;
@@ -55,41 +60,62 @@ type KYCScreenProps = {
   userType: KYCUserType;
   /** 1-based index of the active step (1..TOTAL_STEPS). */
   currentStep?: number;
-  /** Fires when the verification flow completes successfully. Carries the
-   *  full set of collected data. Callers that only care about closing
-   *  the modal can declare the handler as `() => void`. */
+  /** Fires when the verification flow completes successfully. */
   onComplete: (payload?: KYCCompletePayload) => void;
   /** Fires when the user dismisses the screen without finishing. */
   onClose: () => void;
 };
 
-/* ─── Step model ────────────────────────────────────────────────────────── */
+/* ─── Step model ────────────────────────────────────────────────────────
+   Four steps. Steps 1–3 are user-driven; step 4 is automatic. The progress
+   bar has three equal segments — one per user-driven step — and reaches
+   100% during step 4's verification moment (step 4 has no segment). */
+const TOTAL_STEPS = 4;
 
-/* The KYC flow has 5 logical steps. ID front + back share one screen, and
-   verification processing + success share one screen, so the progress bar
-   advances in five increments. */
-const TOTAL_STEPS = 5;
+const STEP_LABELS = ["CONTACTO", "CÓDIGO", "CÉDULA", "VERIFICACIÓN"] as const;
 
-/* Step names indexed 0..4 (currentStep is 1-based, so subtract 1). */
-const STEP_NAMES = [
-  "EMAIL",
-  "TELÉFONO",
-  "CÓDIGO",
-  "CÉDULA",
-  "VERIFICACIÓN",
-] as const;
+/* ─── Progress-bar geometry ─────────────────────────────────────────────
+   SEG = one segment = 33.33%. */
+const SEG = 100 / 3;
+
+/* Resting fill % for each step (index = step - 1): the clean boundary the
+   bar sits at while the user is ON that step. Step 4 → 100% (reached via a
+   slow creep, not an instant set). */
+const REST_PCT = [0, SEG, SEG * 2, 100];
+
+/* Phase-1 fill target for steps 1–3 (index = step - 1): 85% of the way
+   into the step's own segment. Step 3 is special — it fills to ~91.6%
+   (the verification "almost there" point) before the creep to 100%. */
+const PHASE1_PCT = [SEG * 0.85, SEG + SEG * 0.85, 91.6];
+
+/* ─── Fill transitions + timeline ───────────────────────────────────────
+   Variable timing per beat, applied inline so it overrides PROGRESS_FILL's
+   baked-in default.
+
+   Phase-1 is deliberately slow (~1s) AND it gates the step change: the step
+   does not advance until this fill has visibly finished, so the user
+   actually watches the bar fill on the screen they just completed before it
+   transitions away. The Phase-2 snap stays fast — a satisfying "click into
+   place" beat as the next screen mounts. */
+const EASE_OUT = "cubic-bezier(0.22, 1, 0.36, 1)";
+const PHASE1_MS = 1000; // Phase-1 fill duration AND the gate before advancing
+const SNAP_MS = 200; // Phase-2 quick snap to the clean boundary
+const CREEP_MS = 2500; // step 4's slow synchronized creep to 100%
+/* Tiny pause after a new screen mounts before its bar beat plays, so the
+   snap / creep reads as a distinct "after the transition" moment. */
+const MOUNT_BEAT_DELAY = 80;
+
+const FILL_PHASE1 = `width ${PHASE1_MS}ms ${EASE_OUT}`; // smooth fill to 85% of segment
+const FILL_SNAP = `width ${SNAP_MS}ms ${EASE_OUT}`; // quick snap to the clean boundary
+const FILL_CREEP = `width ${CREEP_MS}ms linear`; // slow synchronized creep to 100%
+const FILL_BACK = `width 450ms ${EASE_OUT}`; // reverse on back navigation
 
 /* ─── Copy variants ─────────────────────────────────────────────────────── */
 
 type CopyParagraph = string[];
 type Copy = {
-  /** Accessible dialog label (used for aria-label only). */
   ariaLabel: string;
-  /** Primary headline above the body copy. */
   header: string;
-  /** Body paragraphs — each entry is rendered as a separate <p>, with
-   *  individual lines inside an entry separated by hard breaks so the
-   *  visual line breaks exactly match the design spec. */
   body: CopyParagraph[];
 };
 
@@ -125,8 +151,7 @@ const COPY: Record<KYCUserType, Copy> = {
   },
 };
 
-/* Clamp the incoming step into [1, TOTAL_STEPS] so a bad prop value can't
-   blow up the step-name lookup or push the bar past 100%. */
+/* Clamp the incoming step into [1, TOTAL_STEPS]. */
 function clampStep(step: number): number {
   if (!Number.isFinite(step)) return 1;
   return Math.min(TOTAL_STEPS, Math.max(1, Math.round(step)));
@@ -135,58 +160,52 @@ function clampStep(step: number): number {
 /* ─── Step renderer ─────────────────────────────────────────────────────
    Centralises the step-number → component mapping so it can be used both
    for the active step and for the outgoing-step overlay during a
-   transition. The handlers + state setters travel as a single bag to
-   keep call sites readable. */
+   transition. */
 type StepHandlers = {
   email: string;
   setEmail: (next: string) => void;
-  handleEmailSubmit: (value: string) => void;
   country: Country;
   setCountry: (c: Country) => void;
   phone: string;
   setPhone: (digits: string) => void;
-  handlePhoneSubmit: (payload: { country: Country; phone: string }) => void;
+  handleContactoSubmit: () => void;
   handleCodeSubmit: () => void;
   idFront: string | null;
   setIdFront: (next: string | null) => void;
   idBack: string | null;
   setIdBack: (next: string | null) => void;
   handleIdSubmit: () => void;
+  verifyPhase: "processing" | "success";
   handleVerifyComplete: () => void;
-  navigateTo: (next: number) => void;
+  goBack: (to: number) => void;
 };
 
-function renderStep(step: number, h: StepHandlers) {
+/* Rendered as a JSX element (not a plain function call) so the handler bag
+   — which closes over timer refs — is passed as props rather than read
+   during the parent's render. */
+function StepFrame({ step, h }: { step: number; h: StepHandlers }) {
   switch (step) {
     case 1:
       return (
-        <StepEmail
+        <StepContacto
           email={h.email}
           onEmailChange={h.setEmail}
-          onSubmit={h.handleEmailSubmit}
-        />
-      );
-    case 2:
-      return (
-        <StepPhone
           country={h.country}
           onCountryChange={h.setCountry}
           phone={h.phone}
           onPhoneChange={h.setPhone}
-          onSubmit={h.handlePhoneSubmit}
-          onBack={() => h.navigateTo(1)}
+          onSubmit={h.handleContactoSubmit}
+        />
+      );
+    case 2:
+      return (
+        <StepCode
+          email={h.email}
+          onSubmit={h.handleCodeSubmit}
+          onBack={() => h.goBack(1)}
         />
       );
     case 3:
-      return (
-        <StepCode
-          country={h.country}
-          phone={h.phone}
-          onSubmit={h.handleCodeSubmit}
-          onBack={() => h.navigateTo(2)}
-        />
-      );
-    case 4:
       return (
         <StepId
           idFront={h.idFront}
@@ -194,12 +213,16 @@ function renderStep(step: number, h: StepHandlers) {
           onIdFrontChange={h.setIdFront}
           onIdBackChange={h.setIdBack}
           onSubmit={h.handleIdSubmit}
-          onBack={() => h.navigateTo(3)}
+          onBack={() => h.goBack(2)}
         />
       );
-    case 5:
+    case 4:
       return (
-        <StepVerify email={h.email} onSubmit={h.handleVerifyComplete} />
+        <StepVerify
+          email={h.email}
+          phase={h.verifyPhase}
+          onSubmit={h.handleVerifyComplete}
+        />
       );
     default:
       return null;
@@ -214,21 +237,41 @@ export function KYCScreen({
 }: KYCScreenProps) {
   const copy = COPY[userType];
 
-  /* ─── Step navigation ─────────────────────────────────────────────────
-     activeStep is internally owned so the orchestrator can advance the
-     flow itself. The `currentStep` prop seeds the initial value but
-     subsequent changes happen here. */
   const [activeStep, setActiveStep] = useState<number>(() =>
     clampStep(currentStep),
   );
 
-  /* Drives the slide-in/slide-out animation for the step content. When
-     non-null, the previous step is briefly rendered over the new one
-     using the "out" keyframe while the new one plays the "in" keyframe. */
+  /* Drives the slide-in/slide-out animation for the step content. */
   const [transition, setTransition] = useState<{
     from: number;
     direction: "forward" | "back";
   } | null>(null);
+
+  /* ─── Progress-bar fill ───────────────────────────────────────────────
+     `pct` is the target width; `cssTransition` is applied inline so each
+     beat (phase-1, snap, creep, back) animates at its own pace. Initialised
+     to the resting position for the starting step — step 1 → 0%, no
+     pre-fill on mount. */
+  const [fill, setFill] = useState<{ pct: number; cssTransition: string }>(
+    () => ({
+      pct: REST_PCT[clampStep(currentStep) - 1],
+      cssTransition: FILL_SNAP,
+    }),
+  );
+
+  /* Step 4's processing → success flip is owned here so the bar creep and
+     the success "beat" stay perfectly in sync. */
+  const [verifyPhase, setVerifyPhase] = useState<"processing" | "success">(
+    "processing",
+  );
+
+  /* Pending fill / verification timers, cleared whenever navigation changes
+     so a fast click can't leave a stale snap/creep queued. */
+  const timersRef = useRef<number[]>([]);
+  const clearTimers = useCallback(() => {
+    timersRef.current.forEach((id) => window.clearTimeout(id));
+    timersRef.current = [];
+  }, []);
 
   const navigateTo = useCallback(
     (next: number) => {
@@ -243,61 +286,95 @@ export function KYCScreen({
     [activeStep],
   );
 
-  /* Clear the outgoing-step overlay once the 300 ms animation is done so
-     it doesn't keep eating pointer events or RAF cycles. */
+  /* Clear the outgoing-step overlay once the 300 ms animation is done. */
   useEffect(() => {
     if (!transition) return;
     const timer = window.setTimeout(() => setTransition(null), 320);
     return () => window.clearTimeout(timer);
   }, [transition]);
 
-  const fillPct = (activeStep / TOTAL_STEPS) * 100;
-  const stepName = STEP_NAMES[activeStep - 1];
+  /* Clear any queued fill/verification timers on unmount. */
+  useEffect(() => clearTimers, [clearTimers]);
 
   /* ─── Per-step form state ─────────────────────────────────────────────
-     Lifted to the orchestrator so going back to a previous step
-     preserves what the user already entered. ID images are data URLs
-     for now (no server upload yet). */
+     Lifted here so navigating back preserves what the user entered. */
   const [email, setEmail] = useState("");
   const [country, setCountry] = useState<Country>(DEFAULT_COUNTRY);
   const [phone, setPhone] = useState("");
   const [idFront, setIdFront] = useState<string | null>(null);
   const [idBack, setIdBack] = useState<string | null>(null);
 
-  function handleEmailSubmit(_value: string) {
-    /* The email is already in parent state via onEmailChange — just
-       advance. The console.log lives in StepEmail. */
-    navigateTo(2);
-  }
+  /* ─── Forward: two-phase fill (steps 1 → 2 and 2 → 3) ─────────────────
+     Phase 1 keeps the CURRENT screen visible while the bar fills to 85% of
+     the segment over ~1s. ONLY THEN does the step change; as the new screen
+     mounts the bar snaps the remaining 15% to the clean boundary. */
+  const advanceTwoPhase = useCallback(
+    (from: number) => {
+      clearTimers();
+      // Phase 1 — bar fills on the screen the user just completed.
+      setFill({ pct: PHASE1_PCT[from - 1], cssTransition: FILL_PHASE1 });
+      // After the fill has visibly played, transition to the next step…
+      const advance = window.setTimeout(() => {
+        navigateTo(from + 1);
+        // …then snap the remaining 15% into place as the new screen mounts.
+        const snap = window.setTimeout(() => {
+          setFill({ pct: REST_PCT[from], cssTransition: FILL_SNAP });
+        }, MOUNT_BEAT_DELAY);
+        timersRef.current.push(snap);
+      }, PHASE1_MS);
+      timersRef.current.push(advance);
+    },
+    [clearTimers, navigateTo],
+  );
 
-  function handlePhoneSubmit(_payload: { country: Country; phone: string }) {
-    /* Real SMS sending will be wired when the backend exists; for now
-       just advance so the progress bar + transition can be verified. */
-    console.log("[KYC] phone valid, moving to step 3", _payload);
-    navigateTo(3);
-  }
+  /* ─── Forward: step 3 → 4 (verification creep, no snap) ───────────────
+     Phase 1 keeps Step 3 visible while the bar fills to ~91.6% over ~1s.
+     Only then does Step 4 mount, where a slow synchronized creep takes the
+     bar to exactly 100% over 2.5 s. The success flip is scheduled for the
+     frame the creep completes so the bar, the spinner stop and
+     "✓ VERIFICADO" land as one beat. */
+  const advanceToVerify = useCallback(() => {
+    clearTimers();
+    // Phase 1 — bar fills to ~91.6% while Step 3 is still on screen.
+    setFill({ pct: PHASE1_PCT[2], cssTransition: FILL_PHASE1 });
+    const advance = window.setTimeout(() => {
+      setVerifyPhase("processing");
+      navigateTo(4);
+      const creep = window.setTimeout(() => {
+        setFill({ pct: 100, cssTransition: FILL_CREEP });
+      }, MOUNT_BEAT_DELAY);
+      const finish = window.setTimeout(() => {
+        setVerifyPhase("success");
+      }, MOUNT_BEAT_DELAY + CREEP_MS);
+      timersRef.current.push(creep, finish);
+    }, PHASE1_MS);
+    timersRef.current.push(advance);
+  }, [clearTimers, navigateTo]);
 
-  function handleCodeSubmit() {
-    /* The 6-digit code matched the gold path inside StepCode. The
-       backend hook for marking the phone "verified" lands later. */
-    console.log("[KYC] code verified, moving to step 4");
-    navigateTo(4);
-  }
+  /* ─── Back: reverse the bar to the previous boundary ──────────────────── */
+  const goBack = useCallback(
+    (to: number) => {
+      clearTimers();
+      setFill({ pct: REST_PCT[to - 1], cssTransition: FILL_BACK });
+      navigateTo(to);
+    },
+    [clearTimers, navigateTo],
+  );
 
-  function handleIdSubmit() {
-    /* Both cédula photos captured. Step 5 owns the processing → success
-       animation; once the user presses CONTINUAR there we hand off to
-       the parent via handleVerifyComplete. */
-    console.log("[KYC] ID images captured, moving to step 5");
-    navigateTo(5);
-  }
+  const handleContactoSubmit = useCallback(
+    () => advanceTwoPhase(1),
+    [advanceTwoPhase],
+  );
+  const handleCodeSubmit = useCallback(
+    () => advanceTwoPhase(2),
+    [advanceTwoPhase],
+  );
+  const handleIdSubmit = useCallback(
+    () => advanceToVerify(),
+    [advanceToVerify],
+  );
 
-  function handleVerifyComplete() {
-    /* User pressed CONTINUAR on the success screen. Bundle everything
-       collected during the flow and hand it back to the parent so they
-       can either open BookingModal (guest) or route to /ofrecer
-       (host) — see PropertyDetailExperience.handleKycComplete and
-       SpatialCardField.handleKycComplete for the consumer side. */
+  const handleVerifyComplete = useCallback(() => {
     console.log("[KYC] flow complete, handing off to parent");
     onComplete({
       email,
@@ -307,7 +384,7 @@ export function KYCScreen({
       idFront,
       idBack,
     });
-  }
+  }, [onComplete, email, phone, country, idFront, idBack]);
 
   // Esc dismisses the screen, mirroring BookingModal behaviour.
   useEffect(() => {
@@ -318,8 +395,7 @@ export function KYCScreen({
     return () => document.removeEventListener("keydown", onKeyDown);
   }, [onClose]);
 
-  // Lock body scroll while the screen is mounted so the page behind can't
-  // be scrolled through the blurred scrim.
+  // Lock body scroll while the screen is mounted.
   useEffect(() => {
     const prev = document.body.style.overflow;
     document.body.style.overflow = "hidden";
@@ -327,6 +403,25 @@ export function KYCScreen({
       document.body.style.overflow = prev;
     };
   }, []);
+
+  const stepHandlers: StepHandlers = {
+    email,
+    setEmail,
+    country,
+    setCountry,
+    phone,
+    setPhone,
+    handleContactoSubmit,
+    handleCodeSubmit,
+    idFront,
+    setIdFront,
+    idBack,
+    setIdBack,
+    handleIdSubmit,
+    verifyPhase,
+    handleVerifyComplete,
+    goBack,
+  };
 
   return (
     <div
@@ -344,16 +439,14 @@ export function KYCScreen({
         className={`absolute inset-0 cursor-default ${SCRIM}`}
       />
 
-      {/* Ambient wash — matches BookingModal's MODAL_AMBIENT_BG so the two
-          modal-class surfaces feel like the same product. */}
+      {/* Ambient wash — matches BookingModal's MODAL_AMBIENT_BG. */}
       <div
         aria-hidden
         className="pointer-events-none absolute inset-0 opacity-80"
         style={{ background: MODAL_AMBIENT_BG }}
       />
 
-      {/* Close button — same shared CTA_SECONDARY pill used by OfferScreen
-          and BookingModal so the close affordance is unmistakable. */}
+      {/* Close button — shared CTA_SECONDARY pill. */}
       <button
         type="button"
         onClick={onClose}
@@ -369,13 +462,8 @@ export function KYCScreen({
         {/* ───────────── LEFT — 35%, lighter glass ───────────── */}
         <aside
           aria-label="Contexto"
-          /* Asymmetric outer modal panel — same recipe as OfferScreen's left
-             aside. Slightly more luminous bg + brighter border give this
-             panel the "lighter glass tone" called for in the spec. */
           className="relative flex w-full shrink-0 flex-col items-center justify-center rounded-[28px_56px_28px_48px] border border-white/15 border-b-transparent border-r-transparent bg-[#0a1626]/55 p-7 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.16)] backdrop-blur-2xl sm:p-9 lg:w-[35%] lg:max-w-[35%]"
         >
-          {/* Decorative bg layers — radial mask scoped here so the wordmark
-              + body copy are never clipped at the panel edges. */}
           <div
             aria-hidden
             className="pointer-events-none absolute inset-0 overflow-hidden rounded-[28px_56px_28px_48px]"
@@ -395,8 +483,6 @@ export function KYCScreen({
             />
           </div>
 
-          {/* Vertical light accent — lives OUTSIDE the masked bg layer so
-              it reads reliably end-to-end. Decorative; aria-hidden. */}
           <span
             aria-hidden
             className="pointer-events-none absolute bottom-14 left-6 top-14 hidden w-px sm:block"
@@ -410,13 +496,7 @@ export function KYCScreen({
 
           <span aria-hidden className={RIM_HIGHLIGHT_TOP} />
 
-          {/* SPACIO + contextual copy — grouped in a single column that the
-              parent flex centers vertically. Because SPACIO sits above ~80px
-              of gap and a multi-line copy block, its baseline naturally
-              lands in the upper-middle of the panel. */}
           <div className="relative flex w-full max-w-[42ch] flex-col items-center gap-[72px] px-2">
-            {/* SPACIO wordmark — breathing glow ties the panel to the
-                ambient feel of the app. */}
             <p
               data-kyc-spacio=""
               className={`text-center text-4xl font-medium uppercase tracking-[0.6em] sm:text-5xl ${textPrimary}`}
@@ -430,7 +510,6 @@ export function KYCScreen({
               SPACIO
             </p>
 
-            {/* Contextual copy block — calm, centered, comfortable rhythm. */}
             <div className="flex flex-col items-center gap-7 text-center">
               <h2
                 className={`text-[15px] font-medium uppercase tracking-[0.42em] sm:text-base ${textPrimary}`}
@@ -461,9 +540,6 @@ export function KYCScreen({
         {/* ───────────── RIGHT — 65%, darker glass ───────────── */}
         <section
           aria-label="Verificación"
-          /* Same structural radius/shadows as OfferScreen's right form
-             panel, but the bg tone is dropped a notch (#050b15 vs the
-             left panel's #0a1626) for the "darker glass tone" spec. */
           className="relative flex flex-1 flex-col overflow-hidden rounded-[32px_56px_48px_28px] border border-white/10 border-b-transparent border-r-transparent bg-[#050b15]/68 p-5 shadow-[34px_42px_120px_rgba(0,0,0,0.62),inset_0_1px_0_rgba(255,255,255,0.12)] backdrop-blur-2xl sm:p-7 lg:w-[65%]"
         >
           <div
@@ -476,62 +552,69 @@ export function KYCScreen({
           />
           <span aria-hidden className={RIM_HIGHLIGHT_TOP} />
 
-          {/* Progress bar + step-name row. Sits at the top of the right
-              panel and spans 100% of its content area. */}
+          {/* Progress bar + step legend. */}
           <header
             className="relative flex flex-col gap-2.5"
             aria-label={`Paso ${activeStep} de ${TOTAL_STEPS}`}
           >
-            {/* Track — 6 px tall pill, subtle inset shadow gives the
-                "recessed into the panel" depth cue. */}
             <div
-              className="relative h-1.5 w-full overflow-hidden rounded-full bg-white/[0.08] shadow-[inset_0_1px_2px_rgba(0,0,0,0.45),inset_0_-1px_0_rgba(255,255,255,0.04)]"
+              className={PROGRESS_TRACK}
               role="progressbar"
               aria-valuemin={0}
-              aria-valuemax={TOTAL_STEPS}
-              aria-valuenow={activeStep}
-              aria-valuetext={stepName}
+              aria-valuemax={100}
+              aria-valuenow={Math.round(fill.pct)}
+              aria-valuetext={STEP_LABELS[activeStep - 1]}
             >
-              {/* Fill — bright-white liquid with a brighter leading edge.
-                  At 100% (final step) the glow blooms a touch wider and
-                  the opacity ticks up to 1.0 so completion reads as a
-                  small but satisfying moment. */}
+              {/* Liquid-glow fill — width + timing driven inline so each beat
+                  animates at its own pace; the glow comes from PROGRESS_FILL. */}
               <span
                 aria-hidden
-                className={[
-                  "absolute inset-y-0 left-0 rounded-full bg-gradient-to-r from-white/70 via-white/85 to-white",
-                  activeStep === TOTAL_STEPS
-                    ? "shadow-[0_0_10px_rgba(255,255,255,0.7),0_0_26px_rgba(255,255,255,0.5),inset_0_1px_0_rgba(255,255,255,0.78)]"
-                    : "shadow-[0_0_8px_rgba(255,255,255,0.55),0_0_18px_rgba(255,255,255,0.32),inset_0_1px_0_rgba(255,255,255,0.6)]",
-                ].join(" ")}
+                className={PROGRESS_FILL}
                 style={{
-                  width: `${fillPct}%`,
-                  transition:
-                    "width 450ms cubic-bezier(0.22, 1, 0.36, 1), opacity 500ms ease-out",
-                  opacity: activeStep === TOTAL_STEPS ? 1 : 0.9,
+                  width: `${fill.pct}%`,
+                  transition: fill.cssTransition,
                 }}
               />
             </div>
 
-            {/* Step name — right-aligned, label tier (60%). Decorative
-                hierarchy only; no step number, per spec. */}
-            <p
-              className={`self-end text-[10px] uppercase tracking-widest ${textLabel}`}
-            >
-              {stepName}
-            </p>
+            {/* Step legend — all four steps; the active one sits brightest,
+                completed steps mid, upcoming steps faint. */}
+            <div className="flex flex-wrap items-center justify-end gap-x-1.5 gap-y-1">
+              {STEP_LABELS.map((label, i) => {
+                const n = i + 1;
+                const tone =
+                  n === activeStep
+                    ? textPrimary
+                    : n < activeStep
+                      ? textMeta
+                      : textInactive;
+                return (
+                  <Fragment key={label}>
+                    {i > 0 && (
+                      <span
+                        aria-hidden
+                        className={`${STEP_LEGEND_TYPE} ${textInactive}`}
+                      >
+                        ·
+                      </span>
+                    )}
+                    <span
+                      aria-current={n === activeStep ? "step" : undefined}
+                      className={`${STEP_LEGEND_TYPE} ${tone}`}
+                    >
+                      {n} {label}
+                    </span>
+                  </Fragment>
+                );
+              })}
+            </div>
           </header>
 
-          {/* Step content area — vertically centered in the remaining
-              space. Width constraints live on each step component so
-              wider steps (e.g. ID upload with two side-by-side zones)
-              can opt-in independently. The relative inner box is the
-              animation stage for the slide-in / slide-out crossfade. */}
+          {/* Step content area — vertically centered. The relative inner box
+              is the animation stage for the slide-in / slide-out crossfade. */}
           <div className="relative flex flex-1 items-center justify-center px-2 sm:px-6">
             <div className="relative w-full">
-              {/* Outgoing step — overlays the new one for ~300 ms while
-                  it slides out. Pointer-events-none so it doesn't block
-                  the incoming step's focus / clicks. */}
+              {/* Outgoing step — overlays the new one while it slides out. */}
               {transition && (
                 <div
                   aria-hidden
@@ -542,30 +625,12 @@ export function KYCScreen({
                     } 300ms ease both`,
                   }}
                 >
-                  {renderStep(transition.from, {
-                    email,
-                    setEmail,
-                    handleEmailSubmit,
-                    country,
-                    setCountry,
-                    phone,
-                    setPhone,
-                    handlePhoneSubmit,
-                    handleCodeSubmit,
-                    idFront,
-                    setIdFront,
-                    idBack,
-                    setIdBack,
-                    handleIdSubmit,
-                    handleVerifyComplete,
-                    navigateTo,
-                  })}
+                  <StepFrame step={transition.from} h={stepHandlers} />
                 </div>
               )}
 
-              {/* Active step — keyed by step number so React mounts a
-                  fresh instance per step and the enter animation fires
-                  each time. */}
+              {/* Active step — keyed by step number so React mounts a fresh
+                  instance per step and the enter animation fires each time. */}
               <div
                 key={activeStep}
                 style={
@@ -578,24 +643,7 @@ export function KYCScreen({
                     : undefined
                 }
               >
-                {renderStep(activeStep, {
-                  email,
-                  setEmail,
-                  handleEmailSubmit,
-                  country,
-                  setCountry,
-                  phone,
-                  setPhone,
-                  handlePhoneSubmit,
-                  handleCodeSubmit,
-                  idFront,
-                  setIdFront,
-                  idBack,
-                  setIdBack,
-                  handleIdSubmit,
-                  handleVerifyComplete,
-                  navigateTo,
-                })}
+                <StepFrame step={activeStep} h={stepHandlers} />
               </div>
             </div>
           </div>
@@ -633,10 +681,7 @@ export function KYCScreen({
           from { opacity: 1; transform: translateX(0);    }
           to   { opacity: 0; transform: translateX(40px); }
         }
-        /* Step 5 — verification screen
-           Phase crossfade, rotating spinner, checkmark scale-in, and
-           checkmark stroke draw. Animation names are all kycVerify*
-           prefixed so they never collide with other step keyframes. */
+        /* Step 4 — verification screen keyframes. */
         @keyframes kycVerifyPhaseIn {
           from { opacity: 0; transform: translateY(6px); }
           to   { opacity: 1; transform: translateY(0);    }

@@ -2,10 +2,9 @@
 
 import { useEffect, useRef, useState } from "react";
 import { textBody, textLabel } from "@/styles/glass";
-import type { Country } from "@/lib/kyc/countries";
 
 /**
- * SPACED — KYC Step 3: SMS verification code
+ * SPACED — KYC Step 3: email verification code
  * ─────────────────────────────────────────────────────────────────────────
  *
  * Six-box numeric code input with auto-advance, paste support, an
@@ -13,8 +12,10 @@ import type { Country } from "@/lib/kyc/countries";
  * countdown, and a three-strike lockout that re-opens only after the
  * user requests a fresh code.
  *
- * Until the backend lands, the gold-path code is the literal "123456" —
- * any other six-digit string is treated as an incorrect code.
+ * The code is sent to the email collected in Step 1 (the phone number
+ * from Step 2 is still stored in state but is no longer the delivery
+ * channel). Until the backend lands, the gold-path code is the literal
+ * "123456" — any other six-digit string is treated as incorrect.
  */
 
 /* ─── Tuning ────────────────────────────────────────────────────────────
@@ -30,27 +31,30 @@ const ERROR_FLASH_MS = 600;
 /** Test-mode gold path — replace with the backend's expected value. */
 const VALID_CODE = "123456";
 
-/* Mask the phone number so the SMS confirmation feels personal but
-   doesn't leak the full number. Format: "+{dial} {first} •••• {last4}".
-   Example: phone "912340253" + Chile → "+56 9 •••• 0253". */
-function maskPhone(country: Country, digits: string): string {
-  if (!digits) return `+${country.dialCode}`;
-  const first = digits[0] ?? "";
-  const last4 = digits.length >= 5 ? digits.slice(-4) : digits.slice(1);
-  return `+${country.dialCode} ${first} •••• ${last4}`;
+/* Mask the email so the confirmation feels personal but doesn't leak the
+   full address. Format: first 2 chars of the username + "***" + "@" +
+   full domain. If the username is a single character, that 1 char + "***".
+   Examples:
+     "andres@gmail.com"       → "an***@gmail.com"
+     "j@hotmail.com"          → "j***@hotmail.com"
+     "maria.jose@outlook.com" → "ma***@outlook.com" */
+function maskEmail(email: string): string {
+  const [username, domain] = email.split("@");
+  if (!domain) return email;
+  const visible = username.slice(0, 2);
+  return `${visible}***@${domain}`;
 }
 
 type StepCodeProps = {
-  country: Country;
-  /** Raw digits collected in Step 2 (no formatting, no country code). */
-  phone: string;
+  /** Email collected in Step 1 — the code's delivery address. */
+  email: string;
   /** Fires when the user enters the correct verification code. */
   onSubmit: () => void;
   /** Back to Step 2. */
   onBack: () => void;
 };
 
-export function StepCode({ country, phone, onSubmit, onBack }: StepCodeProps) {
+export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
   /* ─── Local form state ────────────────────────────────────────────────
      Per the spec, all of this is internal to Step 3. Going back to
      Step 2 unmounts this component — when the user returns, they get
@@ -308,14 +312,19 @@ export function StepCode({ country, phone, onSubmit, onBack }: StepCodeProps) {
         CÓDIGO DE VERIFICACIÓN
       </p>
 
-      {/* Confirmation message — masked phone */}
+      {/* Confirmation message — masked email */}
       <p
         className={`mt-4 text-[13px] font-normal tracking-[0.02em] ${textBody}`}
       >
         Enviamos un código a{" "}
-        <span className="text-white/90 tabular-nums">
-          {maskPhone(country, phone)}
-        </span>
+        <span className="text-white/90">{maskEmail(email)}</span>
+      </p>
+
+      {/* Reassuring subtext — points the user at their inbox. */}
+      <p
+        className={`mt-2 text-[12px] font-normal tracking-[0.02em] ${textLabel}`}
+      >
+        Revisa tu correo e ingresa el código.
       </p>
 
       {/* Six-box input row */}
