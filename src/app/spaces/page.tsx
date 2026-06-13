@@ -1,12 +1,12 @@
 "use client";
 
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import Link from "next/link";
 import { SpaceCard } from "@/components/space-card";
 import { TopNav } from "@/components/top-nav";
 import { useViewerLocation } from "@/hooks/use-viewer-location";
 import { distanceKm } from "@/lib/geo";
-import { mockSpaces } from "@/lib/mock-spaces";
+import { fetchSpaces } from "@/lib/spaces";
 import type { Space } from "@/lib/types";
 import {
   CTA_PRIMARY,
@@ -54,11 +54,16 @@ export default function SpacesPage() {
   const [priceFilter, setPriceFilter] = useState(0);
   const [sort, setSort] = useState<SortValue>("distance");
   const [typeFilter, setTypeFilter] = useState<TypeFilterValue>("all");
+  const [spaces, setSpaces] = useState<Space[]>([]);
+
+  useEffect(() => {
+    fetchSpaces().then(setSpaces);
+  }, []);
 
   const filtered = useMemo(() => {
     const range = PRICE_RANGES[priceFilter];
 
-    let rows = mockSpaces.map((space) => ({
+    let rows = spaces.map((space) => ({
       space,
       distanceKm: distanceKm(origin, { lat: space.lat, lng: space.lng }),
     }));

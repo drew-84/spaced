@@ -14,19 +14,31 @@ import {
   TEXT_BODY,
   TEXT_LABEL,
 } from "@/styles/glass";
+import { supabase } from "@/lib/supabase";
 
 export default function LoginPage() {
   const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
     setPending(true);
-    window.setTimeout(() => {
+
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    const { error: authError } = await supabase.auth.signInWithPassword({ email, password });
+
+    if (authError) {
+      setError(authError.message);
       setPending(false);
-      alert("Inicio de sesión no conectado aún. Redirigiendo al inicio.");
-      router.push("/");
-    }, 300);
+      return;
+    }
+
+    router.push("/");
   }
 
   return (
@@ -50,7 +62,7 @@ export default function LoginPage() {
                 Iniciar sesión
               </h1>
               <p className={`text-sm ${TEXT_BODY}`}>
-                Accede a tu cuenta SPACED (próximamente con autenticación real).
+                Accede a tu cuenta SPACED.
               </p>
             </header>
 
@@ -88,6 +100,10 @@ export default function LoginPage() {
                   />
                 </div>
               </div>
+
+              {error && (
+                <p className="text-sm text-red-400/90">{error}</p>
+              )}
 
               <div className="pt-1">
                 <button

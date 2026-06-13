@@ -2,6 +2,8 @@
 
 import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
+import { supabase } from "@/lib/supabase";
+import { uploadSpaceCoverPhoto } from "@/lib/space-images";
 import {
   CTA_SECONDARY,
   PAGE_AMBIENT_BG,
@@ -32,6 +34,7 @@ function validateStep(step: number, data: ListSpaceFormData): StepErrors {
     if (!data.titulo.trim()) e.titulo = "Ingresa un título";
     if (!data.descripcion.trim()) e.descripcion = "Cuéntanos sobre el espacio";
     if (!data.tipoPropiedad) e.tipoPropiedad = "Elige un tipo de propiedad";
+    if (!data.coverPhoto) e.coverPhoto = "Agrega una foto del espacio";
   }
   if (step === 2) {
     if (!data.direccion.trim()) e.direccion = "Ingresa la dirección";
@@ -70,6 +73,7 @@ export function ListSpaceExperience() {
   const [data, setData] = useState<ListSpaceFormData>(INITIAL_DATA);
   const [errors, setErrors] = useState<StepErrors>({});
   const [savedAt, setSavedAt] = useState<Date | null>(null);
+  const [publishing, setPublishing] = useState(false);
 
   const update = useCallback(
     <K extends keyof ListSpaceFormData>(
@@ -87,13 +91,34 @@ export function ListSpaceExperience() {
     [],
   );
 
-  function goNext() {
+  async function goNext() {
     const e = validateStep(step, data);
     if (Object.keys(e).length > 0) {
       setErrors(e);
       return;
     }
     setErrors({});
+
+    // Geocode address when leaving step 2
+    if (step === 2) {
+      const query = encodeURIComponent(
+        `${data.direccion}, ${data.comuna}, ${data.ciudad}, ${data.region}`
+      );
+      const key = process.env.NEXT_PUBLIC_GOOGLE_MAPS_API_KEY;
+      try {
+        const res = await fetch(
+          `https://maps.googleapis.com/maps/api/geocode/json?address=${query}&key=${key}`
+        );
+        const json = await res.json();
+        const loc = json.results?.[0]?.geometry?.location;
+        if (loc) {
+          setData((prev) => ({ ...prev, lat: loc.lat, lng: loc.lng }));
+        }
+      } catch {
+        // Geocoding failed — proceed without coordinates
+      }
+    }
+
     setStep((s) => Math.min(TOTAL_STEPS, s + 1));
   }
 
@@ -111,7 +136,7 @@ export function ListSpaceExperience() {
     });
   }
 
-  function handlePublish() {
+  async function handlePublish() {
     let all: StepErrors = {};
     for (let s = 1; s <= TOTAL_STEPS; s++) {
       all = { ...all, ...validateStep(s, data) };
@@ -124,13 +149,48 @@ export function ListSpaceExperience() {
       if (firstBad) setStep(firstBad.id);
       return;
     }
-    console.log("[Spaced] publicar espacio", {
-      ...data,
-      videos: data.videos
-        .filter((v) => v.file)
-        .map((v) => ({ id: v.id, name: v.name })),
-      publishedAt: new Date().toISOString(),
+
+    setPublishing(true);
+
+    const { data: { user } } = await supabase.auth.getUser();
+
+    const imageUrl = data.coverPhoto && user
+      ? await uploadSpaceCoverPhoto(data.coverPhoto, user.id)
+      : null;
+
+    const price30m = typeof data.precioPor15Min === "number"
+      ? data.precioPor15Min * 2
+      : null;
+
+    const typeMap: Record<string, string> = {
+      "studio": "studio",
+      "1-dormitorio": "apartment-1br",
+    };
+
+    const { error } = await supabase.from("spaces").insert({
+      host_id:       user?.id ?? null,
+      title:         data.titulo,
+      description:   data.descripcion,
+      type:          typeMap[data.tipoPropiedad ?? ""] ?? "studio",
+      stay_type:     "hourly",
+      area:          data.comuna,
+      city:          data.ciudad,
+      lat:           data.lat,
+      lng:           data.lng,
+      price_per_30m: price30m,
+      instant_access: false,
+      amenities:     data.comodidades,
+      image_url:     imageUrl,
     });
+
+    setPublishing(false);
+
+    if (error) {
+      console.error("[Spaced] error publicando espacio:", error.message);
+      return;
+    }
+
+    router.push("/");
   }
 
   const stepMeta = STEPS[step - 1];
@@ -286,6 +346,7 @@ export function ListSpaceExperience() {
             onPublish={handlePublish}
             onSaveDraft={handleSaveDraft}
             savedAt={savedAt}
+            publishing={publishing}
           />
         </section>
       </main>

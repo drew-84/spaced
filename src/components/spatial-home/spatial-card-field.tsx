@@ -3,12 +3,10 @@
 import { useEffect, useRef, useState } from "react";
 import { useRouter } from "next/navigation";
 import { KYCScreen } from "@/components/kyc/KYCScreen";
+import type { KYCCompletePayload } from "@/components/kyc/KYCScreen";
 import type { FloatingCardSpace } from "./floating-space-card";
-
-/* Temporary flag — flips the OFRECER flow between KYC-first (new host)
-   and direct /ofrecer route (returning host). Replace with real auth
-   state once we have a session backend. */
-const isNewUser = true;
+import { useAuthStore } from "@/lib/auth-store";
+import { submitKyc } from "@/lib/kyc/supabase-kyc";
 
 type SpatialCardFieldProps = {
   spaces: FloatingCardSpace[];
@@ -87,6 +85,8 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
   const [hoveredLabel, setHoveredLabel] = useState<FooterLabel | null>(null);
   const [offerOpen, setOfferOpen] = useState(false);
   const [kycOpen, setKycOpen] = useState(false);
+  const kycStatus = useAuthStore((s) => s.kycStatus);
+  const setKycStatus = useAuthStore((s) => s.setKycStatus);
   const [offerTiming, setOfferTiming] = useState(OFFER_TIMINGS[0]);
   const [offerArea, setOfferArea] = useState(OFFER_AREAS[0]);
   const [offerVibe, setOfferVibe] = useState(OFFER_VIBES[0]);
@@ -153,14 +153,13 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
 
   function handleOfferClick() {
     /* OFRECER routes to the full-screen list-space flow at /ofrecer, but
-       new hosts must complete KYC first. Returning hosts skip straight to
-       /ofrecer. Prefetch happens automatically on hover via
-       router.prefetch. */
-    if (isNewUser) {
-      setKycOpen(true);
+       new hosts must complete KYC first. Verified hosts skip straight to
+       /ofrecer. */
+    if (kycStatus === "verified") {
+      router.push("/ofrecer");
       return;
     }
-    router.push("/ofrecer");
+    setKycOpen(true);
   }
 
   /* EXPLORAR scrolls down to the property grid section (HostCardsSection)
@@ -175,7 +174,11 @@ export function SpatialCardField({ spaces, readyCount }: SpatialCardFieldProps) 
     }
   }
 
-  function handleKycComplete() {
+  async function handleKycComplete(payload?: KYCCompletePayload) {
+    if (payload) {
+      await submitKyc(payload, "host");
+      setKycStatus("verified");
+    }
     setKycOpen(false);
     router.push("/ofrecer");
   }

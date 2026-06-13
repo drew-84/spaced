@@ -17,12 +17,15 @@ export type ListSpaceFormData = {
   titulo: string;
   descripcion: string;
   tipoPropiedad: PropertyType | null;
+  coverPhoto: File | null;
 
   // Step 2 — Ubicación
   direccion: string;
   comuna: string;
   ciudad: string;
   region: string;
+  lat: number | null;
+  lng: number | null;
 
   // Step 3 — Precio y Disponibilidad
   precioPor15Min: number | "";
@@ -149,10 +152,13 @@ export const INITIAL_DATA: ListSpaceFormData = {
   titulo: "",
   descripcion: "",
   tipoPropiedad: null,
+  coverPhoto: null,
   direccion: "",
   comuna: "",
   ciudad: "Santiago",
   region: "Región Metropolitana",
+  lat: null,
+  lng: null,
   precioPor15Min: "",
   reservaMinimaMin: 45,
   disponibilidad: [],

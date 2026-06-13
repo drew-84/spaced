@@ -15,6 +15,7 @@ type Props = {
   onPublish: () => void;
   onSaveDraft: () => void;
   savedAt?: Date | null;
+  publishing?: boolean;
 };
 
 export function ListSpaceNav({
@@ -25,6 +26,7 @@ export function ListSpaceNav({
   onPublish,
   onSaveDraft,
   savedAt,
+  publishing = false,
 }: Props) {
   const isLast = current === total;
   return (
@@ -52,8 +54,8 @@ export function ListSpaceNav({
           Guardar borrador
         </button>
         {isLast ? (
-          <button type="button" onClick={onPublish} className={CTA_PRIMARY}>
-            Publicar
+          <button type="button" onClick={onPublish} disabled={publishing} className={CTA_PRIMARY}>
+            {publishing ? "Publicando…" : "Publicar"}
           </button>
         ) : (
           <button type="button" onClick={onNext} className={CTA_PRIMARY}>

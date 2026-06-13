@@ -14,7 +14,10 @@ import {
   TEXT_HINT,
 } from "@/styles/glass";
 import { KYCScreen } from "@/components/kyc/KYCScreen";
+import type { KYCCompletePayload } from "@/components/kyc/KYCScreen";
 import { AmenityPills } from "./amenity-pills";
+import { useAuthStore } from "@/lib/auth-store";
+import { submitKyc } from "@/lib/kyc/supabase-kyc";
 import { BookingBar } from "./booking-bar";
 import { BookingModal } from "./booking-modal";
 import { HostCard } from "./host-card";
@@ -24,10 +27,6 @@ import { ReviewsSection } from "./reviews-section";
 import { VideoGallery } from "./video-gallery";
 import type { PropertyDetail } from "./types";
 
-/* Temporary flag — flips the RESERVAR flow between KYC-first (new user)
-   and direct BookingModal (returning user). Replace with real auth state
-   once we have a session backend. */
-const isNewUser = true;
 
 type Props = {
   property: PropertyDetail;
@@ -64,16 +63,22 @@ export function PropertyDetailExperience({ property }: Props) {
   const router = useRouter();
   const [bookingOpen, setBookingOpen] = useState(false);
   const [kycOpen, setKycOpen] = useState(false);
+  const kycStatus = useAuthStore((s) => s.kycStatus);
+  const setKycStatus = useAuthStore((s) => s.setKycStatus);
 
   function handleReserve() {
-    if (isNewUser) {
-      setKycOpen(true);
+    if (kycStatus === "verified") {
+      setBookingOpen(true);
       return;
     }
-    setBookingOpen(true);
+    setKycOpen(true);
   }
 
-  function handleKycComplete() {
+  async function handleKycComplete(payload?: KYCCompletePayload) {
+    if (payload) {
+      await submitKyc(payload, "guest");
+      setKycStatus("verified");
+    }
     setKycOpen(false);
     setBookingOpen(true);
   }

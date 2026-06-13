@@ -1,7 +1,6 @@
 "use client";
 
 import Link from "next/link";
-import { useRouter } from "next/navigation";
 import { useState } from "react";
 import { TopNav } from "@/components/top-nav";
 import {
@@ -14,19 +13,32 @@ import {
   TEXT_BODY,
   TEXT_LABEL,
 } from "@/styles/glass";
+import { supabase } from "@/lib/supabase";
 
 export default function RegisterPage() {
-  const router = useRouter();
   const [pending, setPending] = useState(false);
+  const [error, setError] = useState<string | null>(null);
+  const [success, setSuccess] = useState(false);
 
-  function onSubmit(e: React.FormEvent<HTMLFormElement>) {
+  async function onSubmit(e: React.FormEvent<HTMLFormElement>) {
     e.preventDefault();
+    setError(null);
     setPending(true);
-    window.setTimeout(() => {
+
+    const form = e.currentTarget;
+    const email = (form.elements.namedItem("email") as HTMLInputElement).value;
+    const password = (form.elements.namedItem("password") as HTMLInputElement).value;
+
+    const { error: authError } = await supabase.auth.signUp({ email, password });
+
+    if (authError) {
+      setError(authError.message);
       setPending(false);
-      alert("Registro no conectado aún. Vuelve cuando tengamos backend.");
-      router.push("/");
-    }, 300);
+      return;
+    }
+
+    setSuccess(true);
+    setPending(false);
   }
 
   return (
@@ -45,71 +57,92 @@ export default function RegisterPage() {
         <TopNav active="register" />
         <main className="mx-auto flex min-h-[calc(100vh-5rem)] w-full max-w-6xl items-center justify-center px-6 py-10 sm:px-8">
           <section className={`w-full max-w-md space-y-7 ${GLASS_PANEL} p-6 sm:p-8`}>
-            <header className="space-y-2.5">
-              <h1 className="text-3xl font-semibold text-white/95">
-                Crear cuenta
-              </h1>
-              <p className={`text-sm ${TEXT_BODY}`}>
-                Registro de demostración; la autenticación llegará con el backend.
-              </p>
-            </header>
-
-            <form className="space-y-5" onSubmit={onSubmit}>
-              <div className="space-y-1.5">
-                <label htmlFor="reg-email" className={TEXT_LABEL}>
-                  Correo
-                </label>
-                <div className={`${INPUT_WRAP} px-4 py-3`}>
-                  <input
-                    id="reg-email"
-                    name="email"
-                    type="email"
-                    autoComplete="email"
-                    required
-                    placeholder="tu@correo.com"
-                    className={INPUT_INNER}
-                  />
-                </div>
-              </div>
-
-              <div className="space-y-1.5">
-                <label htmlFor="reg-password" className={TEXT_LABEL}>
-                  Contraseña
-                </label>
-                <div className={`${INPUT_WRAP} px-4 py-3`}>
-                  <input
-                    id="reg-password"
-                    name="password"
-                    type="password"
-                    autoComplete="new-password"
-                    required
-                    minLength={8}
-                    placeholder="Mínimo 8 caracteres"
-                    className={INPUT_INNER}
-                  />
-                </div>
-              </div>
-
-              <div className="pt-1">
-                <button
-                  type="submit"
-                  disabled={pending}
-                  className={`w-full ${CTA_PRIMARY}`}
+            {success ? (
+              <div className="space-y-4 text-center">
+                <h1 className="text-2xl font-semibold text-white/95">¡Revisa tu correo!</h1>
+                <p className={`text-sm ${TEXT_BODY}`}>
+                  Te enviamos un enlace de confirmación. Confirma tu cuenta y luego inicia sesión.
+                </p>
+                <Link
+                  href="/login"
+                  className="inline-block font-medium text-white/70 underline underline-offset-2 transition-colors duration-300 ease-out hover:text-white"
                 >
-                  {pending ? "Creando…" : "Crear cuenta"}
-                </button>
+                  Ir a iniciar sesión
+                </Link>
               </div>
-            </form>
+            ) : (
+              <>
+                <header className="space-y-2.5">
+                  <h1 className="text-3xl font-semibold text-white/95">
+                    Crear cuenta
+                  </h1>
+                  <p className={`text-sm ${TEXT_BODY}`}>
+                    Empieza a usar SPACED con tu correo y contraseña.
+                  </p>
+                </header>
 
-            <p className={`text-sm ${TEXT_BODY}`}>
-              ¿Ya tienes cuenta?{" "}
-              <Link
-                href="/login"
-                className="font-medium text-white/70 underline underline-offset-2 transition-colors duration-300 ease-out hover:text-white"
-              >
-                Iniciar sesión
-              </Link>
-            </p>
+                <form className="space-y-5" onSubmit={onSubmit}>
+                  <div className="space-y-1.5">
+                    <label htmlFor="reg-email" className={TEXT_LABEL}>
+                      Correo
+                    </label>
+                    <div className={`${INPUT_WRAP} px-4 py-3`}>
+                      <input
+                        id="reg-email"
+                        name="email"
+                        type="email"
+                        autoComplete="email"
+                        required
+                        placeholder="tu@correo.com"
+                        className={INPUT_INNER}
+                      />
+                    </div>
+                  </div>
+
+                  <div className="space-y-1.5">
+                    <label htmlFor="reg-password" className={TEXT_LABEL}>
+                      Contraseña
+                    </label>
+                    <div className={`${INPUT_WRAP} px-4 py-3`}>
+                      <input
+                        id="reg-password"
+                        name="password"
+                        type="password"
+                        autoComplete="new-password"
+                        required
+                        minLength={8}
+                        placeholder="Mínimo 8 caracteres"
+                        className={INPUT_INNER}
+                      />
+                    </div>
+                  </div>
+
+                  {error && (
+                    <p className="text-sm text-red-400/90">{error}</p>
+                  )}
+
+                  <div className="pt-1">
+                    <button
+                      type="submit"
+                      disabled={pending}
+                      className={`w-full ${CTA_PRIMARY}`}
+                    >
+                      {pending ? "Creando…" : "Crear cuenta"}
+                    </button>
+                  </div>
+                </form>
+
+                <p className={`text-sm ${TEXT_BODY}`}>
+                  ¿Ya tienes cuenta?{" "}
+                  <Link
+                    href="/login"
+                    className="font-medium text-white/70 underline underline-offset-2 transition-colors duration-300 ease-out hover:text-white"
+                  >
+                    Iniciar sesión
+                  </Link>
+                </p>
+              </>
+            )}
           </section>
         </main>
       </div>

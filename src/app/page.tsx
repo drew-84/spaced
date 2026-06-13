@@ -2,16 +2,17 @@ import { TopNav } from "@/components/top-nav";
 import { SpatialCardField } from "@/components/spatial-home/spatial-card-field";
 import { LocationSection } from "@/components/landing/location-section";
 import { HostCardsSection } from "@/components/landing/host-cards-section";
-import { mockSpaces } from "@/lib/mock-spaces";
+import { fetchSpaces } from "@/lib/spaces";
 
-export default function Home() {
-  const cardSpaces = mockSpaces.map((s) => ({
+export default async function Home() {
+  const spaces = await fetchSpaces();
+  const cardSpaces = spaces.map((s) => ({
     id: s.id,
     title: s.title,
     imageUrl: s.imageUrl,
     area: s.area,
   }));
-  const readyCount = mockSpaces.filter((s) => s.instantAccess).length;
+  const readyCount = spaces.filter((s) => s.instantAccess).length;
 
   return (
     <div className="min-h-screen text-white">
