@@ -4,6 +4,8 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { uploadSpaceCoverPhoto } from "@/lib/space-images";
+import { KYCScreen } from "@/components/kyc/KYCScreen";
+import { useAuthStore } from "@/lib/auth-store";
 import {
   CTA_SECONDARY,
   PAGE_AMBIENT_BG,
@@ -69,11 +71,20 @@ function validateStep(step: number, data: ListSpaceFormData): StepErrors {
 
 export function ListSpaceExperience() {
   const router = useRouter();
+  const user      = useAuthStore((s) => s.user);
+  const loading   = useAuthStore((s) => s.loading);
+  const kycStatus = useAuthStore((s) => s.kycStatus);
   const [step, setStep] = useState(1);
   const [data, setData] = useState<ListSpaceFormData>(INITIAL_DATA);
   const [errors, setErrors] = useState<StepErrors>({});
   const [savedAt, setSavedAt] = useState<Date | null>(null);
   const [publishing, setPublishing] = useState(false);
+
+  /* ─── Auth gate ────────────────────────────────────────────────────────
+     Only allow access once kycStatus is "verified". All other states:
+       • loading              → wait (render nothing)
+       • !user                → no session at all → KYC (creates account)
+       • user + kycStatus !== "verified" → logged-in but unverified → KYC */
 
   const update = useCallback(
     <K extends keyof ListSpaceFormData>(
@@ -191,6 +202,23 @@ export function ListSpaceExperience() {
     }
 
     router.push("/");
+  }
+
+  /* Wait for session + kycStatus to resolve before rendering anything. */
+  if (loading) return null;
+
+  /* Any user without a verified KYC profile must complete KYC first. */
+  if (kycStatus !== "verified") {
+    return (
+      <KYCScreen
+        userType="host"
+        onComplete={() => {
+          /* kycStatus will update via auth-store after KYCScreen writes the
+             profile row; React re-renders and the form mounts naturally. */
+        }}
+        onClose={() => router.push("/")}
+      />
+    );
   }
 
   const stepMeta = STEPS[step - 1];
