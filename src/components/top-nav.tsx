@@ -2,24 +2,19 @@
 
 import Link from "next/link";
 import { useRouter, usePathname } from "next/navigation";
-import { useState, type MouseEvent } from "react";
+import { useEffect, useRef, useState, type MouseEvent } from "react";
 import { LoginModal } from "@/components/login/LoginModal";
 import { useAuthStore } from "@/lib/auth-store";
 import { supabase } from "@/lib/supabase";
 
 /**
- * Top navigation bar — appears at the top of every page.
+ * Top navigation bar.
  *
- *  • "Home"   → routes to "/"
- *  • "Spaces" → smooth-scrolls to the #spaces anchor on the homepage
- *               (just above the search bar + pill filters in
- *               HostCardsSection). When the user is on another route
- *               we router.push("/#spaces") and let the browser handle
- *               the hash jump once the homepage mounts.
- *  • "Login"  → opens the LoginModal placeholder.
- *
- * The "Book" entry was removed entirely — booking is now reached via
- * the in-page Reservar flows on property detail surfaces.
+ *   • "Home"   → "/"
+ *   • "Spaces" → smooth-scroll to #spaces on homepage, router.push otherwise
+ *   • Unauthenticated → "Login" pill opens LoginModal
+ *   • Authenticated   → glass avatar circle (first letter of email username)
+ *                        click → dropdown: "Mi perfil" + "CERRAR SESIÓN"
  */
 
 type TopNavProps = {
@@ -33,23 +28,44 @@ function navClass(isActive: boolean) {
     : "rounded-full border border-transparent px-2.5 py-1 text-xs text-white/60 transition-all duration-300 ease-out hover:border-white/20 hover:bg-white/[0.05] hover:text-white";
 }
 
-export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
-  void hideRegisterLink;
-  const router = useRouter();
+export function TopNav({ active }: TopNavProps) {
+  const router   = useRouter();
   const pathname = usePathname();
-  const [loginOpen, setLoginOpen] = useState(false);
-  const user = useAuthStore((s) => s.user);
+  const [loginOpen, setLoginOpen]   = useState(false);
+  const [dropdownOpen, setDropdown] = useState(false);
+  const dropdownRef = useRef<HTMLDivElement>(null);
+
+  const user    = useAuthStore((s) => s.user);
+  const loading = useAuthStore((s) => s.loading);
+
+  /* Close dropdown when clicking outside. */
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function onPointerDown(e: PointerEvent) {
+      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node)) {
+        setDropdown(false);
+      }
+    }
+    document.addEventListener("pointerdown", onPointerDown);
+    return () => document.removeEventListener("pointerdown", onPointerDown);
+  }, [dropdownOpen]);
+
+  /* Close dropdown on Escape. */
+  useEffect(() => {
+    if (!dropdownOpen) return;
+    function onKey(e: KeyboardEvent) { if (e.key === "Escape") setDropdown(false); }
+    document.addEventListener("keydown", onKey);
+    return () => document.removeEventListener("keydown", onKey);
+  }, [dropdownOpen]);
 
   async function handleSignOut() {
+    setDropdown(false);
     await supabase.auth.signOut();
     router.push("/");
   }
 
   function handleSpacesClick(e: MouseEvent<HTMLAnchorElement>) {
     e.preventDefault();
-    /* In-page smooth scroll when we're already on "/"; otherwise route
-       to "/#spaces" and let the browser handle the hash jump once
-       the homepage has mounted. */
     if (pathname === "/") {
       const target = document.getElementById("spaces");
       if (target) {
@@ -61,48 +77,25 @@ export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
     router.push("/#spaces");
   }
 
-  function handleLoginClick(e: MouseEvent<HTMLAnchorElement>) {
-    e.preventDefault();
-    setLoginOpen(true);
-  }
+  /* First letter of the email's local part, uppercase. */
+  const avatarLetter = user?.email
+    ? user.email.split("@")[0].charAt(0).toUpperCase()
+    : "?";
 
   return (
     <>
       <header className="sticky top-0 z-30 border-b border-white/10 bg-[#050506]/40 backdrop-blur-sm">
         <div className="mx-auto flex w-full max-w-6xl items-center justify-between px-5 py-2 sm:px-7 sm:py-2.5">
-          {/* Left side: logo + user identity when logged in */}
-          <div className="flex items-center gap-3">
-            <Link
-              href="/"
-              className="relative text-base font-medium tracking-[0.28em] text-white/95 sm:text-lg"
-            >
-              <span className="text-white/95">SPACIO</span>
-            </Link>
-            {user && (
-              <div className="flex items-center gap-1.5 rounded-full border border-white/10 bg-white/[0.04] px-2.5 py-1 backdrop-blur-md">
-                <svg
-                  xmlns="http://www.w3.org/2000/svg"
-                  width="13"
-                  height="13"
-                  viewBox="0 0 24 24"
-                  fill="none"
-                  stroke="currentColor"
-                  strokeWidth="2"
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  className="text-white/50"
-                  aria-hidden
-                >
-                  <circle cx="12" cy="8" r="4" />
-                  <path d="M4 20c0-4 3.6-7 8-7s8 3 8 7" />
-                </svg>
-                <span className="text-xs text-white/70">
-                  {user.email?.split("@")[0]}
-                </span>
-              </div>
-            )}
-          </div>
 
+          {/* Logo */}
+          <Link
+            href="/"
+            className="text-base font-medium tracking-[0.28em] text-white/95 sm:text-lg"
+          >
+            SPACIO
+          </Link>
+
+          {/* Nav pills */}
           <nav className="relative flex items-center gap-1 rounded-full border border-white/15 bg-white/[0.04] p-0.5 backdrop-blur-md">
             <Link href="/" className={navClass(active === "home")}>
               Home
@@ -114,28 +107,75 @@ export function TopNav({ active, hideRegisterLink = false }: TopNavProps) {
             >
               Spaces
             </Link>
-            {user ? (
+
+            {!loading && user ? (
+              /* ── Avatar + dropdown ── */
+              <div ref={dropdownRef} className="relative">
+                <button
+                  type="button"
+                  onClick={() => setDropdown((v) => !v)}
+                  aria-label="Menú de usuario"
+                  aria-expanded={dropdownOpen}
+                  className="relative flex h-7 w-7 items-center justify-center rounded-full border border-white/25 bg-white/[0.08] text-[11px] font-medium text-white/90 shadow-[inset_0_1px_0_rgba(255,255,255,0.18),0_0_16px_-4px_rgba(255,255,255,0.25)] backdrop-blur-md transition-all duration-200 ease-out hover:border-white/45 hover:bg-white/[0.14] hover:shadow-[inset_0_1px_0_rgba(255,255,255,0.22),0_0_22px_-4px_rgba(255,255,255,0.45)] focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-white/40"
+                  style={{ letterSpacing: "0.04em" }}
+                >
+                  {avatarLetter}
+                </button>
+
+                {dropdownOpen && (
+                  <div
+                    className="absolute right-0 top-full mt-2 min-w-[148px] overflow-hidden rounded-[14px] border border-white/12 bg-[#060d1a]/90 shadow-[0_16px_48px_rgba(0,0,0,0.6),inset_0_1px_0_rgba(255,255,255,0.1)] backdrop-blur-xl"
+                    style={{ animation: "navDropdownIn 180ms ease-out both" }}
+                  >
+                    {/* Email identifier */}
+                    <div className="border-b border-white/8 px-4 py-2.5">
+                      <p className="truncate text-[10px] font-normal tracking-[0.04em] text-white/40">
+                        {user.email}
+                      </p>
+                    </div>
+
+                    <div className="py-1">
+                      <Link
+                        href="/perfil"
+                        onClick={() => setDropdown(false)}
+                        className="block px-4 py-2 text-[12px] font-normal tracking-[0.04em] text-white/70 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white/95"
+                      >
+                        Mi perfil
+                      </Link>
+
+                      <button
+                        type="button"
+                        onClick={handleSignOut}
+                        className="w-full px-4 py-2 text-left text-[12px] font-medium uppercase tracking-[0.22em] text-white/60 transition-colors duration-150 hover:bg-white/[0.06] hover:text-white/90"
+                      >
+                        Cerrar sesión
+                      </button>
+                    </div>
+                  </div>
+                )}
+              </div>
+            ) : !loading ? (
+              /* ── Login pill ── */
               <button
                 type="button"
-                onClick={handleSignOut}
-                className={navClass(false)}
-              >
-                Salir
-              </button>
-            ) : (
-              <Link
-                href="/login"
-                onClick={handleLoginClick}
+                onClick={() => setLoginOpen(true)}
                 className={navClass(active === "login")}
               >
                 Login
-              </Link>
-            )}
+              </button>
+            ) : null}
           </nav>
         </div>
       </header>
 
       <LoginModal open={loginOpen} onClose={() => setLoginOpen(false)} />
+
+      <style>{`
+        @keyframes navDropdownIn {
+          from { opacity: 0; transform: translateY(-6px) scale(0.97); }
+          to   { opacity: 1; transform: translateY(0)   scale(1);    }
+        }
+      `}</style>
     </>
   );
 }

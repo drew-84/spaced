@@ -12,7 +12,11 @@
       "Bash(git merge *)",
       "Bash(git push *)",
       "Bash(git stash *)",
-      "Bash(npm install *)"
+      "Bash(npm install *)",
+      "Bash(New-Item -ItemType Directory -Force \"c:\\\\Projects\\\\spaced\\\\src\\\\app\\\\auth\\\\callback\")",
+      "Bash(Out-Null)",
+      "PowerShell(New-Item -ItemType Directory -Force \"c:\\\\Projects\\\\spaced\\\\src\\\\app\\\\auth\\\\callback\")",
+      "PowerShell(\"done\")"
     ]
   }
 }

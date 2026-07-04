@@ -329,6 +329,10 @@ type StepContactoProps = {
   onPhoneChange: (digits: string) => void;
   /** Fires only when BOTH email and phone are valid. */
   onSubmit: () => void;
+  /** True while the OTP is being sent — disables the button. */
+  pending?: boolean;
+  /** Error message from the OTP send attempt, shown below the button. */
+  submitError?: string | null;
 };
 
 export function StepContacto({
@@ -339,6 +343,8 @@ export function StepContacto({
   phone,
   onPhoneChange,
   onSubmit,
+  pending = false,
+  submitError = null,
 }: StepContactoProps) {
   const emailInputRef = useRef<HTMLInputElement | null>(null);
   const phoneInputRef = useRef<HTMLInputElement | null>(null);
@@ -702,25 +708,28 @@ export function StepContacto({
         )}
       </div>
 
-      {/* CONTINUAR — right-aligned, TRULY disabled until the whole form is
-          valid. CTA_PRIMARY supplies disabled:opacity-40 +
-          disabled:cursor-not-allowed, and its transition-all eases the
-          dim→bright swap (~300ms) when the last field becomes valid. A
-          disabled button takes no clicks and is skipped in tab order. */}
-      <div className="mt-8 flex justify-end">
+      {/* CONTINUAR — right-aligned, disabled until valid OR while OTP is sending. */}
+      <div className="mt-8 flex flex-col items-end gap-2">
+        {submitError && (
+          <p role="alert" className="text-[11px] font-medium uppercase tracking-[0.22em] text-amber-200/85">
+            {submitError}
+          </p>
+        )}
         <button
           type="button"
           onClick={submitContacto}
-          disabled={!bothValid}
+          disabled={!bothValid || pending}
           className={`group inline-flex items-center gap-2 ${CTA_PRIMARY}`}
         >
-          CONTINUAR
-          <span
-            aria-hidden
-            className="transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-0.5"
-          >
-            →
-          </span>
+          {pending ? "ENVIANDO..." : "CONTINUAR"}
+          {!pending && (
+            <span
+              aria-hidden
+              className="transition-transform duration-300 ease-out motion-reduce:transition-none group-hover:translate-x-0.5"
+            >
+              →
+            </span>
+          )}
         </button>
       </div>
     </div>

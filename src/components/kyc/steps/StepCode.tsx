@@ -2,42 +2,28 @@
 
 import { useEffect, useRef, useState } from "react";
 import { textBody, textLabel } from "@/styles/glass";
+import { supabase } from "@/lib/supabase";
 
 /**
- * SPACED — KYC Step 3: email verification code
+ * SPACED — KYC Step 2: email OTP verification
  * ─────────────────────────────────────────────────────────────────────────
  *
- * Six-box numeric code input with auto-advance, paste support, an
- * auto-verify trigger once all six boxes are filled, a 30 s resend
- * countdown, and a three-strike lockout that re-opens only after the
- * user requests a fresh code.
+ * Six-box numeric code input. When all six digits are filled the component
+ * calls supabase.auth.verifyOtp() automatically. On success it fires
+ * onSubmit() — by this point Supabase has created (or re-authenticated)
+ * the user and a live session exists. On failure the boxes clear and the
+ * user can retry up to MAX_ATTEMPTS times before needing to resend.
  *
- * The code is sent to the email collected in Step 1 (the phone number
- * from Step 2 is still stored in state but is no longer the delivery
- * channel). Until the backend lands, the gold-path code is the literal
- * "123456" — any other six-digit string is treated as incorrect.
+ * "Reenviar" calls supabase.auth.signInWithOtp() for the same email so
+ * the server issues a fresh code.
  */
 
-/* ─── Tuning ────────────────────────────────────────────────────────────
-   All magic numbers in one place so the lockout/resend behaviour is
-   easy to tweak without spelunking through JSX. */
 const CODE_LENGTH = 6;
 const MAX_ATTEMPTS = 3;
 const RESEND_SECONDS = 30;
 const RESEND_CONFIRM_MS = 2500;
-/** How long the amber-border + error message stays visible on a wrong
- *  code before the boxes auto-clear and refocus on the first one. */
 const ERROR_FLASH_MS = 600;
-/** Test-mode gold path — replace with the backend's expected value. */
-const VALID_CODE = "123456";
 
-/* Mask the email so the confirmation feels personal but doesn't leak the
-   full address. Format: first 2 chars of the username + "***" + "@" +
-   full domain. If the username is a single character, that 1 char + "***".
-   Examples:
-     "andres@gmail.com"       → "an***@gmail.com"
-     "j@hotmail.com"          → "j***@hotmail.com"
-     "maria.jose@outlook.com" → "ma***@outlook.com" */
 function maskEmail(email: string): string {
   const [username, domain] = email.split("@");
   if (!domain) return email;
@@ -46,44 +32,30 @@ function maskEmail(email: string): string {
 }
 
 type StepCodeProps = {
-  /** Email collected in Step 1 — the code's delivery address. */
   email: string;
-  /** Fires when the user enters the correct verification code. */
   onSubmit: () => void;
-  /** Back to Step 2. */
   onBack: () => void;
 };
 
 export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
-  /* ─── Local form state ────────────────────────────────────────────────
-     Per the spec, all of this is internal to Step 3. Going back to
-     Step 2 unmounts this component — when the user returns, they get
-     a fresh lockout-free, countdown-fresh slate. */
   const [digits, setDigits] = useState<string[]>(() =>
     Array(CODE_LENGTH).fill(""),
   );
   const [attempts, setAttempts] = useState(0);
   const [error, setError] = useState(false);
+  const [verifying, setVerifying] = useState(false);
   const [countdown, setCountdown] = useState(RESEND_SECONDS);
   const [resendConfirm, setResendConfirm] = useState(false);
 
   const locked = attempts >= MAX_ATTEMPTS;
   const code = digits.join("");
   const codeComplete = code.length === CODE_LENGTH;
-  /* While the amber flash is showing OR the user has hit the strike
-     cap, no typing is accepted. The flash duration is short enough that
-     this feels like immediate feedback rather than a frozen input. */
-  const inputsDisabled = locked || error;
+  const inputsDisabled = locked || error || verifying;
 
   const inputRefs = useRef<(HTMLInputElement | null)[]>([]);
-  /* Guard against the verify effect re-firing for the same code on an
-     unrelated re-render (e.g. parent passing a fresh onSubmit prop
-     reference while the digits are unchanged). */
   const lastVerifiedRef = useRef<string>("");
 
-  /* ─── Focus management ────────────────────────────────────────────────
-     Drop the caret on the first empty box when the step mounts so the
-     user can start typing immediately. */
+  /* Focus first empty box on mount. */
   useEffect(() => {
     const firstEmpty = inputRefs.current.findIndex(
       (el, i) => el && !digits[i],
@@ -91,12 +63,10 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
     const target = firstEmpty >= 0 ? firstEmpty : CODE_LENGTH - 1;
     inputRefs.current[target]?.focus();
     inputRefs.current[target]?.select();
-    /* Intentional: only run on mount. The user drives focus afterward. */
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
-  /* ─── Resend countdown ────────────────────────────────────────────────
-     Recursive setTimeout — one timer at a time, auto-stops at zero. */
+  /* Resend countdown — recursive setTimeout, stops at zero. */
   useEffect(() => {
     if (countdown <= 0) return;
     const t = window.setTimeout(
@@ -106,64 +76,41 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
     return () => window.clearTimeout(t);
   }, [countdown]);
 
-  /* ─── Resend-confirmation toast ───────────────────────────────────────
-     Show "Código reenviado" for ~2.5 s, then fall back to the countdown. */
+  /* Resend-confirmation toast — shown for ~2.5 s. */
   useEffect(() => {
     if (!resendConfirm) return;
-    const t = window.setTimeout(
-      () => setResendConfirm(false),
-      RESEND_CONFIRM_MS,
-    );
+    const t = window.setTimeout(() => setResendConfirm(false), RESEND_CONFIRM_MS);
     return () => window.clearTimeout(t);
   }, [resendConfirm]);
 
-  /* ─── Auto-verify ─────────────────────────────────────────────────────
-     Watches the joined code string. As soon as it reaches CODE_LENGTH
-     digits we run the (simulated) verification synchronously — no
-     setTimeout, so there's nothing for a parent re-render to cancel.
-     The `lastVerifiedRef` guard stops the same code from being
-     re-verified if the effect re-runs because of an unrelated prop
-     change (e.g. a fresh `onSubmit` reference from the parent). */
+  /* Auto-verify: fires when all six digits are present. Calls Supabase
+     verifyOtp — if the code is correct the user gets a live session and
+     we advance; if not, the error flash + attempt counter kicks in. */
   useEffect(() => {
-    /* Code is still being typed — reset the dedupe ref so the user can
-       retry the SAME wrong code after the boxes auto-clear. */
     if (!codeComplete) {
       lastVerifiedRef.current = "";
       return;
     }
-    if (locked) return;
+    if (locked || verifying) return;
     if (code === lastVerifiedRef.current) return;
 
     lastVerifiedRef.current = code;
-    console.log("[KYC StepCode] code length reached 6:", code);
-    console.log("[KYC StepCode] running verification check");
+    setVerifying(true);
 
-    if (code === VALID_CODE) {
-      console.log("[KYC StepCode] verification SUCCESS — advancing to step 4");
-      onSubmit();
-      return;
-    }
+    supabase.auth
+      .verifyOtp({ email, token: code, type: "email" })
+      .then(({ error: otpError }) => {
+        setVerifying(false);
+        if (!otpError) {
+          onSubmit();
+        } else {
+          setError(true);
+          setAttempts((prev) => prev + 1);
+        }
+      });
+  }, [code, codeComplete, locked, verifying, onSubmit, email]);
 
-    console.log("[KYC StepCode] verification FAILED for code:", code);
-    setError(true);
-    setAttempts((prev) => {
-      const next = prev + 1;
-      console.log(
-        "[KYC StepCode] failed attempts:",
-        next,
-        "of",
-        MAX_ATTEMPTS,
-      );
-      return next;
-    });
-  }, [code, codeComplete, locked, onSubmit]);
-
-  /* ─── Error flash → clear → refocus ───────────────────────────────────
-     Whenever `error` flips to true we hold the amber border + message
-     for ERROR_FLASH_MS, then wipe the boxes and refocus the first one
-     so the user can re-attempt without manually deleting. If the user
-     just hit the strike cap we skip the refocus — the lockout copy
-     takes over and the input is disabled until they tap "Reenviar". */
+  /* Error flash → clear boxes → refocus. */
   useEffect(() => {
     if (!error) return;
     const t = window.setTimeout(() => {
@@ -176,10 +123,6 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
     return () => window.clearTimeout(t);
   }, [error, attempts]);
 
-  /* ─── Per-box input handlers ──────────────────────────────────────────
-     Each handler mutates a single index in the digits array and
-     advances focus when appropriate. The amber error state is owned by
-     the auto-clear effect above so we don't need to clear it here. */
   function setDigit(idx: number, value: string) {
     setDigits((prev) => {
       const next = [...prev];
@@ -195,51 +138,21 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
   }
 
   function handleChange(idx: number, e: React.ChangeEvent<HTMLInputElement>) {
-    /* Only keep the last typed digit — guards against IME/autofill
-       dumping multi-character strings into a maxLength=1 input. */
     const digit = e.target.value.replace(/\D/g, "").slice(-1);
-    if (!digit) {
-      setDigit(idx, "");
-      return;
-    }
+    if (!digit) { setDigit(idx, ""); return; }
     setDigit(idx, digit);
     if (idx < CODE_LENGTH - 1) focusBox(idx + 1);
   }
 
-  function handleKeyDown(
-    idx: number,
-    e: React.KeyboardEvent<HTMLInputElement>,
-  ) {
+  function handleKeyDown(idx: number, e: React.KeyboardEvent<HTMLInputElement>) {
     if (e.key === "Backspace") {
-      if (digits[idx]) {
-        /* Box has content — let the default behaviour clear it; we
-           also push the cleared state immediately so the user can
-           keep deleting backward without a stutter. */
-        e.preventDefault();
-        setDigit(idx, "");
-        return;
-      }
-      if (idx > 0) {
-        e.preventDefault();
-        setDigit(idx - 1, "");
-        focusBox(idx - 1);
-      }
+      if (digits[idx]) { e.preventDefault(); setDigit(idx, ""); return; }
+      if (idx > 0) { e.preventDefault(); setDigit(idx - 1, ""); focusBox(idx - 1); }
       return;
     }
-    if (e.key === "ArrowLeft" && idx > 0) {
-      e.preventDefault();
-      focusBox(idx - 1);
-      return;
-    }
-    if (e.key === "ArrowRight" && idx < CODE_LENGTH - 1) {
-      e.preventDefault();
-      focusBox(idx + 1);
-      return;
-    }
-    /* Block anything that isn't a digit (control keys still pass). */
-    if (e.key.length === 1 && !/^\d$/.test(e.key)) {
-      e.preventDefault();
-    }
+    if (e.key === "ArrowLeft" && idx > 0) { e.preventDefault(); focusBox(idx - 1); return; }
+    if (e.key === "ArrowRight" && idx < CODE_LENGTH - 1) { e.preventDefault(); focusBox(idx + 1); return; }
+    if (e.key.length === 1 && !/^\d$/.test(e.key)) e.preventDefault();
   }
 
   function handlePaste(e: React.ClipboardEvent<HTMLInputElement>) {
@@ -250,25 +163,22 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
       .replace(/\D/g, "")
       .slice(0, CODE_LENGTH);
     if (!pasted) return;
-    /* Always distribute from box 0 regardless of which box received
-       the paste — matches the spec's "distribute … across all 6". */
     setDigits(() => {
       const next = Array<string>(CODE_LENGTH).fill("");
-      for (let i = 0; i < pasted.length; i += 1) next[i] = pasted[i];
+      for (let i = 0; i < pasted.length; i++) next[i] = pasted[i];
       return next;
     });
-    const nextFocus =
-      pasted.length >= CODE_LENGTH ? CODE_LENGTH - 1 : pasted.length;
+    const nextFocus = pasted.length >= CODE_LENGTH ? CODE_LENGTH - 1 : pasted.length;
     requestAnimationFrame(() => focusBox(nextFocus));
   }
 
-  /* ─── Resend handler ──────────────────────────────────────────────────
-     Clears the lockout, wipes the boxes, restarts the timer, resets the
-     dedupe ref (so the user can re-enter the same wrong code if they
-     want), and shows the 2.5 s inline confirmation. */
+  /* Resend: calls signInWithOtp for the same email, resets all local state. */
   function handleResend() {
     if (countdown > 0) return;
-    console.log("[KYC StepCode] resend triggered — resetting attempts");
+    void supabase.auth.signInWithOtp({
+      email,
+      options: { shouldCreateUser: true },
+    });
     setDigits(Array(CODE_LENGTH).fill(""));
     setAttempts(0);
     setError(false);
@@ -278,8 +188,6 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
     requestAnimationFrame(() => focusBox(0));
   }
 
-  /* ─── Derived styling ─────────────────────────────────────────────────
-     A single string of class names per box keeps the JSX legible. */
   const boxClass = (idx: number) => {
     const filled = Boolean(digits[idx]);
     return [
@@ -289,16 +197,17 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
       "disabled:cursor-not-allowed disabled:opacity-50",
       error
         ? "border-amber-200/45 shadow-[inset_0_1px_0_rgba(255,255,255,0.08),0_8px_18px_-6px_rgba(0,0,0,0.45),0_0_22px_-4px_rgba(252,211,77,0.4)]"
-        : filled
-          ? "border-white/35 bg-white/[0.06]"
-          : "border-white/15",
+        : verifying
+          ? "border-white/25"
+          : filled
+            ? "border-white/35 bg-white/[0.06]"
+            : "border-white/15",
       "focus:border-white/45 focus:bg-white/[0.06] focus:shadow-[inset_0_1px_0_rgba(255,255,255,0.14),0_8px_18px_-6px_rgba(0,0,0,0.45),0_0_24px_-6px_rgba(255,255,255,0.4)]",
     ].join(" ");
   };
 
   return (
     <div className="mx-auto flex w-full max-w-[480px] flex-col">
-      {/* ATRÁS — same shape and behaviour as Step 2's back link. */}
       <button
         type="button"
         onClick={onBack}
@@ -307,27 +216,19 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
         <span aria-hidden>←</span> ATRÁS
       </button>
 
-      {/* Step label */}
       <p className={`${textLabel} text-[10px] uppercase tracking-[0.32em]`}>
         CÓDIGO DE VERIFICACIÓN
       </p>
 
-      {/* Confirmation message — masked email */}
-      <p
-        className={`mt-4 text-[13px] font-normal tracking-[0.02em] ${textBody}`}
-      >
+      <p className={`mt-4 text-[13px] font-normal tracking-[0.02em] ${textBody}`}>
         Enviamos un código a{" "}
         <span className="text-white/90">{maskEmail(email)}</span>
       </p>
 
-      {/* Reassuring subtext — points the user at their inbox. */}
-      <p
-        className={`mt-2 text-[12px] font-normal tracking-[0.02em] ${textLabel}`}
-      >
-        Revisa tu correo e ingresa el código.
+      <p className={`mt-2 text-[12px] font-normal tracking-[0.02em] ${textLabel}`}>
+        {verifying ? "Verificando..." : "Revisa tu correo e ingresa el código."}
       </p>
 
-      {/* Six-box input row */}
       <div
         role="group"
         aria-label="Código de verificación de 6 dígitos"
@@ -336,9 +237,7 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
         {digits.map((d, i) => (
           <input
             key={i}
-            ref={(el) => {
-              inputRefs.current[i] = el;
-            }}
+            ref={(el) => { inputRefs.current[i] = el; }}
             type="text"
             inputMode="numeric"
             pattern="[0-9]*"
@@ -357,8 +256,6 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
         ))}
       </div>
 
-      {/* Error / lock message — single source of truth, prefers the
-          lockout copy once attempts reach the cap. */}
       {(error || locked) && (
         <p
           role="alert"
@@ -370,8 +267,6 @@ export function StepCode({ email, onSubmit, onBack }: StepCodeProps) {
         </p>
       )}
 
-      {/* Resend line — flips between countdown, confirmation, and the
-          clickable "Reenviar" link based on local state. */}
       <div className="mt-8 flex justify-center">
         {resendConfirm ? (
           <p
