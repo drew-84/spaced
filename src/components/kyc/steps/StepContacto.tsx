@@ -14,7 +14,12 @@ import {
   TEXT_LABEL,
 } from "@/styles/glass";
 import { COUNTRIES, type Country } from "@/lib/kyc/countries";
-import { validateEmailDomain } from "@/lib/email-validation";
+import {
+  validateEmailDomain,
+  suggestDomainLocally,
+  suggestDomainViaAI,
+  type DomainSuggestion,
+} from "@/lib/email-validation";
 import { CountryPicker } from "./CountryPicker";
 
 /**
@@ -379,6 +384,14 @@ export function StepContacto({
     valid: boolean;
   } | null>(null);
 
+  /* Hybrid domain-typo suggestion, keyed to the exact address it was computed
+     for (same staleness guard as domainResult). Populated only when the domain
+     check failed and the heuristics/AI found a plausible correction. */
+  const [domainSuggestion, setDomainSuggestion] = useState<{
+    email: string;
+    fix: DomainSuggestion;
+  } | null>(null);
+
   /* Mirrors the latest email value for the async staleness check (read inside
      a resolved promise, where the `email` closure would be stale). */
   const emailRef = useRef(email);
@@ -391,6 +404,11 @@ export function StepContacto({
 
   const suggestion = useMemo(() => computeSuggestion(email), [email]);
   const typoFix = useMemo(() => detectTypoFix(email), [email]);
+  /* Domain typo suggestion for the CURRENT address only (staleness guard).
+     Suppressed when the TLD-level typoFix is already offering a correction, so
+     the user never sees two competing "¿Quisiste decir?" prompts. */
+  const domainFix: DomainSuggestion =
+    !typoFix && domainSuggestion?.email === email ? domainSuggestion.fix : null;
 
   const emailClass = classifyEmail(email);
   const phoneValid = phone.length === config.expectedDigits;
@@ -444,6 +462,28 @@ export function StepContacto({
     void validateEmailDomain(target).then((valid) => {
       if (emailRef.current !== target) return; // user moved on → discard
       setDomainResult({ email: target, valid });
+
+      if (valid) {
+        setDomainSuggestion(null);
+        return;
+      }
+
+      /* Domain is dead → run the hybrid typo-suggestion chain. Layer 1 is the
+         instant local heuristic; only if it finds nothing do we spend an AI
+         call (layer 2). Every result is re-guarded against staleness so a
+         since-edited address never shows a suggestion for an old value. */
+      const local = suggestDomainLocally(target);
+      if (local) {
+        if (emailRef.current === target) {
+          setDomainSuggestion({ email: target, fix: local });
+        }
+        return;
+      }
+
+      void suggestDomainViaAI(target).then((aiFix) => {
+        if (emailRef.current !== target) return; // user moved on → discard
+        setDomainSuggestion(aiFix ? { email: target, fix: aiFix } : null);
+      });
     });
   }, []);
 
@@ -660,6 +700,25 @@ export function StepContacto({
           >
             <span className="text-white/50">¿Quisiste decir {typoFix.beforeTld}</span>
             <span className="text-white/75">{typoFix.tld}</span>
+            <span className="text-white/50">?</span>
+          </button>
+        )}
+
+        {/* Domain typo suggestion (hybrid heuristics → AI) — surfaces when the
+            domain check failed and a plausible correction was found. Shown
+            alongside the "Email inválido" message: the error says the domain
+            is wrong, this offers the likely fix. Tappable; never blocks. */}
+        {domainFix && (
+          <button
+            type="button"
+            onClick={() => {
+              handleEmailChange(domainFix.correctedEmail);
+              requestAnimationFrame(() => emailInputRef.current?.focus());
+            }}
+            className="mt-1.5 text-left text-xs leading-none"
+          >
+            <span className="text-white/50">¿Quisiste decir {domainFix.beforeTld}</span>
+            <span className="text-white/75">{domainFix.tld}</span>
             <span className="text-white/50">?</span>
           </button>
         )}
