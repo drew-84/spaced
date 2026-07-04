@@ -105,28 +105,46 @@ export function buildPropertyDetail(
   const pricePer15Min = Math.max(1, Math.round(pricePer30m / 2));
   const pricePer45Min = Math.max(1, Math.round(pricePer30m * 1.5));
 
-  const videoCount = (Math.abs(hashCode(space.id)) % 3) + 1;
-  const videos: PropertyVideo[] = Array.from({ length: videoCount }, (_, i) => ({
-    id: `${space.id}-v${i + 1}`,
-    url: SAMPLE_VIDEOS[(i + Math.abs(hashCode(space.id))) % SAMPLE_VIDEOS.length],
-    poster:
-      SAMPLE_POSTERS[(i + Math.abs(hashCode(space.id))) % SAMPLE_POSTERS.length],
-  }));
+  /* Videos: prefer the host's real uploaded clips (poster = cover photo). If
+     none were uploaded, emit a single poster-only entry so the gallery shows
+     the cover image instead of a video. Falls back to sample media only for
+     legacy mock spaces that carry neither real videos nor a cover image. */
+  const coverImage = space.imageUrl || SAMPLE_POSTERS[0];
+  const realVideos = space.videoUrls ?? [];
+  let videos: PropertyVideo[];
+  if (realVideos.length > 0) {
+    videos = realVideos.map((url, i) => ({
+      id: `${space.id}-v${i + 1}`,
+      url,
+      poster: coverImage,
+    }));
+  } else if (space.imageUrl) {
+    videos = [{ id: `${space.id}-cover`, url: "", poster: coverImage }];
+  } else {
+    // Legacy mock listing with no image — keep the old sample behavior.
+    const videoCount = (Math.abs(hashCode(space.id)) % 3) + 1;
+    videos = Array.from({ length: videoCount }, (_, i) => ({
+      id: `${space.id}-v${i + 1}`,
+      url: SAMPLE_VIDEOS[(i + Math.abs(hashCode(space.id))) % SAMPLE_VIDEOS.length],
+      poster:
+        SAMPLE_POSTERS[(i + Math.abs(hashCode(space.id))) % SAMPLE_POSTERS.length],
+    }));
+  }
 
   return {
     id: space.id,
     title: space.title,
     area: space.area,
-    city: "Ciudad de México",
+    city: space.city || "Ciudad de México",
     category: typeLabel[space.type],
     description: space.description,
-    rulesText: SAMPLE_RULES,
+    rulesText: space.houseRules?.trim() || SAMPLE_RULES,
     amenities: space.amenities,
     videos,
     pricePer15Min,
     pricePer45Min,
     reservaMinimaMin: 45,
-    capacidadMaxima: 4,
+    capacidadMaxima: space.maxCapacity ?? 4,
     rating: space.rating,
     reviewCount: space.reviewCount,
     reviews: space.reviews,

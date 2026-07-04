@@ -18,16 +18,20 @@ export function VideoGallery({ videos }: Props) {
   const [active, setActive] = useState(0);
   const videoRef = useRef<HTMLVideoElement | null>(null);
 
-  /* Each time the active source changes, reload + try to autoplay (muted). */
+  const current = videos[active];
+  const hasVideo = Boolean(current?.url);
+
+  /* Each time the active source changes, reload + try to autoplay (muted).
+     Skipped for poster-only entries (no uploaded clip → just the image). */
   useEffect(() => {
+    if (!hasVideo) return;
     const el = videoRef.current;
     if (!el) return;
     el.load();
     void el.play().catch(() => {});
-  }, [active]);
+  }, [active, hasVideo]);
 
   if (videos.length === 0) return null;
-  const current = videos[active];
 
   return (
     <section aria-label="Galería del espacio" className="mx-auto w-full max-w-[760px]">
@@ -43,18 +47,27 @@ export function VideoGallery({ videos }: Props) {
         <span aria-hidden className={`z-10 ${RIM_HIGHLIGHT_TOP}`} />
 
         <div className="relative aspect-video w-full">
-          <video
-            ref={videoRef}
-            key={current.id}
-            src={current.url}
-            poster={current.poster}
-            className="absolute inset-0 h-full w-full object-cover"
-            playsInline
-            muted
-            loop
-            autoPlay
-            controls
-          />
+          {hasVideo ? (
+            <video
+              ref={videoRef}
+              key={current.id}
+              src={current.url}
+              poster={current.poster}
+              className="absolute inset-0 h-full w-full object-cover"
+              playsInline
+              muted
+              loop
+              autoPlay
+              controls
+            />
+          ) : (
+            <img
+              key={current.id}
+              src={current.poster}
+              alt=""
+              className="absolute inset-0 h-full w-full object-cover"
+            />
+          )}
           {/* Soft bottom gradient so future overlays/captions stay readable */}
           <span
             aria-hidden
