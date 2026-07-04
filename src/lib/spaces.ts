@@ -19,6 +19,13 @@ type SpaceRow = {
   image_url: string | null;
   rating: number;
   review_count: number;
+  address: string | null;
+  region: string | null;
+  availability: string[] | null;
+  min_booking_min: number | null;
+  max_capacity: number | null;
+  house_rules: string | null;
+  video_urls: string[] | null;
 };
 
 function rowToSpace(row: SpaceRow): Space {
@@ -36,6 +43,14 @@ function rowToSpace(row: SpaceRow): Space {
     description: row.description ?? "",
     amenities: row.amenities ?? [],
     reviews: [],
+    address: row.address ?? undefined,
+    city: row.city ?? undefined,
+    region: row.region ?? undefined,
+    availability: row.availability ?? undefined,
+    minBookingMin: row.min_booking_min ?? undefined,
+    maxCapacity: row.max_capacity ?? undefined,
+    houseRules: row.house_rules ?? undefined,
+    videoUrls: row.video_urls ?? undefined,
   };
 
   if (row.stay_type === "nightly") {

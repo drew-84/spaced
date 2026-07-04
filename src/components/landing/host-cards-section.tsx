@@ -5,10 +5,12 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { useJsApiLoader } from "@react-google-maps/api";
 import {
   SPACE_CATEGORIES,
-  listingSpaces,
+  spaceToListing,
+  type ListingMedia,
+  type ListingSpace,
   type SpaceCategory,
 } from "@/lib/mock-spaces";
-import { buildPropertyDetailFromListing } from "@/components/property-detail/types";
+import { fetchSpaces } from "@/lib/spaces";
 import { distanceKm, type LatLng } from "@/lib/geo";
 import { CATEGORY_ICONS, ListingCard } from "./listing-card";
 import {
@@ -20,9 +22,9 @@ import {
   TRANSITION_FLUID,
 } from "@/styles/glass";
 
-type PreviewMedia = {
-  url: string;
-  poster: string;
+type CardEntry = {
+  card: ListingSpace;
+  media: ListingMedia;
   lat: number;
   lng: number;
 };
@@ -55,27 +57,28 @@ export function HostCardsSection() {
   const [query, setQuery] = useState("");
   const [focused, setFocused] = useState(false);
 
-  /* Distance cache for the session, keyed by listing id. Populated once
+  /* Distance cache for the session, keyed by space id. Populated once
      by a single batched Distance Matrix request. */
   const [distances, setDistances] = useState<Record<string, string>>({});
 
-  /* Card preview media + coordinates, derived once from the same
-     PropertyDetail recipe the detail page uses — so a card's preview
-     clip is exactly that property's first clip, and its coordinates
-     match the detail map. */
-  const previews = useMemo(() => {
-    const map = new Map<string, PreviewMedia>();
-    for (const listing of listingSpaces) {
-      const detail = buildPropertyDetailFromListing(listing);
-      const first = detail.videos[0];
-      map.set(listing.id, {
-        url: first?.url ?? "",
-        poster: first?.poster ?? listing.imageUrl,
-        lat: detail.lat,
-        lng: detail.lng,
-      });
-    }
-    return map;
+  /* Real spaces from Supabase, mapped into card + preview-media shape.
+     Cover photo is the poster; the first uploaded clip (if any) is the
+     hover preview. Coordinates drive the distance calculation. */
+  const [entries, setEntries] = useState<CardEntry[]>([]);
+  useEffect(() => {
+    let cancelled = false;
+    fetchSpaces().then((spaces) => {
+      if (cancelled) return;
+      setEntries(
+        spaces.map((s) => {
+          const { card, media } = spaceToListing(s);
+          return { card, media, lat: s.lat, lng: s.lng };
+        }),
+      );
+    });
+    return () => {
+      cancelled = true;
+    };
   }, []);
 
   /* Load the Maps JS API (Distance Matrix lives in core). Same loader
@@ -102,6 +105,7 @@ export function HostCardsSection() {
       return;
     }
     if (requestedRef.current) return;
+    if (entries.length === 0) return;
     if (typeof navigator === "undefined" || !navigator.geolocation) {
       devDistanceLog(
         "debug",
@@ -118,7 +122,7 @@ export function HostCardsSection() {
           lng: pos.coords.longitude,
         };
         /* Batch ALL listings into ONE request (≤25 destinations). */
-        const ordered = listingSpaces.map((l) => previews.get(l.id)!);
+        const ordered = entries;
         const service = new google.maps.DistanceMatrixService();
         service.getDistanceMatrix(
           {
@@ -140,8 +144,8 @@ export function HostCardsSection() {
             const next: Record<string, string> = {};
             let fallbackCount = 0;
             row.elements.forEach((el, i) => {
-              const listing = listingSpaces[i];
               const p = ordered[i];
+              if (!p) return;
               let meters: number;
               if (el.status === "OK" && el.distance) {
                 meters = el.distance.value;
@@ -152,7 +156,7 @@ export function HostCardsSection() {
                    something sensible. */
                 meters = distanceKm(origin, { lat: p.lat, lng: p.lng }) * 1000;
               }
-              next[listing.id] = formatDistance(meters);
+              next[p.card.id] = formatDistance(meters);
             });
             setDistances(next);
             devDistanceLog(
@@ -177,16 +181,16 @@ export function HostCardsSection() {
       },
       { enableHighAccuracy: false, maximumAge: 120_000, timeout: 12_000 },
     );
-  }, [isLoaded, apiKey, previews]);
+  }, [isLoaded, apiKey, entries]);
 
-  const filtered = listingSpaces.filter((s) => {
-    const matchesCategory = active === "Todos" || s.category === active;
+  const filtered = entries.filter(({ card }) => {
+    const matchesCategory = active === "Todos" || card.category === active;
     const q = query.trim().toLowerCase();
     const matchesQuery =
       q === "" ||
-      s.title.toLowerCase().includes(q) ||
-      s.area.toLowerCase().includes(q) ||
-      s.categoryLabel.toLowerCase().includes(q);
+      card.title.toLowerCase().includes(q) ||
+      card.area.toLowerCase().includes(q) ||
+      card.categoryLabel.toLowerCase().includes(q);
     return matchesCategory && matchesQuery;
   });
 
@@ -334,18 +338,23 @@ export function HostCardsSection() {
 
         {/* cards grid */}
         <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 [&>*:nth-child(n+5)]:hidden [&>*:nth-child(n+5)]:xl:block sm:[&>*:nth-child(n+5)]:block">
-          {filtered.map((card) => {
-            const preview = previews.get(card.id)!;
-            return (
-              <ListingCard
-                key={card.id}
-                card={card}
-                media={{ url: preview.url, poster: preview.poster }}
-                distanceText={distances[card.id] ?? null}
-              />
-            );
-          })}
+          {filtered.map(({ card, media }) => (
+            <ListingCard
+              key={card.id}
+              card={card}
+              media={media}
+              distanceText={distances[card.id] ?? null}
+            />
+          ))}
         </div>
+
+        {filtered.length === 0 && (
+          <p className={`py-8 text-center text-sm ${TEXT_BODY}`}>
+            {entries.length === 0
+              ? "Aún no hay espacios publicados. Sé el primero en publicar el tuyo."
+              : "No hay espacios en esta categoría todavía."}
+          </p>
+        )}
 
         {/* bottom CTA */}
         <div className="flex justify-center">

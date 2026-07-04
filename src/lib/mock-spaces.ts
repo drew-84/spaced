@@ -33,6 +33,63 @@ export type ListingSpace = {
   amenities: string[];
 };
 
+/** Card preview media derived from a listing/space. */
+export type ListingMedia = { url: string; poster: string };
+
+/** Maps a DB space `type` onto a homepage category. The DB has no category
+ *  concept yet, so unknown/generic types fall back to "Descanso". */
+function categoryFromType(type: Space["type"]): SpaceCategory {
+  switch (type) {
+    case "office":
+    case "coworking":
+      return "Oficina";
+    case "meeting-room":
+      return "Reunión";
+    case "kitchen":
+      return "Cocina";
+    case "recording-studio":
+    case "podcast-studio":
+      return "Grabación";
+    default:
+      return "Descanso";
+  }
+}
+
+/** Bridges a Supabase `Space` into the shape the homepage grid expects
+ *  (ListingCard + its preview media). Hourly price only — nightly spaces
+ *  are converted to an approximate per-30m rate for display. */
+export function spaceToListing(
+  space: Space,
+): { card: ListingSpace; media: ListingMedia } {
+  const category = categoryFromType(space.type);
+  const pricePer30m =
+    space.stayType === "hourly"
+      ? space.pricePer30m
+      : Math.round(space.pricePerNight / 48);
+
+  return {
+    card: {
+      id: space.id,
+      title: space.title,
+      category,
+      categoryLabel: category,
+      area: space.area,
+      hostName: "",
+      hostAvatar: "",
+      pricePer30m,
+      rating: space.rating,
+      reviewCount: space.reviewCount,
+      imageUrl: space.imageUrl,
+      instantAccess: space.instantAccess,
+      amenities: space.amenities,
+    },
+    media: {
+      url: space.videoUrls?.[0] ?? "",
+      poster: space.imageUrl,
+    },
+  };
+}
+
 export const listingSpaces: ListingSpace[] = [
   {
     id: "lst-001",

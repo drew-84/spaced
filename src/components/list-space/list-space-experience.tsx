@@ -4,6 +4,7 @@ import { useCallback, useState } from "react";
 import { useRouter } from "next/navigation";
 import { supabase } from "@/lib/supabase";
 import { uploadSpaceCoverPhoto } from "@/lib/space-images";
+import { uploadSpaceVideos } from "@/lib/space-videos";
 import { KYCScreen } from "@/components/kyc/KYCScreen";
 import { useAuthStore } from "@/lib/auth-store";
 import {
@@ -165,9 +166,23 @@ export function ListSpaceExperience() {
 
     const { data: { user } } = await supabase.auth.getUser();
 
-    const imageUrl = data.coverPhoto && user
+    if (!user) {
+      setPublishing(false);
+      console.error("[Spaced] no hay sesión al publicar");
+      return;
+    }
+
+    // Cover photo (step 1) + walkthrough videos (step 4) → storage
+    const imageUrl = data.coverPhoto
       ? await uploadSpaceCoverPhoto(data.coverPhoto, user.id)
       : null;
+
+    const videoFiles = data.videos
+      .map((v) => v.file)
+      .filter((f): f is File => f !== null);
+    const videoUrls = videoFiles.length
+      ? await uploadSpaceVideos(videoFiles, user.id)
+      : [];
 
     const price30m = typeof data.precioPor15Min === "number"
       ? data.precioPor15Min * 2
@@ -179,26 +194,53 @@ export function ListSpaceExperience() {
     };
 
     const { error } = await supabase.from("spaces").insert({
-      host_id:       user?.id ?? null,
-      title:         data.titulo,
-      description:   data.descripcion,
-      type:          typeMap[data.tipoPropiedad ?? ""] ?? "studio",
-      stay_type:     "hourly",
-      area:          data.comuna,
-      city:          data.ciudad,
-      lat:           data.lat,
-      lng:           data.lng,
-      price_per_30m: price30m,
-      instant_access: false,
-      amenities:     data.comodidades,
-      image_url:     imageUrl,
+      host_id:         user.id,
+      title:           data.titulo,
+      description:     data.descripcion,
+      type:            typeMap[data.tipoPropiedad ?? ""] ?? "studio",
+      stay_type:       "hourly",
+      address:         data.direccion,
+      area:            data.comuna,
+      city:            data.ciudad,
+      region:          data.region,
+      lat:             data.lat,
+      lng:             data.lng,
+      price_per_30m:   price30m,
+      min_booking_min: data.reservaMinimaMin,
+      availability:    data.disponibilidad,
+      instant_access:  false,
+      amenities:       data.comodidades,
+      max_capacity:    data.capacidadMaxima,
+      house_rules:     data.reglasCasa,
+      image_url:       imageUrl,
+      video_urls:      videoUrls,
     });
+
+    if (error) {
+      setPublishing(false);
+      console.error("[Spaced] error publicando espacio:", error.message);
+      return;
+    }
+
+    // Payout account (step 7) → owner-only table, upserted per host
+    const { error: payoutError } = await supabase
+      .from("payout_accounts")
+      .upsert({
+        host_id:       user.id,
+        titular:       data.titularCuenta,
+        banco:         data.banco,
+        numero_cuenta: data.numeroCuenta,
+        updated_at:    new Date().toISOString(),
+      });
 
     setPublishing(false);
 
-    if (error) {
-      console.error("[Spaced] error publicando espacio:", error.message);
-      return;
+    if (payoutError) {
+      // Space is already published; surface but don't block the redirect.
+      console.error(
+        "[Spaced] espacio publicado, pero falló guardar datos de pago:",
+        payoutError.message,
+      );
     }
 
     router.push("/");

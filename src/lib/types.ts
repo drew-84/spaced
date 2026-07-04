@@ -35,6 +35,15 @@ type SpaceCommon = {
   description: string;
   amenities: string[];
   reviews: Review[];
+  /** Full listing detail (populated from the spaces row; absent on seed data) */
+  address?: string;
+  city?: string;
+  region?: string;
+  availability?: string[];
+  minBookingMin?: number;
+  maxCapacity?: number;
+  houseRules?: string;
+  videoUrls?: string[];
 };
 
 /** Short blocks (hours) — priced per 30 minutes */
