@@ -22,17 +22,12 @@ export async function validateEmailDomain(email: string): Promise<boolean> {
   }
 }
 
-/* ─── Domain typo suggestions (hybrid: heuristics → AI fallback) ─────────────
+/* ─── Domain typo suggestions ────────────────────────────────────────────────
  *
- * Two layers, cheapest first:
- *   1. suggestDomainLocally — instant, free, client-side. Keyboard-adjacency-
- *      aware distance against a small list of the most common providers.
- *      Catches the obvious cases (gmial→gmail, hotmial→hotmail).
- *   2. suggestDomainViaAI — only reached when the local layer finds nothing
- *      AND the DNS check already said the domain is dead. Calls Claude Haiku
- *      through /api/suggest-email-domain. Degrades to null on any error.
- *
- * Both are hint-only — they never block the user.
+ * suggestDomainLocally — instant, free, client-side. Keyboard-adjacency-aware
+ * distance against a small list of the most common providers. Catches the
+ * obvious cases (gmial→gmail, hotmial→hotmail). Hint-only — never blocks the
+ * user; called only after the DNS check says the domain is dead.
  */
 
 export type DomainSuggestion = {
@@ -44,8 +39,7 @@ export type DomainSuggestion = {
 } | null;
 
 /* The handful of providers a local heuristic can confidently correct toward.
- * Kept deliberately small: the AI fallback covers the long tail, so this list
- * only needs the domains that dominate real typo traffic. */
+ * Kept deliberately small — only the domains that dominate real typo traffic. */
 const COMMON_DOMAINS = [
   "gmail.com",
   "hotmail.com",
@@ -78,8 +72,8 @@ function subCost(a: string, b: string): number {
  * Keyboard-adjacency-weighted Damerau-Levenshtein. Lower = more plausible
  * typo. Includes an adjacent-transposition case (Damerau) so a swapped pair
  * like "gmial"→"gmail" costs ~1, not 2 — transpositions are among the most
- * common email typos and shouldn't spill over to the AI layer. Needs three
- * rows (not two) because the transposition term reaches back two rows.
+ * common email typos. Needs three rows (not two) because the transposition
+ * term reaches back two rows.
  */
 function weightedDistance(a: string, b: string): number {
   const m = a.length, n = b.length;
@@ -119,9 +113,9 @@ function buildSuggestion(email: string, correctedDomain: string): DomainSuggesti
 }
 
 /**
- * Layer 1 — local heuristic. Returns a suggestion only when the typed domain
- * is a close (weighted distance ≤ 1.5) match to a common provider but isn't
- * itself one. Tight threshold → very few false positives.
+ * Local heuristic. Returns a suggestion only when the typed domain is a close
+ * (weighted distance ≤ 1.5) match to a common provider but isn't itself one.
+ * Tight threshold → very few false positives.
  */
 export function suggestDomainLocally(email: string): DomainSuggestion {
   const atIdx = email.indexOf("@");
@@ -139,26 +133,4 @@ export function suggestDomainLocally(email: string): DomainSuggestion {
 
   if (best === null || bestDist > 1.5) return null;
   return buildSuggestion(email, best);
-}
-
-/**
- * Layer 2 — AI fallback. Only call this when the local heuristic returned null
- * AND the DNS check already failed (domain is dead). Asks Claude Haiku whether
- * the domain looks like a typo of a real one. Returns null on any error, when
- * the key is missing, or when Claude sees no plausible correction.
- */
-export async function suggestDomainViaAI(email: string): Promise<DomainSuggestion> {
-  try {
-    const res = await fetch("/api/suggest-email-domain", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({ domain: email.split("@")[1] }),
-    });
-    if (!res.ok) return null;
-    const data = await res.json();
-    if (!data.suggestion || typeof data.suggestion !== "string") return null;
-    return buildSuggestion(email, data.suggestion.toLowerCase());
-  } catch {
-    return null; // never block on the AI path
-  }
 }
