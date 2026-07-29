@@ -144,6 +144,14 @@ create type approval_mode as enum (
 
 create type access_type as enum ('digital_lock', 'lockbox', 'concierge');
 
+-- Whether the host is on-site during the session. Host-declared per listing,
+-- guest-filterable, and resolved to a concrete value per booking (§4.3b).
+create type host_presence as enum (
+  'host_present',   -- A: host is on-site during the session
+  'host_absent',    -- B: host is not on-site
+  'host_flexible'   -- C: host defers to the guest; resolved at booking time
+);
+
 create type booking_status as enum (
   'pending',        -- created, awaiting approval/payment
   'confirmed',      -- approved + payment hold placed
@@ -231,6 +239,7 @@ RLS: host-owns-property write; read scoped (public listing read joins through `s
 | `allow_unrated_guests` | boolean | **default `true`** — may a guest with no ratings yet be auto-approved? Applies **only** to `auto_approve_above_score` (see §4.3a) [G7] |
 | `turnover_buffer_min` | int | configurable 15–30; **default 20** (see §3) |
 | `access_type` | access_type | digital_lock / lockbox / concierge |
+| `host_presence` | host_presence | A/B/C — host on-site, absent, or flexible (§4.3b) |
 | `amenities` | text[] | |
 | `max_capacity` | int | |
 | `house_rules` | text | |
@@ -260,6 +269,38 @@ Hosts have genuinely different risk appetites. Forcing one policy on all of them
 > **Unrated guests under `manual_above_score` are excluded by construction.** They have no rating, so they cannot clear `min_score`, so they never reach manual review. `allow_unrated_guests` therefore applies **only** to `auto_approve_above_score`; under `manual_above_score` the answer is structurally *no*. This is deliberate — a host choosing that mode has opted into both filters — but it must not be discovered later as a surprise. A host wanting manual review *including* newcomers should choose `manual_per_guest`.
 
 **Default for `allow_unrated_guests` is `true`** so that inaction does not lock new users out. Every user's first booking is made with no rating; a restrictive default would make the empty state of the platform its harshest.
+
+### 4.3b Host presence — A/B/C (decided)
+
+Since the wedge widened (discretion supported, not required — `wedge__canonical.todo`), listings serve two populations with opposite needs: a guest who wants nobody there, and a guest who is fine with the host around. Rather than the platform choosing one, **each listing declares its own answer and supply sorts itself**:
+
+| Value | Meaning |
+|---|---|
+| `host_present` | The host is on-site during the session. |
+| `host_absent` | The host is not on-site. |
+| `host_flexible` | The host defers to the guest; resolved per booking (below). |
+
+> **This does NOT weaken "access must not depend on host presence" (§4.7).** That constraint is load-bearing for on-demand booking — a host who must be there to hand over a key cannot serve a booking starting in twenty minutes, and the constraint predates this feature (`mvp_description.todo`). `host_presence` describes **whether the host is around during the session**, never how the guest gets in. All three values require keyless access (`digital_lock`, `lockbox`, or `concierge`); a human key handoff is not an access method in V1. A host who is present is simply *also there* — the guest still enters with their own credential.
+>
+> This distinction is the difference between a listing attribute and a design regression. It must survive into the listing wizard: presence is a question about the session, not a fork in how access is configured.
+
+**Three requirements for this to earn its place rather than being a label:**
+
+**1. Guest-side filter, not detail-page text.** The entire value is a guest who wants privacy being able to filter for it. `host_presence` must be a **first-class discovery filter** alongside location and availability — a guest filtering for "host not present" sees `host_absent` listings plus `host_flexible` ones (which they can resolve their way at booking). If it only renders on the detail page, it does not do its job.
+
+**2. `host_flexible` resolves at booking, not over chat.** A flexible listing is ambiguous exactly when it matters — at checkout. So C triggers a **booking-time choice**: the guest picks present or absent, and that choice propagates to the host automatically as part of the confirmed booking. Leaving it to be settled by message thread reintroduces the back-and-forth the product exists to remove.
+
+Therefore `bookings` carries the **resolved** value:
+
+| Column | Type | Notes |
+|---|---|---|
+| `host_presence_resolved` | host_presence | `host_present` or `host_absent` only — never `host_flexible` |
+
+Set at booking creation: copied from `spaces.host_presence` for A/B, or taken from the guest's checkout selection for C. A check constraint rejects `host_flexible`, so no booking can reach `confirmed` with the question still open. The listing keeps the host's *policy*; the booking records the *outcome*.
+
+**3. Presence informs the session, not the access method.** `host_presence_resolved` tells both parties what to expect on arrival and belongs in the confirmation and access-instruction surfaces. It does **not** branch `access_type` (see the constraint note above).
+
+**Interaction with the trust model.** Under `host_present`, the host is a witness to the session — which partially covers the personal-safety gap (F4) that no pillar currently addresses (`TRUST-ARCHITECTURE.md` §9.3), and equally means the *host* is now exposed to the guest in a way an absent host is not. Under `host_absent`, the 360° video protocol and the deposit are the only accountability present. Whether ratings, deposits, or approval modes should differ by resolved presence is **open** (§6.9) — the schema records the value either way.
 
 ### 4.4 `space_media` — images/videos per space
 `id`, `space_id` → spaces, `kind` (`image`|`video`), `storage_path` text, `sort_order` int, `created_at`. Replaces single `image_url` and the `video_urls[]` marketing array.
@@ -292,6 +333,7 @@ A single property can expose both a whole unit and the rooms inside it (e.g. `wh
 | `base_duration_min` | int | check in (45, 60) |
 | `extension_min` | int | multiple of 15; default 0 |
 | `buffer_min` | int | snapshot of space's turnover buffer at booking time |
+| `host_presence_resolved` | host_presence | resolved A/B for this booking; **never `host_flexible`** (§4.3b) |
 | `price_total` | numeric | |
 | `approved_at`, `cancelled_at` | timestamptz null | |
 | `approval_decision` | text null | how approval happened: `allow_all` \| `auto_score` \| `manual` — check constraint [G6] |
@@ -307,6 +349,7 @@ A single property can expose both a whole unit and the rooms inside it (e.g. `wh
 **Constraints to encode (proposed):**
 - `base_duration_min in (45, 60)`.
 - `extension_min % 15 = 0 and extension_min >= 0`.
+- `host_presence_resolved <> 'host_flexible'` — a booking must never carry the unresolved value (§4.3b).
 - **Overlap prevention respecting the buffer**: no two non-terminal bookings for the same `space_id` may have `[starts_at, ends_at + buffer_min)` intervals that intersect. Implement via an exclusion constraint on a `tstzrange` (booking window extended by buffer) using `btree_gist`, or an equivalent server-side check. Terminal statuses (`cancelled`, `no_show`, `ended_without_closing`) are excluded from the conflict set — note `ended_without_closing` is terminal, so a session that never closed out stops blocking the calendar once its grace period lapses (§4.6a).
 - **Containment-aware conflict**: the conflict set also includes the space's parents/children via `space_containment` (§4.5b) — a whole-unit booking blocks its rooms and vice-versa; sibling rooms don't collide.
 - **Extension respects the next slot's buffer (decided)**: an extension increases `extension_min`/`ends_at` only if the extended `[starts_at, ends_at + buffer_min)` interval still clears the next booking. If it would collide with the following booking's turnover buffer, the extension is refused. Example: a 60-min booking extended to 1:26 must still leave the full buffer before the next guest.
@@ -355,6 +398,8 @@ Missing the closing deadline → `status = ended_without_closing`. **No metered 
 
 ### 4.7 `access_instructions` — per booking
 `id`, `booking_id` → bookings (unique), `access_type` access_type, `payload` text (code / lockbox location / concierge note), `valid_from`, `valid_until` timestamptz, `created_at`. **Access must not depend on host presence** — instructions are delivered to a confirmed booking and retrievable only by the guest of that booking (strict RLS on booking ownership + confirmed status).
+
+> This holds for **all** values of `host_presence` (§4.3b), including `host_present`. A host being on-site during the session does not make them the access mechanism: the guest still enters with their own credential via `digital_lock`, `lockbox`, or `concierge`. A human key handoff is not an access method in V1 — it would break bookings that start within the hour, which is the product.
 
 ### 4.8 `booking_videos` — mandatory 360° gate videos
 `id`, `booking_id` → bookings, `kind` video_kind (`opening` | `closing`), `storage_path` text null, `recorded_at` timestamptz, `expires_at` timestamptz null, `created_at`. Unique `(booking_id, kind)`. **The opening video gates `in_progress`; the closing video gates `completed`.** A dedicated **private** storage bucket (`booking-videos`) is proposed — these are evidence, not public media.
@@ -505,7 +550,7 @@ Ordered proposal. **Nothing here has been run.** Each is a new migration file af
 1. **`010_enums.sql`** — create all enums in §4.1 (`space_type` with V1+V2 values, etc.).
 2. **`011_properties.sql`** — create `properties`; backfill one property per existing `spaces` row from that row's `host_id`/address/city/region/lat/lng.
 3. **`012_spaces_restructure.sql`** —
-   - Add `property_id`, `space_type`, `price_per_45m/60m`, `price_per_extra_15m`, `approval_mode`, `min_score` (`numeric(3,2)`), `allow_unrated_guests` (default `true`), `turnover_buffer_min`, `access_type`, `is_active`.
+   - Add `property_id`, `space_type`, `price_per_45m/60m`, `price_per_extra_15m`, `approval_mode`, `min_score` (`numeric(3,2)`), `allow_unrated_guests` (default `true`), `turnover_buffer_min`, `access_type`, `host_presence` (§4.3b), `is_active`.
    - **Map old `type` → `space_type`** (explicit, proposed mapping): `studio`→`studio`; `apartment-1br`→`one_bedroom`; `private-room`→`room_in_home`; `house`→`whole_house`. Rows with unmappable free-text values are flagged for manual review, **not** silently dropped. *(The wider code-only `SpaceType` union values — `rest-room`, `office`, `meeting-room`, etc. — are treated as mock/leftover pending confirmation; see §6.1.)*
    - **Drop `type`** (free-text) — replaced by `space_type`.
    - **Drop `stay_type`** — deprecated flat-model artifact (§3).
@@ -513,7 +558,7 @@ Ordered proposal. **Nothing here has been run.** Each is a new migration file af
    - **Move** `host_id`, address/geo columns to `properties` (drop from `spaces` once backfilled).
    - Update `src/lib/types.ts`: replace the hyphenated `SpaceType` union with the underscored `space_type` enum values; remove `stay_type`/`HourlySpace`/`NightlySpace` split.
 4. **`013_space_media_availability.sql`** — create `space_media`, `space_availability`, and `space_containment` (§4.5b); migrate `image_url`/`video_urls[]`/`availability[]` into them.
-5. **`014_bookings.sql`** — create `bookings` with duration/extension checks and the buffer-aware, containment-aware overlap exclusion constraint (`btree_gist`). Includes the gate deadlines (`opening_deadline_at`, `closing_deadline_at`), approval-decision columns (`approval_decision`, `approved_by`, `decline_reason`, `approval_expires_at`), and cancellation columns (`cancelled_by`, `cancellation_reason`). Terminal statuses for the conflict set: `cancelled`, `no_show`, `ended_without_closing`.
+5. **`014_bookings.sql`** — create `bookings` with duration/extension checks, the `host_presence_resolved <> 'host_flexible'` check (§4.3b), and the buffer-aware, containment-aware overlap exclusion constraint (`btree_gist`). Includes the gate deadlines (`opening_deadline_at`, `closing_deadline_at`), approval-decision columns (`approval_decision`, `approved_by`, `decline_reason`, `approval_expires_at`), and cancellation columns (`cancelled_by`, `cancellation_reason`). Terminal statuses for the conflict set: `cancelled`, `no_show`, `ended_without_closing`.
 6. **`015_access_and_videos.sql`** — create `access_instructions`, `booking_videos` (with `expires_at`, `upload_status`, `upload_started_at`, `duration_sec`), and the private `booking-videos` storage bucket + owner/host RLS.
 7. **`016_ratings_deposits_claims.sql`** — create `ratings`, `deposits` (with `captured_amount`), `payments` (§4.10a), `damage_claims`. `spaces.rating` widened to `numeric(3,2)`.
 8. **`017_profiles_trust.sql`** — add `identity_kyc_status`, `criminal_record_status`, `criminal_record_doc_path`, `criminal_record_checked_at`, `trust_tier`, `national_id_hash` (unique), `identity_verified_until`, `criminal_record_valid_until`, `rating` (`numeric(3,2)` null), `review_count`, `is_banned`; create the private `antecedentes-docs` storage bucket + owner-only RLS; migrate existing `kyc_status` (`pending`/`verified`) into `identity_kyc_status`; then retire the old column.
@@ -592,5 +637,9 @@ Values and policies the decisions above **require but do not yet supply**. Each 
 13. **Re-submission after rejected verification [G3].** `verification_reviews` gives the attempt history; the **policy** (how many attempts, cooling-off) is unset.
 14. **Review capacity.** Manual verification + `ended_without_closing` refund reviews + claim adjudication all land on one unstaffed queue (§4.14). Volume and staffing are an operational unknown, and verification latency contradicts the on-demand promise for the user arriving with urgent need.
 15. **Multi-occupant bookings.** `spaces.max_capacity` permits more than one person, but only the booking guest is screened, rated, and recorded. Everyone else in the space is unverified and unattributable.
+
+16. **Does host presence change the trust mechanics (§4.3b)?** A `host_present` session has a witness; a `host_absent` one has only the video protocol and the deposit. Open: should deposits, approval modes, or the 360° gates differ by `host_presence_resolved`? Arguments both ways — a present host is a form of supervision, but is also personally exposed in a way an absent host is not, and the platform screens both parties precisely because presence cuts both ways. The schema records the resolved value regardless, so this can be decided after launch.
+
+17. **Does the host have to honour the declared presence?** Nothing verifies that a `host_absent` listing's host actually stayed away, and a guest who chose privacy and found the host there has no recorded recourse. This is a rating/claim question, but the mismatch is currently invisible — worth a guest-reportable path (related to host-fault reporting, item 11).
 
 > Items **7–15 are behavioural**, and several belong in `TRUST-ARCHITECTURE.md` rather than here — this schema carries the fields they will need either way. The larger unresolved systems named in that document (end-to-end damage adjudication, legal review, personal-safety mechanisms, insurance, and Chilean PSP hold support) are **not** repeated here; see `TRUST-ARCHITECTURE.md` §9.

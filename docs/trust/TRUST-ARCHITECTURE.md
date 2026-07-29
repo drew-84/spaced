@@ -577,6 +577,8 @@ Pillar 1 screens who may enter; Pillars 3 and 4 address property and money. **No
 
 This is **F4 in [§1](#the-trust-failures-the-system-must-prevent)** — a named failure with no assigned pillar. Given that the product's defining property is a stranger alone in a private space, this is the most significant substantive gap in the architecture, distinct from the schema gaps in §8 because no amount of schema fixes it.
 
+> **Host presence (SCHEMA.md §4.3b) partially touches this, but does not close it.** Listings declare whether the host is on-site (`host_present` / `host_absent` / `host_flexible`, resolved per booking), and a present host is a witness — meaningful supervision that an absent one cannot provide. But it cuts both ways: a present host is also personally exposed to the guest, so presence redistributes the risk rather than removing it. And `host_absent` is precisely the configuration a guest seeking privacy will filter for, meaning the sessions with the least supervision are the ones this mechanism selects for. Presence is a useful signal, not a safety mechanism.
+
 ### 9.4 Insurance beyond deposits
 
 Deposits cap liability at X or Y. Damage above that is uncovered, and the platform has no recovery mechanism. Open:
