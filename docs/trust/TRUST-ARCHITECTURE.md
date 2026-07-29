@@ -137,9 +137,10 @@ Three connected mechanisms:
 1. **Two-sided ratings** — after every completed session, guest rates host/space and host rates guest. Both directions are first-class; neither is optional decoration.
 2. **Permanent bans** — serious violations remove a user from the platform entirely, in both roles, permanently.
 3. **Tiered host approval control** — hosts choose, per listing, how much control they exercise over who books:
-   - **`auto_approve_verified`** — any fully verified user books instantly. Maximum liquidity, minimum friction.
-   - **`auto_approve_above_score`** — instant booking only for guests whose aggregate rating meets the host's threshold.
+   - **`allow_all`** — any fully verified user books instantly. Maximum liquidity, minimum friction.
+   - **`auto_approve_above_score`** — instant booking only for guests whose aggregate rating meets the host's threshold. A separate toggle decides whether guests with **no rating yet** are allowed through (default: yes).
    - **`manual_per_guest`** — every request is reviewed and approved by hand.
+   - **`manual_above_score`** — manual review, but only guests already above the threshold reach the host. The cautious-host mode: the score filters the obvious no's, the host judges the rest. Unrated guests are excluded structurally (see SCHEMA.md §4.3a).
 
 The tiering matters because hosts have genuinely different risk appetites, and forcing one policy on all of them either drives cautious hosts off the platform or destroys the instant-booking experience that makes the product work. Letting each host choose keeps both populations.
 
@@ -201,9 +202,9 @@ A **serious violation** triggers permanent removal from the platform, in both ro
 
 1. Guest requests a booking. Pillar 1 has already gated account access; the guest is verified.
 2. The listing's `approval_mode` is evaluated:
-   - `auto_approve_verified` → approved immediately.
-   - `auto_approve_above_score` → guest aggregate compared to `spaces.min_score`. **Behaviour for a guest with no ratings yet is undefined** ([G7](#8-schema-gaps-surfaced-by-this-document)) — and this is not an edge case, it is every new user's first booking.
-   - `manual_per_guest` → awaits host action. No timeout is defined ([G11](#8-schema-gaps-surfaced-by-this-document)).
+   - `allow_all` → approved immediately.
+   - `auto_approve_above_score` → guest aggregate compared to `spaces.min_score`; unrated guests routed by `spaces.allow_unrated_guests` (default allow) — resolved, [G7](#8-schema-gaps-surfaced-by-this-document).
+   - `manual_per_guest` / `manual_above_score` → awaits host action, auto-declining at `approval_expires_at`; the timeout duration is still open ([G11](#8-schema-gaps-surfaced-by-this-document)).
 3. On approval, `bookings.approved_at` is set and Pillar 4 places the hold.
 
 **Rating window: after `completed`.** Both parties are prompted. Ratings feed aggregates, which feed future approval decisions — closing the loop.
@@ -465,6 +466,16 @@ A single booking, start to finish, with the acting pillar marked.
 ## 8. Schema gaps surfaced by this document
 
 Elements required by the pillars above that **SCHEMA.md does not currently contain.** Grouped by where they would land, so folding back is mechanical. Nothing here is assumed to exist.
+
+> **✅ STATUS: ALL 24 GAPS FOLDED INTO SCHEMA.md.** This section is retained as the record of what was surfaced and why. The gap IDs (G1–G24) are referenced inline throughout SCHEMA.md at the point each was resolved. Where a gap needed a product decision rather than a column, the decision is recorded in SCHEMA.md §6 ("Resolved this round"); where it opened a new question, it is in SCHEMA.md §6.9.
+>
+> **Decisions taken while folding back**, which supersede the phrasing of the pillars above:
+> - **Host approval is 4 modes**, not 3: `allow_all`, `auto_approve_above_score`, `manual_per_guest`, and `manual_above_score` (manual review restricted to guests already above the threshold). §4.3a.
+> - **New users start unrated** (`rating = null`), not at a maximum score — a 5.00 default would rank new accounts above the platform's best repeat guests.
+> - **`allow_unrated_guests`** is a separate host toggle (default *true*), applying only to `auto_approve_above_score`. Under `manual_above_score` unrated guests are excluded structurally.
+> - **Tier graduation counts `completed` bookings only** — closing the [G17](#84-money-schemamd-410) loophole where a no-show could promote a guest to the cheaper deposit tier.
+> - **No metered overstay billing at launch.** A missing closing video terminates the booking as `ended_without_closing` after a 10-minute grace; the deposit is captured but refundable on review.
+> - **GPS departure detection** is a V2 candidate for prompting and dispute evidence — never a gate, and a departure event only, never a continuous track.
 
 ### 8.1 `profiles` / verification (SCHEMA.md §4.12)
 
