@@ -1,13 +1,26 @@
 SPACED — WEDGE (CANONICAL)
 
 Primary Wedge
-Need a private place right now? Book a room near you in minutes.
+Need a space for a while? Book a private room or a whole place near you in minutes.
 
 Secondary Variant
-Need a place right now? Get a private room near you in minutes.
+A room, an apartment, a house — yours for as long as you need it.
 
 Core Moment
-A user needs immediate, discreet access to a private space with minimal friction.
+A user needs a private space for a short time, nearby, without a lease,
+a booking window, or an explanation.
+
+Scope
+Residential spaces only.
+
+- a whole apartment
+- a whole house
+- a studio
+- a room inside one of these — bedroom, home office, kitchen
+
+Discretion is supported, not required. It is one reason among several a
+person needs a space for an hour, and the product does not assume or ask
+which reason applies.
 
 What This Is
 A wedge.
@@ -26,13 +39,52 @@ Do Not
 - mention specific durations in the wedge
 - mention 45–60 minutes
 - over-explain the concept
+- broaden it beyond residential space
 - broaden it into a generic marketplace for space
 - dilute urgency
-- dilute discretion
+- frame the product around any single use case
 
 Notes
 Duration flexibility belongs in the MVP and booking flow, not in the wedge.
-The wedge must stay broad enough to pull interest, but sharp enough to communicate immediate need.
+The wedge must stay broad enough to pull interest, but sharp enough to
+communicate immediate need.
+
+The residential boundary is the load-bearing constraint. Commercial space
+(offices, conference rooms, commercial kitchens) is a different market with
+different users and different intent — it is gated out of V1 by config, not
+excluded from the schema. See docs/technical/SCHEMA.md §4.1.
+
+Status
+REVISED — 2026-07-28
+Superseded the original wedge, which was narrower on two axes: private rooms
+only, and discretion as the defining use case. Both were widened deliberately:
+the space types now span whole residences and the rooms within them, and
+discretion became one use case among several rather than the frame.
+
+What did NOT change: residential only, near you, short duration, minutes to
+book, no lease or commitment.
+
+Change this file only if real-world testing clearly proves the wedge is weak.
+
+————————————————————————————————
+SUPERSEDED — original wedge, kept for reference
+
+Primary Wedge
+Need a private place right now? Book a room near you in minutes.
+
+Secondary Variant
+Need a place right now? Get a private room near you in minutes.
+
+Core Moment
+A user needs immediate, discreet access to a private space with minimal friction.
+
+Do Not (original)
+- mention specific durations in the wedge
+- mention 45–60 minutes
+- over-explain the concept
+- broaden it into a generic marketplace for space
+- dilute urgency
+- dilute discretion
 
 Status
 LOCKED
