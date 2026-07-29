@@ -39,8 +39,8 @@ export function LocationSection() {
             <span className="text-white/95">en minutos</span>
           </h2>
           <p className={`max-w-md text-sm leading-relaxed ${TEXT_BODY}`}>
-            Reserva por horas o fracciones de 30 min. Sin trámites, sin
-            depósitos. Solo entra, usa y sal.
+            Reserva desde 45 min y extiende de a 15. Sin trámites, sin
+            contratos. Solo entra, usa y sal.
           </p>
         </div>
 

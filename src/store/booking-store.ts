@@ -2,7 +2,8 @@ import { create } from "zustand";
 
 type BookingDraft = {
   spaceId: string;
-  durationMinutes: 30 | 60;
+  /** Base durations are 45 and 60 min — see docs/technical/SCHEMA.md §3. */
+  durationMinutes: 45 | 60;
   extensionMinutes: 0 | 15 | 30;
   notes: string;
 };
@@ -15,7 +16,7 @@ type BookingState = {
 
 const initialDraft: BookingDraft = {
   spaceId: "",
-  durationMinutes: 30,
+  durationMinutes: 45,
   extensionMinutes: 0,
   notes: "",
 };

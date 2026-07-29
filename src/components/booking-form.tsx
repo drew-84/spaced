@@ -18,9 +18,12 @@ import {
 
 const hourlySpaces = mockSpaces.filter((s) => s.stayType === "hourly");
 
-function formatTotal(duration: string, extension: string, unitPrice: number) {
-  const blocks = (Number(duration) + Number(extension)) / 30;
-  return blocks * unitPrice;
+// Priced in 15-minute blocks so 45- and 60-min bases and +15 extensions all
+// divide cleanly. Mock data still carries a 30-min unit price, so halve it.
+// See docs/technical/SCHEMA.md §3 (45/60 base) and §4.3 (price_per_45m/60m).
+function formatTotal(duration: string, extension: string, unitPricePer30m: number) {
+  const blocks = (Number(duration) + Number(extension)) / 15;
+  return blocks * (unitPricePer30m / 2);
 }
 
 export function BookingForm() {
@@ -30,7 +33,7 @@ export function BookingForm() {
     resolver: zodResolver(bookingSchema),
     defaultValues: {
       spaceId: draft.spaceId,
-      durationMinutes: String(draft.durationMinutes) as "30" | "60",
+      durationMinutes: String(draft.durationMinutes) as "45" | "60",
       extensionMinutes: String(draft.extensionMinutes) as "0" | "15" | "30",
       notes: draft.notes,
     },
@@ -58,7 +61,7 @@ export function BookingForm() {
   const onSubmit = (values: BookingFormValues) => {
     setDraft({
       spaceId: values.spaceId,
-      durationMinutes: Number(values.durationMinutes) as 30 | 60,
+      durationMinutes: Number(values.durationMinutes) as 45 | 60,
       extensionMinutes: Number(values.extensionMinutes) as 0 | 15 | 30,
       notes: values.notes ?? "",
     });
@@ -117,8 +120,8 @@ export function BookingForm() {
               {...form.register("durationMinutes")}
               className={`${INPUT_INNER} appearance-none pr-8`}
             >
-              <option value="30" className="bg-[#0a0f1c] text-white/95">
-                30 minutos
+              <option value="45" className="bg-[#0a0f1c] text-white/95">
+                45 minutos
               </option>
               <option value="60" className="bg-[#0a0f1c] text-white/95">
                 60 minutos

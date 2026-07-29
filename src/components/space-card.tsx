@@ -71,9 +71,9 @@ export function SpaceCard({ space, distanceKm }: SpaceCardProps) {
           <div className="absolute bottom-3 right-3">
             {isHourly ? (
               <span className="rounded-lg border border-white/30 bg-white/[0.1] px-3 py-1.5 text-sm font-bold text-white/80 shadow-[inset_0_1px_0_rgba(255,255,255,0.2)] backdrop-blur-md">
-                ${space.pricePer30m}
+                ${Math.round(space.pricePer30m * 1.5)}
                 <span className="ml-0.5 text-[10px] font-normal text-white/50">
-                  /30m
+                  /45m
                 </span>
               </span>
             ) : (
@@ -100,9 +100,9 @@ export function SpaceCard({ space, distanceKm }: SpaceCardProps) {
             </p>
             {isHourly ? (
               <p className="text-lg font-bold text-white/80">
-                ${space.pricePer30m}
+                ${Math.round(space.pricePer30m * 1.5)}
                 <span className="ml-1 text-xs font-normal text-white/50">
-                  / 30 min
+                  / 45 min
                 </span>
               </p>
             ) : (
