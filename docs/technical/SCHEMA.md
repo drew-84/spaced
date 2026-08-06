@@ -1,4 +1,4 @@
-# Spacio — Data Model & Schema
+# Lugarmi — Data Model & Schema
 
 **Status:** Proposal (V1)
 **Scope:** Data model only. No migrations are executed by this document. Every schema change described in the Migration Path is a **proposal** to be reviewed and run separately.

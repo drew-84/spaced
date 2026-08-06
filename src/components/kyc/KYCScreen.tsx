@@ -94,7 +94,7 @@ const COPY: Record<KYCUserType, Copy> = {
     ariaLabel: "Verificación de huésped",
     header: "ACCESO VERIFICADO",
     body: [
-      ["Para reservar un espacio en Spacio,", "verificamos tu identidad una sola vez."],
+      ["Para reservar un espacio en Lugarmi,", "verificamos tu identidad una sola vez."],
       ["Rápido. Seguro. Solo la primera vez.", "Por tu seguridad y la del anfitrión."],
     ],
   },
@@ -102,7 +102,7 @@ const COPY: Record<KYCUserType, Copy> = {
     ariaLabel: "Verificación de host",
     header: "PUBLICA CON CONFIANZA",
     body: [
-      ["Para ofrecer tu espacio en Spacio,", "verificamos tu identidad una sola vez."],
+      ["Para ofrecer tu espacio en Lugarmi,", "verificamos tu identidad una sola vez."],
       ["Rápido. Seguro. Solo la primera vez.", "Para que los huéspedes confíen en ti", "y tú confíes en ellos."],
     ],
   },
@@ -440,7 +440,7 @@ export function KYCScreen({
                 willChange: "transform, opacity",
               }}
             >
-              SPACIO
+              LUGARMI
             </p>
 
             <div className="flex flex-col items-center gap-7 text-center">

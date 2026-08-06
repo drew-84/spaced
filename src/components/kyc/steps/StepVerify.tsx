@@ -225,7 +225,7 @@ function SuccessPhase({ firstName, onSubmit }: SuccessPhaseProps) {
         >
           Tu identidad ha sido confirmada.
           <br />
-          Spacio es más seguro gracias a ti.
+          Lugarmi es más seguro gracias a ti.
         </p>
 
         {/* CONTINUAR — centered horizontally per spec; this is the moment

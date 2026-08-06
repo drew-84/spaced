@@ -92,7 +92,7 @@ export function TopNav({ active }: TopNavProps) {
             href="/"
             className="text-base font-medium tracking-[0.28em] text-white/95 sm:text-lg"
           >
-            SPACIO
+            LUGARMI
           </Link>
 
           {/* Nav pills */}

@@ -1,4 +1,4 @@
-# Spacio — Trust Architecture
+# Lugarmi — Trust Architecture
 
 **Status:** Proposal (V1)
 **Scope:** The *logic* of trust — screening, ratings, host control, session gating, and money at risk. This document defines behaviour and policy. It does **not** define storage; [`docs/technical/SCHEMA.md`](../technical/SCHEMA.md) owns the data model.
@@ -10,11 +10,11 @@
 
 ## 1. Why trust architecture exists
 
-Spacio's core transaction has a structural property that most marketplaces do not share:
+Lugarmi's core transaction has a structural property that most marketplaces do not share:
 
 > **A stranger is given private, unsupervised physical access to someone else's real property, and by design the owner is not present.**
 
-"Access must not depend on host presence" is an MVP constraint, not an accident — it is what makes short-duration, on-demand booking work at all. A host who must be physically present to hand over a key cannot support a booking that starts twenty minutes from now. But removing the host from the transaction also removes the informal supervision that every other short-stay model quietly relies on. Hotels have a front desk. Long-lease rentals have a screening process measured in weeks and a contract with a signature on it. Spacio has neither, and compresses the whole transaction into under an hour.
+"Access must not depend on host presence" is an MVP constraint, not an accident — it is what makes short-duration, on-demand booking work at all. A host who must be physically present to hand over a key cannot support a booking that starts twenty minutes from now. But removing the host from the transaction also removes the informal supervision that every other short-stay model quietly relies on. Hotels have a front desk. Long-lease rentals have a screening process measured in weeks and a contract with a signature on it. Lugarmi has neither, and compresses the whole transaction into under an hour.
 
 That combination — **anonymous by default, unsupervised by design, fast by requirement, and physical in consequence** — is what the four pillars exist to counteract. Each pillar addresses a failure that the absent host would otherwise have caught.
 
@@ -63,7 +63,7 @@ Two independent verifications, **both mandatory from launch, for every user, in 
 
 There is no guest-only or host-only tier of verification, and no grace period. A user who has completed neither can browse; a user who has completed both can transact. There is no state in between that permits booking or listing.
 
-> **Decision recorded:** both checks are required at launch for all users. This is stricter than most marketplaces, which typically screen hosts more heavily than guests. The asymmetry does not fit Spacio: the guest is the party who gains unsupervised access to someone's property, so screening the guest is at least as important as screening the host.
+> **Decision recorded:** both checks are required at launch for all users. This is stricter than most marketplaces, which typically screen hosts more heavily than guests. The asymmetry does not fit Lugarmi: the guest is the party who gains unsupervised access to someone's property, so screening the guest is at least as important as screening the host.
 
 ### 3.2 Why it exists — failures prevented
 
@@ -90,7 +90,7 @@ Both checks are presented in a **single KYC modal** during onboarding, as one co
 
 > **"Seamless" here means UX, not automation.** The manual download-and-upload step is unavoidable given how the Chilean system works. What the platform controls is that it happens **once**, inside **one modal**, with **clear status feedback** and no ambiguity about what the user must do next. Design effort should go into making the manual step feel handled rather than into pretending it is automatic.
 
-**Latency consequence.** Manual admin review means verification is **not instant**, which sits in tension with the platform's on-demand promise. A user who discovers Spacio because they need a space *now* cannot transact now. Mitigating this — batching review, staffing it, or setting expectations at signup — is an operational problem flagged in [§9](#9-open-questions--todo).
+**Latency consequence.** Manual admin review means verification is **not instant**, which sits in tension with the platform's on-demand promise. A user who discovers Lugarmi because they need a space *now* cannot transact now. Mitigating this — batching review, staffing it, or setting expectations at signup — is an operational problem flagged in [§9](#9-open-questions--todo).
 
 ### 3.4 Where it touches the data model
 
@@ -146,7 +146,7 @@ The tiering matters because hosts have genuinely different risk appetites, and f
 
 ### 4.2 Why it exists — failures prevented
 
-- **F1/F3 residual risk.** Screening (Pillar 1) is a point-in-time check that catches recorded history. It cannot catch someone with no record who behaves badly on the platform. Ratings capture *behaviour observed on Spacio itself* — the signal screening structurally cannot produce.
+- **F1/F3 residual risk.** Screening (Pillar 1) is a point-in-time check that catches recorded history. It cannot catch someone with no record who behaves badly on the platform. Ratings capture *behaviour observed on Lugarmi itself* — the signal screening structurally cannot produce.
 - **F6 (listing fraud).** Guest→host ratings are the mechanism by which a misrepresented or non-existent space becomes visible. Without them, a fraudulent listing degrades silently, one disappointed guest at a time.
 - **F8 (liability).** Bans are how a known-bad actor is durably removed. Their effectiveness depends entirely on Pillar 1 — a ban is only as strong as the identity it is attached to.
 - **Host retention.** Approval control is as much a supply-side feature as a trust mechanism. A host who cannot control who enters their property will not list it.
